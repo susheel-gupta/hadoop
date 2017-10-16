@@ -323,7 +323,7 @@ public abstract class Resource implements Comparable<Resource> {
       return;
     }
     if (resource.equals(ResourceInformation.VCORES_URI)) {
-      this.setVirtualCores((int) resourceInformation.getValue());
+      this.setVirtualCores(castToIntSafely(resourceInformation.getValue()));
       return;
     }
     ResourceInformation storedResourceInfo = getResourceInformation(resource);
@@ -369,10 +369,7 @@ public abstract class Resource implements Comparable<Resource> {
       return;
     }
     if (resource.equals(ResourceInformation.VCORES_URI)) {
-      if (value > Integer.MAX_VALUE) {
-        value = (long) Integer.MAX_VALUE;
-      }
-      this.setVirtualCores((int)value);
+      this.setVirtualCores(castToIntSafely(value));
       return;
     }
 
