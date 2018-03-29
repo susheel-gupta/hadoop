@@ -238,7 +238,10 @@ public class CommonNodeLabelsManager extends AbstractService {
     return initNodeLabelStoreInProgress;
   }
 
-  boolean isCentralizedConfiguration() {
+  /**
+   * @return true if node label configuration type is not distributed.
+   */
+  public boolean isCentralizedConfiguration() {
     return isCentralizedNodeLabelConfiguration;
   }
 
@@ -249,8 +252,7 @@ public class CommonNodeLabelsManager extends AbstractService {
                 conf.getClass(YarnConfiguration.FS_NODE_LABELS_STORE_IMPL_CLASS,
                     FileSystemNodeLabelsStore.class, NodeLabelsStore.class),
                 conf);
-    this.store.setNodeLabelsManager(this);
-    this.store.init(conf);
+    this.store.init(conf, this);
     this.store.recover();
   }
 
