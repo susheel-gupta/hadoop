@@ -150,3 +150,6 @@ BUG-111427. HADOOP-15748. S3 listing inconsistency can raise NPE in globber. Con
     HADOOP-15968. ABFS: add try catch for UGI failure when initializing ABFS.
 
     HADOOP-15434. Upgrade to ADLS SDK that exposes current timeout.
+
+    HADOOP-15356. Make HTTP timeout configurable in ADLS connector. Contributed
+    by Atul Sikaria and Sean Mackrory.
