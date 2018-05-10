@@ -233,6 +233,11 @@ public class FpgaResourceHandlerImpl implements ResourceHandler {
     return null;
   }
 
+  @Override
+  public List<PrivilegedOperation> updateContainer(Container container)
+      throws ResourceHandlerException {
+    return null;
+  }
 
   @Override
   public List<PrivilegedOperation> postComplete(ContainerId containerId)

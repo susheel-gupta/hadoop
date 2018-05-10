@@ -43,6 +43,7 @@ import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.privileg
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.resources.CGroupsHandler;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.resources.ResourceHandler;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.resources.ResourceHandlerChain;
+import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.resources.ResourceHandlerException;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.resourceplugin.deviceframework.*;
 import org.apache.hadoop.yarn.server.security.ApplicationACLsManager;
 import org.apache.hadoop.yarn.util.resource.ResourceUtils;
@@ -136,6 +137,12 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
     @Override
     public List<PrivilegedOperation> reacquireContainer(
         ContainerId containerId) {
+      return null;
+    }
+
+    @Override
+    public List<PrivilegedOperation> updateContainer(Container container)
+        throws ResourceHandlerException {
       return null;
     }
 
