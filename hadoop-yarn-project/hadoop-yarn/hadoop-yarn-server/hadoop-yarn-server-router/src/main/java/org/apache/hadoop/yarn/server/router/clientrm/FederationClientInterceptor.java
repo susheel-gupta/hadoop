@@ -755,6 +755,6 @@ public class FederationClientInterceptor
   @Override
   public GetNodesToAttributesResponse getNodesToAttributes(
       GetNodesToAttributesRequest request) throws YarnException, IOException {
-    throw new NotImplementedException();
+    throw new NotImplementedException("Code is not implemented");
   }
 }
