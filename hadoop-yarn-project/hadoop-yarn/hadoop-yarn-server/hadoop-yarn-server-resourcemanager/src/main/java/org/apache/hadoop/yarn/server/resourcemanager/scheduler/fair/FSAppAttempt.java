@@ -460,7 +460,6 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
       // Add it to allContainers list.
       addToNewlyAllocatedContainers(node, rmContainer);
       liveContainers.put(container.getId(), rmContainer);
-
       // Update consumption and track allocations
       ContainerRequest containerRequest = appSchedulingInfo.allocate(
           type, node, schedulerKey, container);
@@ -868,6 +867,12 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
         if (reserved) {
           unreserve(schedulerKey, node);
         }
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(String.format(
+              "Resource ask %s fits in available node resources %s, " +
+                      "but no container was allocated",
+              capability, available));
+        }
         return Resources.none();
       }
 
@@ -1097,7 +1102,8 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
     } else if (!getQueue().fitsInMaxShare(resource)) {
       // The requested container must fit in queue maximum share
       updateAMDiagnosticMsg(resource,
-          " exceeds current queue or its parents maximum resource allowed).");
+          " exceeds current queue or its parents maximum resource allowed). " +
+                  "Max share of queue: " + getQueue().getMaxShare());
 
       ret = false;
     }

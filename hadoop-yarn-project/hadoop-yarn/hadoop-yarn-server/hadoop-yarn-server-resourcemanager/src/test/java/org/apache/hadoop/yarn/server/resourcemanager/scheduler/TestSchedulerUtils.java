@@ -864,7 +864,8 @@ public class TestSchedulerUtils {
   }
 
   @Test
-  public void testCustomResourceRequestedUnitIsSmallerThanAvailableUnit2() {
+  public void testCustomResourceRequestedUnitIsSmallerThanAvailableUnit2()
+          throws InvalidResourceRequestException {
     Resource requestedResource =
         ResourceTypesTestHelper.newResource(1, 1,
                 ImmutableMap.of("custom-resource-1", "11"));
