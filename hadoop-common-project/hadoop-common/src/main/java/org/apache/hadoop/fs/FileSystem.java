@@ -3566,6 +3566,7 @@ public abstract class FileSystem extends Configured
       private volatile long bytesReadDistanceOfOneOrTwo;
       private volatile long bytesReadDistanceOfThreeOrFour;
       private volatile long bytesReadDistanceOfFiveOrLarger;
+      private volatile long bytesReadErasureCoded;
 
       /**
        * Add another StatisticsData object to this one.
@@ -3582,6 +3583,7 @@ public abstract class FileSystem extends Configured
             other.bytesReadDistanceOfThreeOrFour;
         this.bytesReadDistanceOfFiveOrLarger +=
             other.bytesReadDistanceOfFiveOrLarger;
+        this.bytesReadErasureCoded += other.bytesReadErasureCoded;
       }
 
       /**
@@ -3599,6 +3601,7 @@ public abstract class FileSystem extends Configured
             -this.bytesReadDistanceOfThreeOrFour;
         this.bytesReadDistanceOfFiveOrLarger =
             -this.bytesReadDistanceOfFiveOrLarger;
+        this.bytesReadErasureCoded = -this.bytesReadErasureCoded;
       }
 
       @Override
@@ -3642,6 +3645,10 @@ public abstract class FileSystem extends Configured
 
       public long getBytesReadDistanceOfFiveOrLarger() {
         return bytesReadDistanceOfFiveOrLarger;
+      }
+
+      public long getBytesReadErasureCoded() {
+        return bytesReadErasureCoded;
       }
     }
 
@@ -3835,6 +3842,14 @@ public abstract class FileSystem extends Configured
     }
 
     /**
+     * Increment the bytes read on erasure-coded files in the statistics.
+     * @param newBytes the additional bytes read
+     */
+    public void incrementBytesReadErasureCoded(long newBytes) {
+      getThreadStatistics().bytesReadErasureCoded += newBytes;
+    }
+
+    /**
      * Increment the bytes read by the network distance in the statistics
      * In the common network topology setup, distance value should be an even
      * number such as 0, 2, 4, 6. To make it more general, we group distance
@@ -4024,6 +4039,25 @@ public abstract class FileSystem extends Configured
 
         public StatisticsData aggregate() {
           return all;
+        }
+      });
+    }
+
+    /**
+     * Get the total number of bytes read on erasure-coded files.
+     * @return the number of bytes
+     */
+    public long getBytesReadErasureCoded() {
+      return visitAll(new StatisticsAggregator<Long>() {
+        private long bytesReadErasureCoded = 0;
+
+        @Override
+        public void accept(StatisticsData data) {
+          bytesReadErasureCoded += data.bytesReadErasureCoded;
+        }
+
+        public Long aggregate() {
+          return bytesReadErasureCoded;
         }
       });
     }
