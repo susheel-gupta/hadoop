@@ -185,3 +185,6 @@ HADOOP-15968. ABFS: add try catch for UGI failure when initializing ABFS.
 
     YARN-8567. Fetching yarn logs fails for long running application if it is
     not present in timeline store. Contributed by Tarun Parimi.
+
+    YARN-7417. Remove duplicated code from IndexedFileAggregatedLogsBlock
+    and TFileAggregatedLogsBlock.            Contributed by Zian Chen
