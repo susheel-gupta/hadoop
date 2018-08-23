@@ -518,6 +518,19 @@ public class MockRM extends ResourceManager {
     return submitApp(masterMemory, false);
   }
 
+  public RMApp submitApp(int masterMemory, Set<String> appTags)
+      throws Exception {
+    Resource resource = Resource.newInstance(masterMemory, 0);
+    ResourceRequest amResourceRequest = ResourceRequest.newInstance(
+        Priority.newInstance(0), ResourceRequest.ANY, resource, 1);
+    return submitApp(Collections.singletonList(amResourceRequest), "",
+        UserGroupInformation.getCurrentUser().getShortUserName(), null, false,
+        null, super.getConfig().getInt(YarnConfiguration.RM_AM_MAX_ATTEMPTS,
+        YarnConfiguration.DEFAULT_RM_AM_MAX_ATTEMPTS), null, null, true,
+        false, false, null, 0, null, true, Priority.newInstance(0), null,
+        null, null, appTags);
+  }
+
   public RMApp submitApp(int masterMemory, String queue) throws Exception {
     return submitApp(masterMemory, "",
         UserGroupInformation.getCurrentUser().getShortUserName(), null, false,
@@ -814,6 +827,9 @@ public class MockRM extends ResourceManager {
     sub.setApplicationId(appId);
     sub.setApplicationName(name);
     sub.setMaxAppAttempts(maxAppAttempts);
+    if (applicationTags != null) {
+      sub.setApplicationTags(applicationTags);
+    }
     if (applicationTimeouts != null && applicationTimeouts.size() > 0) {
       sub.setApplicationTimeouts(applicationTimeouts);
     }
