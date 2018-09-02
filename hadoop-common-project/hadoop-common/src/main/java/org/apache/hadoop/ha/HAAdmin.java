@@ -617,7 +617,10 @@ public abstract class HAAdmin extends Configured implements Tool {
     }
     return 0;
   }
-  
+
+  /**
+   * UsageInfo class holds args and help details.
+   */
   public static class UsageInfo {
     public final String args;
     public final String help;
