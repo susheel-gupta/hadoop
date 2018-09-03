@@ -2018,7 +2018,8 @@ public class TestClientRMService {
 
   @Test(timeout = 120000)
   public void testGetClusterNodeAttributes() throws IOException, YarnException {
-    MockRM rm = new MockRM() {
+    Configuration newConf = NodeAttributeTestUtils.getRandomDirConf(null);
+    MockRM rm = new MockRM(newConf) {
       protected ClientRMService createClientRMService() {
         return new ClientRMService(this.rmContext, scheduler, this.rmAppManager,
             this.applicationACLsManager, this.queueACLsManager,
@@ -2067,7 +2068,8 @@ public class TestClientRMService {
 
   @Test(timeout = 120000)
   public void testGetAttributesToNodes() throws IOException, YarnException {
-    MockRM rm = new MockRM() {
+    Configuration newConf = NodeAttributeTestUtils.getRandomDirConf(null);
+    MockRM rm = new MockRM(newConf) {
       protected ClientRMService createClientRMService() {
         return new ClientRMService(this.rmContext, scheduler, this.rmAppManager,
             this.applicationACLsManager, this.queueACLsManager,
@@ -2158,7 +2160,8 @@ public class TestClientRMService {
 
   @Test(timeout = 120000)
   public void testGetNodesToAttributes() throws IOException, YarnException {
-    MockRM rm = new MockRM() {
+    Configuration newConf = NodeAttributeTestUtils.getRandomDirConf(null);
+    MockRM rm = new MockRM(newConf) {
       protected ClientRMService createClientRMService() {
         return new ClientRMService(this.rmContext, scheduler, this.rmAppManager,
             this.applicationACLsManager, this.queueACLsManager,
