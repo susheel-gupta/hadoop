@@ -43,8 +43,8 @@ import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CachingGetSpaceUsed;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -82,7 +82,7 @@ import com.google.common.annotations.VisibleForTesting;
  * This class is synchronized by {@link FsVolumeImpl}.
  */
 class BlockPoolSlice {
-  static final Log LOG = LogFactory.getLog(BlockPoolSlice.class);
+  static final Logger LOG = LoggerFactory.getLogger(BlockPoolSlice.class);
 
   private final String bpid;
   private final FsVolumeImpl volume; // volume to which this BlockPool belongs to
@@ -858,7 +858,7 @@ class BlockPoolSlice {
     }
 
     if (dfsUsage instanceof CachingGetSpaceUsed) {
-      IOUtils.cleanup(LOG, ((CachingGetSpaceUsed) dfsUsage));
+      IOUtils.cleanupWithLogger(LOG, ((CachingGetSpaceUsed) dfsUsage));
     }
   }
 

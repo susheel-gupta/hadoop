@@ -41,7 +41,7 @@ import org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream;
 import org.apache.hadoop.hdfs.server.namenode.NameNodeLayoutVersion;
 import org.apache.hadoop.hdfs.server.protocol.NamespaceInfo;
 import org.apache.hadoop.test.GenericTestUtils;
-import org.apache.log4j.Level;
+import org.slf4j.event.Level;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -63,7 +63,7 @@ import static org.apache.hadoop.hdfs.qjournal.QJMTestUtil.verifyEdits;
  */
 public class TestQuorumJournalManagerUnit {
   static {
-    GenericTestUtils.setLogLevel(QuorumJournalManager.LOG, Level.ALL);
+    GenericTestUtils.setLogLevel(QuorumJournalManager.LOG, Level.TRACE);
   }
   private static final NamespaceInfo FAKE_NSINFO = new NamespaceInfo(
       12345, "mycluster", "my-bp", 0L);

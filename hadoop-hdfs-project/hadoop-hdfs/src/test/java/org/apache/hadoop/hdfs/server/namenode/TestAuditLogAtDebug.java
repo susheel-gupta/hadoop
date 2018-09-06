@@ -19,8 +19,8 @@
 package org.apache.hadoop.hdfs.server.namenode;
 
 import com.google.common.base.Joiner;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.HdfsConfiguration;
@@ -44,7 +44,7 @@ import static org.mockito.Mockito.*;
  * Test that the HDFS Audit logger respects DFS_NAMENODE_AUDIT_LOG_DEBUG_CMDLIST. 
  */
 public class TestAuditLogAtDebug {
-  static final Log LOG = LogFactory.getLog(TestAuditLogAtDebug.class);
+  static final Logger LOG = LoggerFactory.getLogger(TestAuditLogAtDebug.class);
 
   @Rule
   public Timeout timeout = new Timeout(300000);

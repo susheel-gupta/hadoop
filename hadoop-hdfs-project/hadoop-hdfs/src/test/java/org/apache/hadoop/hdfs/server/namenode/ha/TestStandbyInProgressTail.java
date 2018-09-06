@@ -28,8 +28,8 @@ import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
@@ -56,8 +56,8 @@ import com.google.common.collect.Lists;
  * the standby node.
  */
 public class TestStandbyInProgressTail {
-  private static final Log LOG =
-          LogFactory.getLog(TestStandbyInProgressTail.class);
+  private static final Logger LOG =
+          LoggerFactory.getLogger(TestStandbyInProgressTail.class);
   private Configuration conf;
   private MiniQJMHACluster qjmhaCluster;
   private MiniDFSCluster cluster;

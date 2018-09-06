@@ -40,8 +40,8 @@ import java.util.concurrent.atomic.LongAccumulator;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hdfs.ClientGSIContext;
@@ -66,7 +66,7 @@ import com.google.common.base.Supplier;
  * Static utility functions useful for testing HA.
  */
 public abstract class HATestUtil {
-  private static final Log LOG = LogFactory.getLog(HATestUtil.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HATestUtil.class);
   
   private static final String LOGICAL_HOSTNAME = "ha-nn-uri-%d";
   

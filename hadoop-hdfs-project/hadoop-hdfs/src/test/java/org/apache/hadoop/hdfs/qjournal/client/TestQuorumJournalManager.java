@@ -40,8 +40,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
@@ -73,7 +73,7 @@ import com.google.common.collect.Lists;
  * For true unit tests, see {@link TestQuorumJournalManagerUnit}.
  */
 public class TestQuorumJournalManager {
-  private static final Log LOG = LogFactory.getLog(
+  private static final Logger LOG = LoggerFactory.getLogger(
       TestQuorumJournalManager.class);
   
   private MiniJournalCluster cluster;
@@ -113,7 +113,7 @@ public class TestQuorumJournalManager {
   @After
   public void shutdown() throws IOException, InterruptedException,
       TimeoutException {
-    IOUtils.cleanup(LOG, toClose.toArray(new Closeable[0]));
+    IOUtils.cleanupWithLogger(LOG, toClose.toArray(new Closeable[0]));
 
     // Should not leak clients between tests -- this can cause flaky tests.
     // (See HDFS-4643)
@@ -177,7 +177,7 @@ public class TestQuorumJournalManager {
       verifyEdits(streams, 1, 3);
       assertNull(stream.readOp());
     } finally {
-      IOUtils.cleanup(LOG, streams.toArray(new Closeable[0]));
+      IOUtils.cleanupWithLogger(LOG, streams.toArray(new Closeable[0]));
       streams.clear();
     }
     
@@ -192,7 +192,7 @@ public class TestQuorumJournalManager {
       assertEquals(3, stream.getLastTxId());
       verifyEdits(streams, 1, 3);
     } finally {
-      IOUtils.cleanup(LOG, streams.toArray(new Closeable[0]));
+      IOUtils.cleanupWithLogger(LOG, streams.toArray(new Closeable[0]));
       streams.clear();
     }
     
@@ -210,7 +210,7 @@ public class TestQuorumJournalManager {
 
       verifyEdits(streams, 1, 6);
     } finally {
-      IOUtils.cleanup(LOG, streams.toArray(new Closeable[0]));
+      IOUtils.cleanupWithLogger(LOG, streams.toArray(new Closeable[0]));
       streams.clear();
     }
   }
@@ -239,7 +239,7 @@ public class TestQuorumJournalManager {
       readerQjm.selectInputStreams(streams, 1, false);
       verifyEdits(streams, 1, 9);
     } finally {
-      IOUtils.cleanup(LOG, streams.toArray(new Closeable[0]));
+      IOUtils.cleanupWithLogger(LOG, streams.toArray(new Closeable[0]));
       readerQjm.close();
     }
   }

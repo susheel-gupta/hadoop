@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hdfs;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CreateFlag;
 import org.apache.hadoop.fs.FileSystem;
@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 public class TestDFSInotifyEventInputStream {
 
   private static final int BLOCK_SIZE = 1024;
-  private static final Log LOG = LogFactory.getLog(
+  private static final Logger LOG = LoggerFactory.getLogger(
       TestDFSInotifyEventInputStream.class);
 
   public static EventBatch waitForNextEvents(DFSInotifyEventInputStream eis)
