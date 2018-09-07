@@ -216,13 +216,13 @@ public class TestDistributedShell {
     } else {
       Assert.fail("Wrong timeline version number: " + timelineVersion);
     }
-    
+
     if (yarnCluster == null) {
       yarnCluster =
           new MiniYARNCluster(TestDistributedShell.class.getSimpleName(), 1,
               numNodeManager, 1, 1);
       yarnCluster.init(conf);
-      
+
       yarnCluster.start();
 
       conf.set(
@@ -796,7 +796,7 @@ public class TestDistributedShell {
         "--num_containers",
         "1",
         "--shell_command",
-        "sleep 8",
+        getSleepCommand(8),
         "--master_memory",
         "512",
         "--container_memory",
@@ -831,7 +831,7 @@ public class TestDistributedShell {
         "--num_containers",
         "1",
         "--shell_command",
-        "sleep 8",
+        getSleepCommand(8),
         "--master_memory",
         "512",
         "--container_memory",
@@ -869,7 +869,7 @@ public class TestDistributedShell {
         "--num_containers",
         "1",
         "--shell_command",
-        "sleep 8",
+        getSleepCommand(8),
         "--master_memory",
         "512",
         "--container_memory",
@@ -1141,7 +1141,7 @@ public class TestDistributedShell {
       Assert.assertTrue("The throw exception is not expected",
           e.getMessage().contains("Invalid no. of containers"));
     }
-    
+
     LOG.info("Initializing DS Client with invalid no. of vcores");
     try {
       String[] args = {
@@ -1282,7 +1282,7 @@ public class TestDistributedShell {
   protected void waitForNMsToRegister() throws Exception {
     int sec = 60;
     while (sec >= 0) {
-      if (yarnCluster.getResourceManager().getRMContext().getRMNodes().size() 
+      if (yarnCluster.getResourceManager().getRMContext().getRMNodes().size()
           >= NUM_NMS) {
         break;
       }
