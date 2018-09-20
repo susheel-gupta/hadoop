@@ -133,6 +133,9 @@ public class TestTrash {
     conf.setLong(FS_TRASH_INTERVAL_KEY, 0); // disabled
     assertFalse(new Trash(conf).isEnabled());
 
+    conf.setLong(FS_TRASH_INTERVAL_KEY, -1); // disabled
+    assertFalse(new Trash(conf).isEnabled());
+
     conf.setLong(FS_TRASH_INTERVAL_KEY, 10); // 10 minute
     assertTrue(new Trash(conf).isEnabled());
 
@@ -525,6 +528,9 @@ public class TestTrash {
     FileSystem fs = FileSystem.getLocal(conf);
     conf.set("fs.defaultFS", fs.getUri().toString());
     conf.setLong(FS_TRASH_INTERVAL_KEY, 0); // disabled
+    assertFalse(new Trash(conf).isEnabled());
+
+    conf.setLong(FS_TRASH_INTERVAL_KEY, -1); // disabled
     assertFalse(new Trash(conf).isEnabled());
 
     conf.setLong(FS_TRASH_INTERVAL_KEY, 10); // 10 minute
