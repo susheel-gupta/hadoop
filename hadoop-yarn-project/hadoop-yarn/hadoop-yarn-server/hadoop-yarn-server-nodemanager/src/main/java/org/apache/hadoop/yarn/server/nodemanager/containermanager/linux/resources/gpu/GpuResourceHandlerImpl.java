@@ -48,6 +48,7 @@ public class GpuResourceHandlerImpl implements ResourceHandler {
   public static final String EXCLUDED_GPUS_CLI_OPTION = "--excluded_gpus";
   public static final String CONTAINER_ID_CLI_OPTION = "--container_id";
 
+  private Context nmContext;
   private final GpuResourceAllocator gpuAllocator;
   private final CGroupsHandler cGroupsHandler;
   private final PrivilegedOperationExecutor privilegedOperationExecutor;
@@ -57,6 +58,7 @@ public class GpuResourceHandlerImpl implements ResourceHandler {
       CGroupsHandler cGroupsHandler,
       PrivilegedOperationExecutor privilegedOperationExecutor,
       GpuDiscoverer gpuDiscoverer) {
+    this.nmContext = nmContext;
     this.cGroupsHandler = cGroupsHandler;
     this.privilegedOperationExecutor = privilegedOperationExecutor;
     this.gpuAllocator = new GpuResourceAllocator(nmContext);
@@ -104,6 +106,7 @@ public class GpuResourceHandlerImpl implements ResourceHandler {
     cGroupsHandler.createCGroup(CGroupsHandler.CGroupController.DEVICES,
         containerIdStr);
     if (!DockerLinuxContainerRuntime.isDockerContainerRequested(
+        nmContext.getConf(),
         container.getLaunchContext().getEnvironment())) {
       // Write to devices cgroup only for non-docker container. The reason is
       // docker engine runtime runc do the devices cgroups initialize in the
