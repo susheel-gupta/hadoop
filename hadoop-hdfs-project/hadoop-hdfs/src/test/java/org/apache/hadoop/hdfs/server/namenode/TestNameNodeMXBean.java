@@ -34,6 +34,7 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.MiniDFSNNTopology;
 import org.apache.hadoop.hdfs.StripedFileTestUtil;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
+import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants.SafeModeAction;
 import org.apache.hadoop.hdfs.protocol.LocatedBlock;
 import org.apache.hadoop.hdfs.protocol.LocatedStripedBlock;
@@ -729,6 +730,46 @@ public class TestNameNodeMXBean {
   }
 
   @Test
+  public void testEnabledEcPoliciesMetric() throws Exception {
+    MiniDFSCluster cluster = null;
+    DistributedFileSystem fs = null;
+    try {
+      Configuration conf = new HdfsConfiguration();
+
+      ErasureCodingPolicy defaultPolicy =
+          StripedFileTestUtil.getDefaultECPolicy();
+      int dataBlocks = defaultPolicy.getNumDataUnits();
+      int parityBlocks = defaultPolicy.getNumParityUnits();
+      int totalSize = dataBlocks + parityBlocks;
+      cluster = new MiniDFSCluster.Builder(conf)
+          .numDataNodes(totalSize).build();
+      fs = cluster.getFileSystem();
+
+      final String defaultPolicyName = defaultPolicy.getName();
+      final String rs104PolicyName = "RS-10-4-1024k";
+
+      assertEquals("Enabled EC policies metric should return with " +
+          "the default EC policy", defaultPolicyName,
+          getEnabledEcPoliciesMetric());
+
+      fs.enableErasureCodingPolicy(rs104PolicyName);
+      assertEquals("Enabled EC policies metric should return with " +
+              "both enabled policies separated by a comma",
+          rs104PolicyName + ", " + defaultPolicyName,
+          getEnabledEcPoliciesMetric());
+
+      fs.disableErasureCodingPolicy(defaultPolicyName);
+      fs.disableErasureCodingPolicy(rs104PolicyName);
+      assertEquals("Enabled EC policies metric should return with " +
+          "an empty string if there is no enabled policy",
+          "", getEnabledEcPoliciesMetric());
+    } finally {
+      fs.close();
+      cluster.shutdown();
+    }
+  }
+
+  @Test
   public void testVerifyMissingBlockGroupsMetrics() throws Exception {
     MiniDFSCluster cluster = null;
     DistributedFileSystem fs = null;
@@ -970,14 +1011,6 @@ public class TestNameNodeMXBean {
     verifyEcClusterSetupVerifyResult(mbs);
   }
 
-  private String getEnabledEcPoliciesMetric() throws Exception {
-    MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-    ObjectName mxbeanName = new ObjectName(
-        "Hadoop:service=NameNode,name=ECBlockGroupsState");
-    return (String) (mbs.getAttribute(mxbeanName,
-        "EnabledEcPolicies"));
-  }
-
   private void verifyEcClusterSetupVerifyResult(MBeanServer mbs)
       throws Exception{
     ObjectName namenodeMXBeanName = new ObjectName(
@@ -994,5 +1027,13 @@ public class TestNameNodeMXBean {
     assertTrue(resultMessage.contains("3 racks are required for " +
         "the erasure coding policies: RS-6-3-1024k. " +
         "The number of racks is only 1."));
+  }
+
+  private String getEnabledEcPoliciesMetric() throws Exception {
+    MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+    ObjectName mxbeanName = new ObjectName(
+        "Hadoop:service=NameNode,name=ECBlockGroupsState");
+    return (String) (mbs.getAttribute(mxbeanName,
+        "EnabledEcPolicies"));
   }
 }
