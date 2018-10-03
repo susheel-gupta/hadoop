@@ -58,6 +58,7 @@ import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeysPublic.HADOOP_SECURITY_CREDENTIAL_PROVIDER_PATH;
@@ -1187,4 +1188,14 @@ public final class S3ATestUtils {
         .contains(providerClassname);
   }
 
+  public static boolean metadataStorePersistsAuthoritativeBit(MetadataStore ms)
+      throws IOException {
+    Map<String, String> diags = ms.getDiagnostics();
+    String persists =
+        diags.get(MetadataStoreCapabilities.PERSISTS_AUTHORITATIVE_BIT);
+    if(persists == null){
+      return false;
+    }
+    return Boolean.valueOf(persists);
+  }
 }
