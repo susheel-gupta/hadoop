@@ -129,3 +129,6 @@ BUG-111427. HADOOP-15748. S3 listing inconsistency can raise NPE in globber. Con
     Dusane.
 
     HDFS-13662. TestBlockReaderLocal#testStatisticsForErasureCodingRead is flaky
+
+    HADOOP-15839. Review + update cloud store sensitive keys in hadoop.security
+    .sensitive-config-keys. Contributed by Steve Loughran.
