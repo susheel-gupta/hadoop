@@ -7689,7 +7689,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
       return ret;
     } finally {
       readUnlock(operationName);
-      logAuditEvent(success, operationName, null);
+      logAuditEvent(success, operationName, src);
     }
   }
 
