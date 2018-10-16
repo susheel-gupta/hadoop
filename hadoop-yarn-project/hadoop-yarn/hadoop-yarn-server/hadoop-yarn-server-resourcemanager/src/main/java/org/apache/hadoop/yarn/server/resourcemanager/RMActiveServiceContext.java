@@ -50,6 +50,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.security.AMRMTokenSecretMan
 import org.apache.hadoop.yarn.server.resourcemanager.security.ClientToAMTokenSecretManagerInRM;
 import org.apache.hadoop.yarn.server.resourcemanager.security.DelegationTokenRenewer;
 import org.apache.hadoop.yarn.server.resourcemanager.security.NMTokenSecretManagerInRM;
+import org.apache.hadoop.yarn.server.resourcemanager.security.ProxyCAManager;
 import org.apache.hadoop.yarn.server.resourcemanager.security.RMContainerTokenSecretManager;
 import org.apache.hadoop.yarn.server.resourcemanager.security.RMDelegationTokenSecretManager;
 import org.apache.hadoop.yarn.util.Clock;
@@ -113,6 +114,8 @@ public class RMActiveServiceContext {
   private AllocationTagsManager allocationTagsManager;
   private PlacementConstraintManager placementConstraintManager;
   private ResourceProfilesManager resourceProfilesManager;
+
+  private ProxyCAManager proxyCAManager;
 
   public RMActiveServiceContext() {
     queuePlacementManager = new PlacementManager();
@@ -523,5 +526,17 @@ public class RMActiveServiceContext {
   public void setResourceProfilesManager(
       ResourceProfilesManager resourceProfilesManager) {
     this.resourceProfilesManager = resourceProfilesManager;
+  }
+
+  @Private
+  @Unstable
+  public ProxyCAManager getProxyCAManager() {
+    return proxyCAManager;
+  }
+
+  @Private
+  @Unstable
+  public void setProxyCAManager(ProxyCAManager proxyCAManager) {
+    this.proxyCAManager = proxyCAManager;
   }
 }
