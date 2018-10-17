@@ -127,3 +127,5 @@ BUG-111427. HADOOP-15748. S3 listing inconsistency can raise NPE in globber. Con
 
     HADOOP-15851. Disable wildfly logs to the console. Contributed by Vishwajeet
     Dusane.
+
+    HDFS-13662. TestBlockReaderLocal#testStatisticsForErasureCodingRead is flaky
