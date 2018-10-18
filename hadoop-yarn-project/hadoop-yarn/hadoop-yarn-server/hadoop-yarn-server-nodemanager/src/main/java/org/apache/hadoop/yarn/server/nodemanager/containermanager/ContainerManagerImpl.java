@@ -923,6 +923,7 @@ public class ContainerManagerImpl extends CompositeService implements
   public StartContainersResponse startContainers(
       StartContainersRequest requests) throws YarnException, IOException {
     UserGroupInformation remoteUgi = getRemoteUgi();
+    String remoteUser = remoteUgi.getUserName();
     NMTokenIdentifier nmTokenIdentifier = selectNMTokenIdentifier(remoteUgi);
     authorizeUser(remoteUgi, nmTokenIdentifier);
     List<ContainerId> succeededContainers = new ArrayList<ContainerId>();
@@ -956,7 +957,8 @@ public class ContainerManagerImpl extends CompositeService implements
           }
           performContainerPreStartChecks(nmTokenIdentifier, request,
               containerTokenIdentifier);
-          startContainerInternal(containerTokenIdentifier, request);
+          startContainerInternal(containerTokenIdentifier, request,
+              remoteUser);
           succeededContainers.add(containerId);
         } catch (YarnException e) {
           failedContainers.put(containerId, SerializedException.newInstance(e));
@@ -1064,13 +1066,14 @@ public class ContainerManagerImpl extends CompositeService implements
   @SuppressWarnings("unchecked")
   protected void startContainerInternal(
       ContainerTokenIdentifier containerTokenIdentifier,
-      StartContainerRequest request) throws YarnException, IOException {
+      StartContainerRequest request, String remoteUser)
+      throws YarnException, IOException {
 
     ContainerId containerId = containerTokenIdentifier.getContainerID();
     String containerIdStr = containerId.toString();
     String user = containerTokenIdentifier.getApplicationSubmitter();
 
-    LOG.info("Start request for " + containerIdStr + " by user " + user);
+    LOG.info("Start request for " + containerIdStr + " by user " + remoteUser);
 
     ContainerLaunchContext launchContext = request.getContainerLaunchContext();
 
@@ -1078,14 +1081,14 @@ public class ContainerManagerImpl extends CompositeService implements
     for (Map.Entry<String, LocalResource> rsrc : launchContext
         .getLocalResources().entrySet()) {
       if (rsrc.getValue() == null || rsrc.getValue().getResource() == null) {
-        throw new YarnException(
-            "Null resource URL for local resource " + rsrc.getKey() + " : " + rsrc.getValue());
+        throw new YarnException("Null resource URL for local resource "
+            + rsrc.getKey() + " : " + rsrc.getValue());
       } else if (rsrc.getValue().getType() == null) {
-        throw new YarnException(
-            "Null resource type for local resource " + rsrc.getKey() + " : " + rsrc.getValue());
+        throw new YarnException("Null resource type for local resource "
+            + rsrc.getKey() + " : " + rsrc.getValue());
       } else if (rsrc.getValue().getVisibility() == null) {
-        throw new YarnException(
-            "Null resource visibility for local resource " + rsrc.getKey() + " : " + rsrc.getValue());
+        throw new YarnException("Null resource visibility for local resource "
+            + rsrc.getKey() + " : " + rsrc.getValue());
       }
     }
 
@@ -1100,7 +1103,7 @@ public class ContainerManagerImpl extends CompositeService implements
     ApplicationId applicationID =
         containerId.getApplicationAttemptId().getApplicationId();
     if (context.getContainers().putIfAbsent(containerId, container) != null) {
-      NMAuditLogger.logFailure(user, AuditConstants.START_CONTAINER,
+      NMAuditLogger.logFailure(remoteUser, AuditConstants.START_CONTAINER,
         "ContainerManagerImpl", "Container already running on this node!",
         applicationID, containerId);
       throw RPCUtil.getRemoteException("Container " + containerIdStr
@@ -1168,7 +1171,7 @@ public class ContainerManagerImpl extends CompositeService implements
 
         this.context.getContainerTokenSecretManager().startContainerSuccessful(
           containerTokenIdentifier);
-        NMAuditLogger.logSuccess(user, AuditConstants.START_CONTAINER,
+        NMAuditLogger.logSuccess(remoteUser, AuditConstants.START_CONTAINER,
           "ContainerManageImpl", applicationID, containerId);
         // TODO launchedContainer misplaced -> doesn't necessarily mean a container
         // launch. A finished Application will not launch containers.
@@ -1390,11 +1393,13 @@ public class ContainerManagerImpl extends CompositeService implements
     if (identifier == null) {
       throw RPCUtil.getRemoteException(INVALID_NMTOKEN_MSG);
     }
+    String remoteUser = remoteUgi.getUserName();
     for (ContainerId id : requests.getContainerIds()) {
       try {
         Container container = this.context.getContainers().get(id);
-        authorizeGetAndStopContainerRequest(id, container, true, identifier);
-        stopContainerInternal(id);
+        authorizeGetAndStopContainerRequest(id, container, true, identifier,
+            remoteUser);
+        stopContainerInternal(id, remoteUser);
         succeededRequests.add(id);
       } catch (YarnException e) {
         failedRequests.put(id, SerializedException.newInstance(e));
@@ -1405,7 +1410,8 @@ public class ContainerManagerImpl extends CompositeService implements
   }
 
   @SuppressWarnings("unchecked")
-  protected void stopContainerInternal(ContainerId containerID)
+  protected void stopContainerInternal(ContainerId containerID,
+      String remoteUser)
       throws YarnException, IOException {
     String containerIDStr = containerID.toString();
     Container container = this.context.getContainers().get(containerID);
@@ -1425,9 +1431,10 @@ public class ContainerManagerImpl extends CompositeService implements
       container.sendKillEvent(ContainerExitStatus.KILLED_BY_APPMASTER,
           "Container killed by the ApplicationMaster.");
 
-      NMAuditLogger.logSuccess(container.getUser(),    
-        AuditConstants.STOP_CONTAINER, "ContainerManageImpl", containerID
-          .getApplicationAttemptId().getApplicationId(), containerID);
+      NMAuditLogger.logSuccess(remoteUser, AuditConstants.STOP_CONTAINER,
+          "ContainerManageImpl",
+          containerID.getApplicationAttemptId().getApplicationId(),
+          containerID);
     }
   }
 
@@ -1446,9 +1453,11 @@ public class ContainerManagerImpl extends CompositeService implements
     if (identifier == null) {
       throw RPCUtil.getRemoteException(INVALID_NMTOKEN_MSG);
     }
+    String remoteUser = remoteUgi.getUserName();
     for (ContainerId id : request.getContainerIds()) {
       try {
-        ContainerStatus status = getContainerStatusInternal(id, identifier);
+        ContainerStatus status = getContainerStatusInternal(id, identifier,
+            remoteUser);
         succeededRequests.add(status);
       } catch (YarnException e) {
         failedRequests.put(id, SerializedException.newInstance(e));
@@ -1459,13 +1468,14 @@ public class ContainerManagerImpl extends CompositeService implements
   }
 
   protected ContainerStatus getContainerStatusInternal(ContainerId containerID,
-      NMTokenIdentifier nmTokenIdentifier) throws YarnException {
+      NMTokenIdentifier nmTokenIdentifier, String remoteUser)
+      throws YarnException {
     String containerIDStr = containerID.toString();
     Container container = this.context.getContainers().get(containerID);
 
     LOG.info("Getting container-status for " + containerIDStr);
     authorizeGetAndStopContainerRequest(containerID, container, false,
-      nmTokenIdentifier);
+        nmTokenIdentifier, remoteUser);
 
     if (container == null) {
       if (nodeStatusUpdater.isContainerRecentlyStopped(containerID)) {
@@ -1484,7 +1494,8 @@ public class ContainerManagerImpl extends CompositeService implements
   @Private
   @VisibleForTesting
   protected void authorizeGetAndStopContainerRequest(ContainerId containerId,
-      Container container, boolean stopRequest, NMTokenIdentifier identifier)
+      Container container, boolean stopRequest, NMTokenIdentifier identifier,
+      String remoteUser)
       throws YarnException {
     if (identifier == null) {
       throw RPCUtil.getRemoteException(INVALID_NMTOKEN_MSG);
@@ -1506,7 +1517,7 @@ public class ContainerManagerImpl extends CompositeService implements
         msg = identifier.getApplicationAttemptId()
             + " attempted to stop non-application container : "
             + containerId;
-        NMAuditLogger.logFailure("UnknownUser", AuditConstants.STOP_CONTAINER,
+        NMAuditLogger.logFailure(remoteUser, AuditConstants.STOP_CONTAINER,
             "ContainerManagerImpl", "Trying to stop unknown container!",
             nmTokenAppId, containerId);
       } else {
