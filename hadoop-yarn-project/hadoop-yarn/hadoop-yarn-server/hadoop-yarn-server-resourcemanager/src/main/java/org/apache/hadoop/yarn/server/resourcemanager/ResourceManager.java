@@ -1499,6 +1499,9 @@ public class ResourceManager extends CompositeService
     // recover applications
     rmAppManager.recover(state);
 
+    // recover ProxyCA
+    rmContext.getProxyCAManager().recover(state);
+
     setSchedulerRecoveryStartAndWaitTime(state, conf);
   }
 
