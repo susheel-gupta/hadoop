@@ -303,7 +303,8 @@ public class TestDockerContainerRuntime {
     Map<String, String> envDockerType = new HashMap<>();
     Map<String, String> envOtherType = new HashMap<>();
 
-    envDockerType.put(ContainerRuntimeConstants.ENV_CONTAINER_TYPE, "docker");
+    envDockerType.put(ContainerRuntimeConstants.ENV_CONTAINER_TYPE,
+        ContainerRuntimeConstants.CONTAINER_RUNTIME_DOCKER);
     envOtherType.put(ContainerRuntimeConstants.ENV_CONTAINER_TYPE, "other");
 
     Assert.assertEquals(false, DockerLinuxContainerRuntime
