@@ -119,11 +119,14 @@ BUG-111427. HADOOP-15748. S3 listing inconsistency can raise NPE in globber. Con
     HADOOP-15680. ITestNativeAzureFileSystemConcurrencyLive times out.
     Contributed by Andras Bokor.
 
-    HADOOP-15809. ABFS: better exception handling when making getAccessToken
-    call. Contributed by Da Zhou
+    BUG-111586. YARN-8758. Support getting PreemptionMessage when using
+    AMRMClientAsyn. (Zian Chen via wangda)
 
-    HADOOP-15825. ABFS: Enable some tests for namespace not enabled account
-    using OAuth. Contributed by Da Zhou.
+    BUG-112689. HADOOP-15809. ABFS: better exception handling when making
+    getAccessToken call. Contributed by Da Zhou
+
+    BUG-112690. HADOOP-15825. ABFS: Enable some tests for namespace not enabled
+    account using OAuth. Contributed by Da Zhou.
 
     HADOOP-15851. Disable wildfly logs to the console. Contributed by Vishwajeet
     Dusane.
@@ -163,3 +166,16 @@ BUG-111427. HADOOP-15748. S3 listing inconsistency can raise NPE in globber. Con
 
     HADOOP-15876. Use keySet().removeAll() to remove multiple keys from Map in
     AzureBlobFileSystemStore
+
+    HADOOP-15839. Review + update cloud store sensitive keys in hadoop.security
+    .sensitive-config-keys. Contributed by Steve Loughran.
+
+    HADOOP-15823. ABFS: Stop requiring client ID and tenant ID for MSI
+    (Contributed by Da Zhou via Daniel Templeton)
+
+    HDFS-13941. make storageId in BlockPoolTokenSecretManager.checkAccess
+    optional. Contributed by Wei-Chiu Chuang.
+
+
+    HDFS-14026. Overload BlockPoolTokenSecretManager.checkAccess to make
+    storageId and storageType optional. Contributed by Arpit Agarwal.
