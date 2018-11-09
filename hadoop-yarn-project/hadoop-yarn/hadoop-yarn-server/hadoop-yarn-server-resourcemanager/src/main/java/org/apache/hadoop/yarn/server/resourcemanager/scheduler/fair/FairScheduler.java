@@ -470,7 +470,7 @@ public class FairScheduler extends
     try {
       writeLock.lock();
       RMApp rmApp = rmContext.getRMApps().get(applicationId);
-      FSLeafQueue queue = assignToQueue(rmApp, queueName, user);
+      FSLeafQueue queue = assignToQueue(rmApp, queueName, user, applicationId);
       if (queue == null) {
         return;
       }
@@ -496,6 +496,7 @@ public class FairScheduler extends
                   applicationId, queue.getName(),
                   invalidAMResourceRequests, queue.getMaxShare());
           rejectApplicationWithMessage(applicationId, msg);
+          queue.removeAssignedApp(applicationId);
           return;
         }
       }
@@ -510,6 +511,7 @@ public class FairScheduler extends
             + " cannot submit applications to queue " + queue.getName()
             + "(requested queuename is " + queueName + ")";
         rejectApplicationWithMessage(applicationId, msg);
+        queue.removeAssignedApp(applicationId);
         return;
       }
 
@@ -517,7 +519,6 @@ public class FairScheduler extends
           new SchedulerApplication<FSAppAttempt>(queue, user);
       applications.put(applicationId, application);
       queue.getMetrics().submitApp(user);
-      queue.addAssignedApp(applicationId);
 
       LOG.info("Accepted application " + applicationId + " from user: " + user
           + ", in queue: " + queue.getName()
@@ -594,11 +595,19 @@ public class FairScheduler extends
   }
 
   /**
-   * Helper method that attempts to assign the app to a queue. The method is
-   * responsible to call the appropriate event-handler if the app is rejected.
+   * Helper method for the tests to assign the app to a queue.
    */
   @VisibleForTesting
   FSLeafQueue assignToQueue(RMApp rmApp, String queueName, String user) {
+    return assignToQueue(rmApp, queueName, user, null);
+  }
+
+  /**
+   * Helper method that attempts to assign the app to a queue. The method is
+   * responsible to call the appropriate event-handler if the app is rejected.
+   */
+  private FSLeafQueue assignToQueue(RMApp rmApp, String queueName, String user,
+        ApplicationId applicationId) {
     FSLeafQueue queue = null;
     String appRejectMsg = null;
 
@@ -608,7 +617,7 @@ public class FairScheduler extends
       if (queueName == null) {
         appRejectMsg = "Application rejected by queue placement policy";
       } else {
-        queue = queueMgr.getLeafQueue(queueName, true);
+        queue = queueMgr.getLeafQueue(queueName, true, applicationId);
         if (queue == null) {
           appRejectMsg = queueName + " is not a leaf queue";
         }
