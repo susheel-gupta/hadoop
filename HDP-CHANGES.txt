@@ -143,3 +143,6 @@ BUG-111427. HADOOP-15748. S3 listing inconsistency can raise NPE in globber. Con
     removeAclEntries.
 
     HADOOP-15872. ABFS: Update to target 2018-11-09 REST version for ADLS Gen 2.
+
+    MAPREDUCE-7158. Inefficient Flush Logic in JobHistory EventWriter. (Zichen
+    Sun via wangda)
