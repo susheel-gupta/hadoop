@@ -469,6 +469,12 @@ public class ApiServer {
           && updateServiceData.getLifetime() > 0) {
         return updateLifetime(appName, updateServiceData, ugi);
       }
+
+      for (Component c : updateServiceData.getComponents()) {
+        if (c.getDecommissionedInstances().size() > 0) {
+          return decommissionInstances(updateServiceData, ugi);
+        }
+      }
     } catch (UndeclaredThrowableException e) {
       return formatResponse(Status.BAD_REQUEST,
           e.getCause().getMessage());
@@ -824,8 +830,7 @@ public class ApiServer {
     });
   }
 
-
-  private Response decommissionInstances(Service service, UserGroupInformation
+private Response decommissionInstances(Service service, UserGroupInformation
       ugi) throws IOException, InterruptedException {
     String appName = service.getName();
     Response response = Response.status(Status.BAD_REQUEST).build();
@@ -862,8 +867,9 @@ public class ApiServer {
     return response;
   }
 
-private Service getServiceFromClient(UserGroupInformation ugi,
-      String serviceName) throws IOException, InterruptedException {
+
+  private Service getServiceFromClient(UserGroupInformation ugi,
+    String serviceName) throws IOException, InterruptedException {
 
     return ugi.doAs((PrivilegedExceptionAction<Service>) () -> {
       ServiceClient sc = getServiceClient();
