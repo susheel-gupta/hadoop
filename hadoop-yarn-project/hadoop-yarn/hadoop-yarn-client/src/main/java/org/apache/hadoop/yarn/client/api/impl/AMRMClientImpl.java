@@ -492,8 +492,7 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
       return;
     }
     for (Container container : containers) {
-      if (container.getAllocationTags() != null &&
-          !container.getAllocationTags().isEmpty()) {
+      if (container.getAllocationTags() != null) {
         List<SchedulingRequest> schedReqs =
             this.outstandingSchedRequests.get(container.getAllocationTags());
         if (schedReqs != null && !schedReqs.isEmpty()) {
@@ -1130,6 +1129,11 @@ public class AMRMClientImpl<T extends ContainerRequest> extends AMRMClient<T> {
   @VisibleForTesting
   RemoteRequestsTable<T> getTable(long allocationRequestId) {
     return remoteRequests.get(Long.valueOf(allocationRequestId));
+  }
+
+  @VisibleForTesting
+  Map<Set<String>, List<SchedulingRequest>> getOutstandingSchedRequests() {
+    return outstandingSchedRequests;
   }
 
   RemoteRequestsTable<T> putTable(long allocationRequestId,
