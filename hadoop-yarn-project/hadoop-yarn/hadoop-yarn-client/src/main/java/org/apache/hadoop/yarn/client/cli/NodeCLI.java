@@ -108,6 +108,8 @@ public class NodeCLI extends YarnCLI {
       return exitCode;
     }
 
+    createAndStartYarnClient();
+
     if (cliParser.hasOption("status")) {
       if (args.length != 2) {
         printUsage(opts);

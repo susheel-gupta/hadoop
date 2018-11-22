@@ -96,6 +96,8 @@ public class ClusterCLI extends YarnCLI {
       return exitCode;
     }
 
+    createAndStartYarnClient();
+
     if (parsedCli.hasOption(DIRECTLY_ACCESS_NODE_LABEL_STORE)) {
       accessLocal = true;
     }
