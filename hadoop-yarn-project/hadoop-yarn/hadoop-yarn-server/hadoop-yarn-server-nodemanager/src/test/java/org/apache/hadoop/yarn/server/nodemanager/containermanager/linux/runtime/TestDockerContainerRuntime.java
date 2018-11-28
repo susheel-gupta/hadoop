@@ -373,11 +373,18 @@ public class TestDockerContainerRuntime {
     return opCaptor.getValue();
   }
 
-    @SuppressWarnings("unchecked")
   private PrivilegedOperation capturePrivilegedOperationAndVerifyArgs()
       throws PrivilegedOperationException {
+    return capturePrivilegedOperationAndVerifyArgs(1);
+  }
 
-    PrivilegedOperation op = capturePrivilegedOperation();
+    @SuppressWarnings("unchecked")
+  private PrivilegedOperation capturePrivilegedOperationAndVerifyArgs(
+      int privilegedCaptureCount)
+      throws PrivilegedOperationException {
+
+    PrivilegedOperation op =
+        capturePrivilegedOperation(privilegedCaptureCount);
 
     Assert.assertEquals(PrivilegedOperation.OperationType
         .LAUNCH_DOCKER_CONTAINER, op.getOperationType());
@@ -1999,16 +2006,16 @@ public class TestDockerContainerRuntime {
     ArgumentCaptor<PrivilegedOperation> opCaptor = ArgumentCaptor.forClass(
         PrivilegedOperation.class);
 
-    //single invocation expected
+    //Three invocations expected (volume creation, volume check, run container)
     //due to type erasure + mocking, this verification requires a suppress
     // warning annotation on the entire method
-    verify(mockExecutor, times(2))
+    verify(mockExecutor, times(3))
         .executePrivilegedOperation(anyList(), opCaptor.capture(), any(
             File.class), anyMap(), anyBoolean(), anyBoolean());
 
     //verification completed. we need to isolate specific invications.
     // hence, reset mock here
-    Mockito.reset(mockExecutor);
+    //Mockito.reset(mockExecutor);
 
     List<PrivilegedOperation> allCaptures = opCaptor.getAllValues();
 
@@ -2111,10 +2118,8 @@ public class TestDockerContainerRuntime {
 
     try {
       runtime.prepareContainer(containerRuntimeContext);
-
-      checkVolumeCreateCommand();
-
       runtime.launchContainer(containerRuntimeContext);
+      checkVolumeCreateCommand();
     } catch (ContainerExecutionException e) {
       if (expectFail) {
         // Expected
@@ -2207,10 +2212,10 @@ public class TestDockerContainerRuntime {
     ContainerRuntimeContext containerRuntimeContext = builder.build();
 
     runtime.prepareContainer(containerRuntimeContext);
+    runtime.launchContainer(containerRuntimeContext);
     checkVolumeCreateCommand();
 
-    runtime.launchContainer(containerRuntimeContext);
-    PrivilegedOperation op = capturePrivilegedOperationAndVerifyArgs();
+    PrivilegedOperation op = capturePrivilegedOperationAndVerifyArgs(3);
     List<String> args = op.getArguments();
     String dockerCommandFile = args.get(11);
 
