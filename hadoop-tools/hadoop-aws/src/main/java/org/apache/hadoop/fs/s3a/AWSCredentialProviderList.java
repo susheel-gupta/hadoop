@@ -21,6 +21,7 @@ package org.apache.hadoop.fs.s3a;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -39,6 +40,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.fs.s3a.auth.NoAuthWithAWSException;
+import org.apache.hadoop.fs.s3a.auth.NoAwsCredentialsException;
 import org.apache.hadoop.io.IOUtils;
 
 /**
@@ -52,7 +54,8 @@ import org.apache.hadoop.io.IOUtils;
  *   an {@link AmazonClientException}, that is rethrown, rather than
  *   swallowed.</li>
  *   <li>Has some more diagnostics.</li>
- *   <li>On failure, the last AmazonClientException raised is rethrown.</li>
+ *   <li>On failure, the last "relevant" AmazonClientException raised is
+ *   rethrown; exceptions other than 'no credentials' have priority.</li>
  *   <li>Special handling of {@link AnonymousAWSCredentials}.</li>
  * </ol>
  */
@@ -94,11 +97,27 @@ public class AWSCredentialProviderList implements AWSCredentialsProvider,
   }
 
   /**
+   * Create with an initial list of providers.
+   * @param providerArgs provider list.
+   */
+  public AWSCredentialProviderList(AWSCredentialsProvider...providerArgs) {
+    Collections.addAll(providers, providerArgs);
+  }
+
+  /**
    * Add a new provider.
    * @param p provider
    */
   public void add(AWSCredentialsProvider p) {
     providers.add(p);
+  }
+
+  /**
+   * Add all providers from another list to this one.
+   * @param other the other list.
+   */
+  public void addAll(AWSCredentialProviderList other) {
+    providers.addAll(other.providers);
   }
 
   /**
@@ -135,6 +154,8 @@ public class AWSCredentialProviderList implements AWSCredentialsProvider,
     for (AWSCredentialsProvider provider : providers) {
       try {
         AWSCredentials credentials = provider.getCredentials();
+        Preconditions.checkNotNull(credentials,
+            "Null credentials returned by %s", provider);
         if ((credentials.getAWSAccessKeyId() != null &&
             credentials.getAWSSecretKey() != null)
             || (credentials instanceof AnonymousAWSCredentials)) {
@@ -142,6 +163,18 @@ public class AWSCredentialProviderList implements AWSCredentialsProvider,
           LOG.debug("Using credentials from {}", provider);
           return credentials;
         }
+      } catch (NoAwsCredentialsException e) {
+        // don't bother with the stack trace here as it is usually a
+        // minor detail.
+
+        // only update the last exception if it isn't set.
+        // Why so? Stops delegation token issues being lost on the fallback
+        // values.
+        if (lastException == null) {
+          lastException = e;
+        }
+        LOG.debug("No credentials from {}: {}",
+            provider, e.toString());
       } catch (AmazonClientException e) {
         lastException = e;
         LOG.debug("No credentials provided by {}: {}",
@@ -156,7 +189,11 @@ public class AWSCredentialProviderList implements AWSCredentialsProvider,
     if (lastException != null) {
       message += ": " + lastException;
     }
-    throw new NoAuthWithAWSException(message, lastException);
+    if (lastException instanceof CredentialInitializationException) {
+      throw lastException;
+    } else {
+      throw new NoAuthWithAWSException(message, lastException);
+    }
   }
 
   /**
@@ -199,7 +236,8 @@ public class AWSCredentialProviderList implements AWSCredentialsProvider,
   public String toString() {
     return "AWSCredentialProviderList[" +
         "refcount= " + refCount.get() + ": [" +
-        StringUtils.join(providers, ", ") + ']';
+        StringUtils.join(providers, ", ") + ']'
+        + (lastProvider != null ? (" last provider: " + lastProvider) : "");
   }
 
   /**
@@ -264,5 +302,13 @@ public class AWSCredentialProviderList implements AWSCredentialsProvider,
         S3AUtils.closeAutocloseables(LOG, (AutoCloseable)p);
       }
     }
+  }
+
+  /**
+   * Get the size of this list.
+   * @return the number of providers in the list.
+   */
+  public int size() {
+    return providers.size();
   }
 }
