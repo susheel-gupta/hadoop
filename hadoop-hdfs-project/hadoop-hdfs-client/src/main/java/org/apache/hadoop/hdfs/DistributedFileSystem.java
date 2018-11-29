@@ -2844,6 +2844,8 @@ public class DistributedFileSystem extends FileSystem
    */
   public void setErasureCodingPolicy(final Path path,
       final String ecPolicyName) throws IOException {
+    statistics.incrementWriteOps(1);
+    storageStatistics.incrementOpCounter(OpType.SET_EC_POLICY);
     Path absF = fixRelativePart(path);
     new FileSystemLinkResolver<Void>() {
       @Override
@@ -2877,6 +2879,8 @@ public class DistributedFileSystem extends FileSystem
    */
   public ErasureCodingPolicy getErasureCodingPolicy(final Path path)
       throws IOException {
+    statistics.incrementReadOps(1);
+    storageStatistics.incrementOpCounter(OpType.GET_EC_POLICY);
     Path absF = fixRelativePart(path);
     return new FileSystemLinkResolver<ErasureCodingPolicy>() {
       @Override
@@ -2908,6 +2912,8 @@ public class DistributedFileSystem extends FileSystem
    */
   public Collection<ErasureCodingPolicyInfo> getAllErasureCodingPolicies()
       throws IOException {
+    statistics.incrementReadOps(1);
+    storageStatistics.incrementOpCounter(OpType.GET_EC_POLICIES);
     return Arrays.asList(dfs.getErasureCodingPolicies());
   }
 
@@ -2920,6 +2926,8 @@ public class DistributedFileSystem extends FileSystem
    */
   public Map<String, String> getAllErasureCodingCodecs()
       throws IOException {
+    statistics.incrementReadOps(1);
+    storageStatistics.incrementOpCounter(OpType.GET_EC_CODECS);
     return dfs.getErasureCodingCodecs();
   }
 
@@ -2936,6 +2944,8 @@ public class DistributedFileSystem extends FileSystem
    */
   public AddErasureCodingPolicyResponse[] addErasureCodingPolicies(
       ErasureCodingPolicy[] policies)  throws IOException {
+    statistics.incrementWriteOps(1);
+    storageStatistics.incrementOpCounter(OpType.ADD_EC_POLICY);
     return dfs.addErasureCodingPolicies(policies);
   }
 
@@ -2947,6 +2957,8 @@ public class DistributedFileSystem extends FileSystem
    */
   public void removeErasureCodingPolicy(String ecPolicyName)
       throws IOException {
+    statistics.incrementWriteOps(1);
+    storageStatistics.incrementOpCounter(OpType.REMOVE_EC_POLICY);
     dfs.removeErasureCodingPolicy(ecPolicyName);
   }
 
@@ -2958,6 +2970,8 @@ public class DistributedFileSystem extends FileSystem
    */
   public void enableErasureCodingPolicy(String ecPolicyName)
       throws IOException {
+    statistics.incrementWriteOps(1);
+    storageStatistics.incrementOpCounter(OpType.ENABLE_EC_POLICY);
     dfs.enableErasureCodingPolicy(ecPolicyName);
   }
 
@@ -2969,6 +2983,8 @@ public class DistributedFileSystem extends FileSystem
    */
   public void disableErasureCodingPolicy(String ecPolicyName)
       throws IOException {
+    statistics.incrementWriteOps(1);
+    storageStatistics.incrementOpCounter(OpType.DISABLE_EC_POLICY);
     dfs.disableErasureCodingPolicy(ecPolicyName);
   }
 
@@ -2979,6 +2995,8 @@ public class DistributedFileSystem extends FileSystem
    * @throws IOException
    */
   public void unsetErasureCodingPolicy(final Path path) throws IOException {
+    statistics.incrementWriteOps(1);
+    storageStatistics.incrementOpCounter(OpType.UNSET_EC_POLICY);
     Path absF = fixRelativePart(path);
     new FileSystemLinkResolver<Void>() {
       @Override
