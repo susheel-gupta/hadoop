@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -201,6 +202,14 @@ public final class ErasureCodingPolicyManager {
   public ErasureCodingPolicyInfo[] getPersistedPolicies() {
     return allPersistedPolicies.values()
         .toArray(new ErasureCodingPolicyInfo[0]);
+  }
+
+  public ErasureCodingPolicyInfo[] getCopyOfPolicies() {
+    ErasureCodingPolicyInfo[] copy;
+    synchronized (this) {
+      copy = Arrays.copyOf(allPolicies, allPolicies.length);
+    }
+    return copy;
   }
 
   /**
