@@ -38,11 +38,11 @@ import static org.junit.Assert.assertEquals;
 public class TestResourceCalculator {
   private final ResourceCalculator resourceCalculator;
 
-  @Parameterized.Parameters
-  public static Collection<ResourceCalculator[]> getParameters() {
-    return Arrays.asList(new ResourceCalculator[][] {
-        { new DefaultResourceCalculator() },
-        { new DominantResourceCalculator() } });
+  @Parameterized.Parameters(name = "{0}")
+  public static Collection<Object[]> getParameters() {
+    return Arrays.asList(new Object[][] {
+        { "DefaultResourceCalculator", new DefaultResourceCalculator() },
+        { "DominantResourceCalculator", new DominantResourceCalculator() } });
   }
 
   @Before
@@ -59,7 +59,7 @@ public class TestResourceCalculator {
     ResourceUtils.resetResourceTypes(conf);
   }
 
-  public TestResourceCalculator(ResourceCalculator rs) {
+  public TestResourceCalculator(String name, ResourceCalculator rs) {
     this.resourceCalculator = rs;
   }
   
