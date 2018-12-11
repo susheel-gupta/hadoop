@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.UncheckedIOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -56,6 +57,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -76,6 +78,7 @@ import org.apache.hadoop.yarn.api.protocolrecords.FinishApplicationMasterRequest
 import org.apache.hadoop.yarn.api.protocolrecords.RegisterApplicationMasterResponse;
 import org.apache.hadoop.yarn.api.protocolrecords.StartContainerRequest;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
 import org.apache.hadoop.yarn.api.records.ContainerExitStatus;
 import org.apache.hadoop.yarn.api.records.ContainerId;
@@ -231,6 +234,9 @@ public class ApplicationMaster {
   @VisibleForTesting
   protected ApplicationAttemptId appAttemptID;
 
+  private ApplicationId appId;
+  private String appName;
+
   // TODO
   // For status update for clients - yet to be implemented
   // Hostname of the container
@@ -316,6 +322,8 @@ public class ApplicationMaster {
   private int containerMaxRetries = 0;
   private int containrRetryInterval = 0;
   private long containerFailuresValidityInterval = -1;
+
+  private List<String> localizableFiles = new ArrayList<>();
 
   // Timeline domain ID
   private String domainId = null;
@@ -448,6 +456,8 @@ public class ApplicationMaster {
    */
   public boolean init(String[] args) throws ParseException, IOException {
     Options opts = new Options();
+    opts.addOption("appname", true,
+        "Application Name. Default value - DistributedShell");
     opts.addOption("app_attempt_id", true,
         "App Attempt ID. Not to be used unless for testing purposes");
     opts.addOption("shell_env", true,
@@ -496,6 +506,7 @@ public class ApplicationMaster {
             + " application attempt fails and these containers will be "
             + "retrieved by"
             + " the new application attempt ");
+    opts.addOption("localized_files", true, "List of localized files");
 
     opts.addOption("help", false, "Print usage");
     CommandLine cliParser = new GnuParser().parse(opts, args);
@@ -515,6 +526,8 @@ public class ApplicationMaster {
         LOG.warn("Can not set up custom log4j properties. " + e);
       }
     }
+
+    appName = cliParser.getOptionValue("appname", "DistributedShell");
 
     if (cliParser.hasOption("help")) {
       printUsage(opts);
@@ -550,6 +563,7 @@ public class ApplicationMaster {
       ContainerId containerId = ContainerId.fromString(envs
           .get(Environment.CONTAINER_ID.name()));
       appAttemptID = containerId.getApplicationAttemptId();
+      appId = appAttemptID.getApplicationId();
     }
 
     if (!envs.containsKey(ApplicationConstants.APP_SUBMIT_TIME_ENV)) {
@@ -696,6 +710,16 @@ public class ApplicationMaster {
       timelineClient = null;
       timelineV2Client = null;
       LOG.warn("Timeline service is not enabled");
+    }
+
+    if (cliParser.hasOption("localized_files")) {
+      String localizedFilesArg = cliParser.getOptionValue("localized_files");
+      if (localizedFilesArg.contains(",")) {
+        String[] files = localizedFilesArg.split(",");
+        localizableFiles = Arrays.asList(files);
+      } else {
+        localizableFiles.add(localizedFilesArg);
+      }
     }
 
     return true;
@@ -984,6 +1008,11 @@ public class ApplicationMaster {
     }
 
     return success;
+  }
+
+  public static String getRelativePath(String appName,
+      String appId, String fileDstPath) {
+    return appName + "/" + appId + "/" + fileDstPath;
   }
 
   @VisibleForTesting
@@ -1404,6 +1433,35 @@ public class ApplicationMaster {
         localResources.put(Shell.WINDOWS ? EXEC_BAT_SCRIPT_STRING_PATH :
             EXEC_SHELL_STRING_PATH, shellRsrc);
         shellCommand = Shell.WINDOWS ? windows_command : linux_bash_command;
+      }
+
+      // Set up localization for the container which runs the command
+      if (localizableFiles.size() > 0) {
+        FileSystem fs;
+        try {
+          fs = FileSystem.get(conf);
+        } catch (IOException e) {
+          throw new UncheckedIOException("Cannot get FileSystem", e);
+        }
+
+        localizableFiles.stream().forEach(fileName -> {
+          try {
+            String relativePath =
+                getRelativePath(appName, appId.toString(), fileName);
+            Path dst =
+                new Path(fs.getHomeDirectory(), relativePath);
+            FileStatus fileStatus = fs.getFileStatus(dst);
+            LocalResource localRes = LocalResource.newInstance(
+                URL.fromURI(dst.toUri()),
+                LocalResourceType.FILE, LocalResourceVisibility.APPLICATION,
+                fileStatus.getLen(), fileStatus.getModificationTime());
+            LOG.info("Setting up file for localization: " + dst);
+            localResources.put(fileName, localRes);
+          } catch (IOException e) {
+            throw new UncheckedIOException(
+                "Error during localization setup", e);
+          }
+        });
       }
 
       // Set the necessary command to execute on the allocated container

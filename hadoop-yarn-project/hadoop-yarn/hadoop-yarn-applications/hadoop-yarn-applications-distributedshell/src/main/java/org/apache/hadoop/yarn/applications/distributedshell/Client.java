@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.yarn.applications.distributedshell;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -32,6 +34,7 @@ import java.util.Arrays;
 import java.util.Base64;
 
 import com.google.common.base.Joiner;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -235,6 +238,8 @@ public class Client {
   // Application tags
   private Set<String> applicationTags = new HashSet<>();
 
+  private List<String> filesToLocalize = new ArrayList<>();
+
   // Command line options
   private Options opts;
 
@@ -394,6 +399,8 @@ public class Client {
             + " The \"num_containers\" option will be ignored. All requested"
             + " containers will be of type GUARANTEED" );
     opts.addOption("application_tags", true, "Application tags.");
+    opts.addOption("localize_files", true, "List of files, separated by comma"
+        + " to be localized for the command");
   }
 
   /**
@@ -625,6 +632,17 @@ public class Client {
         this.applicationTags.add(appTag.trim());
       }
     }
+
+    if (cliParser.hasOption("localize_files")) {
+      String filesStr = cliParser.getOptionValue("localize_files");
+      if (filesStr.contains(",")) {
+        String[] files = filesStr.split(",");
+        filesToLocalize = Arrays.asList(files);
+      } else {
+        filesToLocalize.add(filesStr);
+      }
+    }
+
     return true;
   }
 
@@ -724,7 +742,7 @@ public class Client {
           + ", specified=" + amMemory
           + ", max=" + maxMem);
       amMemory = maxMem;
-    }				
+    }
 
     int maxVCores = appResponse.getMaximumResourceCapability().getVirtualCores();
     LOG.info("Max virtual cores capability of resources in this cluster " + maxVCores);
@@ -786,7 +804,42 @@ public class Client {
     if (!log4jPropFile.isEmpty()) {
       addToLocalResources(fs, log4jPropFile, log4jPath, appId.toString(),
           localResources, null);
-    }			
+    }
+
+    // Process local files for localization
+    // Here we just upload the files, the AM
+    // will set up localization later.
+    StringBuilder localizableFiles = new StringBuilder();
+    filesToLocalize.stream().forEach(path -> {
+      File f = new File(path);
+
+      if (!f.exists()) {
+        throw new UncheckedIOException(
+            new IOException(path + " does not exist"));
+      }
+
+      if (!f.canRead()) {
+        throw new UncheckedIOException(
+            new IOException(path + " cannot be read"));
+      }
+
+      if (f.isDirectory()) {
+        throw new UncheckedIOException(
+          new IOException(path + " is a directory"));
+      }
+
+      try {
+        String fileName = f.getName();
+        uploadFile(fs, path, fileName, appId.toString());
+        if (localizableFiles.length() == 0) {
+          localizableFiles.append(fileName);
+        } else {
+          localizableFiles.append(",").append(fileName);
+        }
+      } catch (IOException e) {
+        throw new UncheckedIOException("Cannot upload file: " + path, e);
+      }
+    });
 
     // The shell script has to be made available on the final container(s)
     // where it will be executed. 
@@ -800,7 +853,9 @@ public class Client {
     if (!shellScriptPath.isEmpty()) {
       Path shellSrc = new Path(shellScriptPath);
       String shellPathSuffix =
-          appName + "/" + appId.toString() + "/" + SCRIPT_PATH;
+          ApplicationMaster.getRelativePath(appName,
+              appId.toString(),
+              SCRIPT_PATH);
       Path shellDst =
           new Path(fs.getHomeDirectory(), shellPathSuffix);
       fs.copyFromLocalFile(false, true, shellSrc, shellDst);
@@ -921,6 +976,10 @@ public class Client {
     if (debugFlag) {
       vargs.add("--debug");
     }
+    if (localizableFiles.length() > 0) {
+      vargs.add("--localized_files " + localizableFiles.toString());
+    }
+    vargs.add("--appname " + appName);
 
     vargs.addAll(containerRetryOptions);
 
@@ -1104,7 +1163,7 @@ public class Client {
       String fileDstPath, String appId, Map<String, LocalResource> localResources,
       String resources) throws IOException {
     String suffix =
-        appName + "/" + appId + "/" + fileDstPath;
+        ApplicationMaster.getRelativePath(appName, appId, fileDstPath);
     Path dst =
         new Path(fs.getHomeDirectory(), suffix);
     if (fileSrcPath == null) {
@@ -1126,6 +1185,16 @@ public class Client {
             LocalResourceType.FILE, LocalResourceVisibility.APPLICATION,
             scFileStatus.getLen(), scFileStatus.getModificationTime());
     localResources.put(fileDstPath, scRsrc);
+  }
+
+  private void uploadFile(FileSystem fs, String fileSrcPath,
+      String fileDstPath, String appId) throws IOException {
+    String relativePath =
+        ApplicationMaster.getRelativePath(appName, appId, fileDstPath);
+    Path dst =
+        new Path(fs.getHomeDirectory(), relativePath);
+    LOG.info("Uploading file: " + fileSrcPath + " to " + dst);
+    fs.copyFromLocalFile(new Path(fileSrcPath), dst);
   }
 
   private void prepareTimelineDomain() {
