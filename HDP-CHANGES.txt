@@ -182,3 +182,6 @@ HADOOP-15968. ABFS: add try catch for UGI failure when initializing ABFS.
 
     HADOOP-16104. Wasb tests to downgrade to skip when test a/c is namespace
     enabled. Contributed by Masatake Iwasaki.
+
+    YARN-8567. Fetching yarn logs fails for long running application if it is
+    not present in timeline store. Contributed by Tarun Parimi.
