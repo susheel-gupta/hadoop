@@ -132,12 +132,6 @@ public interface S3ATestConstants {
    */
   String TEST_UNIQUE_FORK_ID = "test.unique.fork.id";
   String TEST_STS_ENABLED = "test.fs.s3a.sts.enabled";
-
-  /**
-   * Endpoint for STS testing.
-   * @deprecated : Use {@link Constants#ASSUMED_ROLE_STS_ENDPOIN}
-   */
-  @Deprecated
   String TEST_STS_ENDPOINT = "test.fs.s3a.sts.endpoint";
 
   /**
@@ -174,9 +168,4 @@ public interface S3ATestConstants {
    */
   String FS_S3A_IMPL_DISABLE_CACHE
       = "fs.s3a.impl.disable.cache";
-
-  /**
-   * Duration in seconds for role/session token requests.
-   */
-  int TEST_SESSION_TOKEN_DURATION = 900;
 }
