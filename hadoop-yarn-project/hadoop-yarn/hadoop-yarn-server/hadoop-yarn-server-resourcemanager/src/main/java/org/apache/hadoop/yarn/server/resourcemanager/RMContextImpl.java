@@ -22,7 +22,6 @@ import static org.apache.hadoop.yarn.util.StringHelper.ujoin;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.logging.Log;
@@ -38,6 +37,7 @@ import org.apache.hadoop.yarn.conf.ConfigurationProvider;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.event.Dispatcher;
 import org.apache.hadoop.yarn.nodelabels.NodeAttributesManager;
+import org.apache.hadoop.yarn.proto.YarnServerCommonServiceProtos.SystemCredentialsForAppsProto;
 import org.apache.hadoop.yarn.server.resourcemanager.ahs.RMApplicationHistoryWriter;
 import org.apache.hadoop.yarn.server.resourcemanager.metrics.SystemMetricsPublisher;
 import org.apache.hadoop.yarn.server.resourcemanager.nodelabels.RMNodeLabelsManager;
@@ -574,7 +574,8 @@ public class RMContextImpl implements RMContext {
     activeServiceContext.setSystemClock(clock);
   }
 
-  public ConcurrentMap<ApplicationId, ByteBuffer> getSystemCredentialsForApps() {
+  public ConcurrentMap<ApplicationId, SystemCredentialsForAppsProto>
+      getSystemCredentialsForApps() {
     return activeServiceContext.getSystemCredentialsForApps();
   }
 
@@ -663,5 +664,15 @@ public class RMContextImpl implements RMContext {
   @Override
   public NodeAttributesManager getNodeAttributesManager() {
     return activeServiceContext.getNodeAttributesManager();
+  }
+
+  @Override
+  public long getTokenSequenceNo() {
+    return this.activeServiceContext.getTokenSequenceNo();
+  }
+
+  @Override
+  public void incrTokenSequenceNo() {
+    this.activeServiceContext.incrTokenSequenceNo();
   }
 }

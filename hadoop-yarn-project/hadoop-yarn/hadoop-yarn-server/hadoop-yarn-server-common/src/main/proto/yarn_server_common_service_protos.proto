@@ -101,6 +101,7 @@ message NodeHeartbeatRequestProto {
   repeated LogAggregationReportProto log_aggregation_reports_for_apps = 5;
   repeated AppCollectorDataProto registering_collectors = 6;
   optional NodeAttributesProto nodeAttributes = 7;
+  optional int64 tokenSequenceNo = 8;
 }
 
 message LogAggregationReportProto {
@@ -130,6 +131,7 @@ message NodeHeartbeatResponseProto {
   // to be used in place of containers_to_decrease
   repeated ContainerProto containers_to_update = 17;
   optional bool areNodeAttributesAcceptedByRM = 18 [default = false];
+  optional int64 tokenSequenceNo = 19;
 }
 
 message ContainerQueuingLimitProto {
