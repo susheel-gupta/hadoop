@@ -2002,8 +2002,7 @@ public class BlockManager implements BlockStatsMXBean {
         if (targets != null && targets.length != 0) {
           StringBuilder targetList = new StringBuilder("datanode(s)");
           for (DatanodeStorageInfo target : targets) {
-            targetList.append(' ');
-            targetList.append(target.getDatanodeDescriptor());
+            targetList.append(' ').append(target.getDatanodeDescriptor());
           }
           blockLog.debug("BLOCK* ask {} to replicate {} to {}", rw.getSrcNodes(),
               rw.getBlock(), targetList);
