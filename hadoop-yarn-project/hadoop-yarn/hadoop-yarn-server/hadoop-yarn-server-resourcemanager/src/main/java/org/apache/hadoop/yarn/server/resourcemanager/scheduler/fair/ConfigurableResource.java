@@ -47,7 +47,7 @@ public class ConfigurableResource {
   }
 
   ConfigurableResource(long value) {
-    this(Resource.newInstance(value));
+    this(ResourceUtils.createResourceWithSameValue(value));
   }
 
   public ConfigurableResource(Resource resource) {
