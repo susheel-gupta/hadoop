@@ -53,6 +53,7 @@ import org.apache.hadoop.fs.s3a.S3AFileSystem;
 import org.apache.hadoop.fs.s3a.S3AUtils;
 import org.apache.hadoop.fs.s3a.auth.delegation.S3ADelegationTokens;
 import org.apache.hadoop.fs.s3a.commit.CommitConstants;
+import org.apache.hadoop.fs.s3a.select.SelectTool;
 import org.apache.hadoop.fs.shell.CommandFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ExitUtil;
@@ -89,11 +90,12 @@ public abstract class S3GuardTool extends Configured implements Tool {
       "\t" + Uploads.NAME + " - " + Uploads.PURPOSE + "\n" +
       "\t" + Diff.NAME + " - " + Diff.PURPOSE + "\n" +
       "\t" + Prune.NAME + " - " + Prune.PURPOSE + "\n" +
-      "\t" + SetCapacity.NAME + " - " +SetCapacity.PURPOSE + "\n";
+      "\t" + SetCapacity.NAME + " - " + SetCapacity.PURPOSE + "\n" +
+      "\t" + SelectTool.NAME + " - " + SelectTool.PURPOSE + "\n";
   private static final String DATA_IN_S3_IS_PRESERVED
       = "(all data in S3 is preserved)";
 
-  abstract public String getUsage();
+  public abstract String getUsage();
 
   // Exit codes
   static final int SUCCESS = EXIT_SUCCESS;
@@ -140,19 +142,19 @@ public abstract class S3GuardTool extends Configured implements Tool {
   /**
    * Return sub-command name.
    */
-  abstract String getName();
+  public abstract String getName();
 
   /**
    * Parse DynamoDB region from either -m option or a S3 path.
    *
-   * This function should only be called from {@link Init} or
-   * {@link Destroy}.
+   * This function should only be called from {@link S3GuardTool.Init} or
+   * {@link S3GuardTool.Destroy}.
    *
    * @param paths remaining parameters from CLI.
    * @throws IOException on I/O errors.
    * @throws ExitUtil.ExitException on validation errors
    */
-  void parseDynamoDBRegion(List<String> paths) throws IOException {
+  protected void parseDynamoDBRegion(List<String> paths) throws IOException {
     Configuration conf = getConf();
     String fromCli = getCommandFormat().getOptValue(REGION_FLAG);
     String fromConf = conf.get(S3GUARD_DDB_REGION_KEY);
@@ -226,7 +228,8 @@ public abstract class S3GuardTool extends Configured implements Tool {
    * @param forceCreate override the auto-creation setting to true.
    * @return a initialized metadata store.
    */
-  MetadataStore initMetadataStore(boolean forceCreate) throws IOException {
+  protected MetadataStore initMetadataStore(boolean forceCreate)
+      throws IOException {
     if (getStore() != null) {
       return getStore();
     }
@@ -288,7 +291,7 @@ public abstract class S3GuardTool extends Configured implements Tool {
    * @throws IOException failure to init filesystem
    * @throws ExitUtil.ExitException if the FS is not an S3A FS
    */
-  void initS3AFileSystem(String path) throws IOException {
+  protected void initS3AFileSystem(String path) throws IOException {
     URI uri = toUri(path);
     // Make sure that S3AFileSystem does not hold an actual MetadataStore
     // implementation.
@@ -321,7 +324,7 @@ public abstract class S3GuardTool extends Configured implements Tool {
    * @param args command line arguments.
    * @return the position arguments from CLI.
    */
-  List<String> parseArgs(String[] args) {
+  protected List<String> parseArgs(String[] args) {
     return getCommandFormat().parse(args, 1);
   }
 
@@ -358,16 +361,16 @@ public abstract class S3GuardTool extends Configured implements Tool {
    *
    * As well as returning an exit code, the implementations can choose to
    * throw an instance of {@link ExitUtil.ExitException} with their exit
-   * code set to the desired exit value. The exit code of auch an exception
+   * code set to the desired exit value. The exit code of such an exception
    * is used for the tool's exit code, and the stack trace only logged at
    * debug.
    * @param args argument list
    * @param out output stream
    * @return the exit code to return.
    * @throws Exception on any failure
-   * @throws ExitUtil.ExitException for an alternative clean exit
    */
-  public abstract int run(String[] args, PrintStream out) throws Exception;
+  public abstract int run(String[] args, PrintStream out) throws Exception,
+      ExitUtil.ExitException;
 
   /**
    * Create the metadata store.
@@ -402,7 +405,7 @@ public abstract class S3GuardTool extends Configured implements Tool {
     }
 
     @Override
-    String getName() {
+    public String getName() {
       return NAME;
     }
 
@@ -489,7 +492,7 @@ public abstract class S3GuardTool extends Configured implements Tool {
     }
 
     @Override
-    String getName() {
+    public String getName() {
       return NAME;
     }
 
@@ -574,7 +577,7 @@ public abstract class S3GuardTool extends Configured implements Tool {
     }
 
     @Override
-    String getName() {
+    public String getName() {
       return NAME;
     }
 
@@ -637,7 +640,7 @@ public abstract class S3GuardTool extends Configured implements Tool {
     }
 
     @Override
-    String getName() {
+    public String getName() {
       return NAME;
     }
 
@@ -769,7 +772,7 @@ public abstract class S3GuardTool extends Configured implements Tool {
     }
 
     @Override
-    String getName() {
+    public String getName() {
       return NAME;
     }
 
@@ -977,7 +980,7 @@ public abstract class S3GuardTool extends Configured implements Tool {
     }
 
     @Override
-    String getName() {
+    public String getName() {
       return NAME;
     }
 
@@ -1067,7 +1070,7 @@ public abstract class S3GuardTool extends Configured implements Tool {
     }
 
     @Override
-    String getName() {
+    public String getName() {
       return NAME;
     }
 
@@ -1241,7 +1244,7 @@ public abstract class S3GuardTool extends Configured implements Tool {
     }
 
     @Override
-    String getName() {
+    public String getName() {
       return NAME;
     }
 
@@ -1420,11 +1423,11 @@ public abstract class S3GuardTool extends Configured implements Tool {
     errorln(COMMON_USAGE);
   }
 
-  private static void errorln() {
+  protected static void errorln() {
     System.err.println();
   }
 
-  private static void errorln(String x) {
+  protected static void errorln(String x) {
     System.err.println(x);
   }
 
@@ -1434,7 +1437,9 @@ public abstract class S3GuardTool extends Configured implements Tool {
    * @param format format string
    * @param args optional arguments
    */
-  private static void println(PrintStream out, String format, Object... args) {
+  protected static void println(PrintStream out,
+      String format,
+      Object... args) {
     out.println(String.format(format, args));
   }
 
@@ -1475,8 +1480,7 @@ public abstract class S3GuardTool extends Configured implements Tool {
    */
   protected static ExitUtil.ExitException invalidArgs(
       String format, Object...args) {
-    return new ExitUtil.ExitException(INVALID_ARGUMENT,
-        String.format(format, args));
+    return exitException(INVALID_ARGUMENT, format, args);
   }
 
   /**
@@ -1487,8 +1491,8 @@ public abstract class S3GuardTool extends Configured implements Tool {
    */
   protected static ExitUtil.ExitException badState(
       String format, Object...args) {
-    return new ExitUtil.ExitException(E_BAD_STATE,
-        String.format(format, args));
+    int exitCode = E_BAD_STATE;
+    return exitException(exitCode, format, args);
   }
 
   /**
@@ -1499,7 +1503,22 @@ public abstract class S3GuardTool extends Configured implements Tool {
    */
   protected static ExitUtil.ExitException userAborted(
       String format, Object...args) {
-    return new ExitUtil.ExitException(ERROR, String.format(format, args));
+    return exitException(ERROR, format, args);
+  }
+
+  /**
+   * Build a exception to throw with a formatted message.
+   * @param exitCode exit code to use
+   * @param format string format
+   * @param args optional arguments for the string
+   * @return a new exception to throw
+   */
+  protected static ExitUtil.ExitException exitException(
+      final int exitCode,
+      final String format,
+      final Object... args) {
+    return new ExitUtil.ExitException(exitCode,
+        String.format(format, args));
   }
 
   /**
@@ -1546,6 +1565,11 @@ public abstract class S3GuardTool extends Configured implements Tool {
       break;
     case Uploads.NAME:
       command = new Uploads(conf);
+      break;
+    case SelectTool.NAME:
+      // the select tool is not technically a S3Guard tool, but it's on the CLI
+      // because this is the defacto S3 CLI.
+      command = new SelectTool(conf);
       break;
     default:
       printHelp();
