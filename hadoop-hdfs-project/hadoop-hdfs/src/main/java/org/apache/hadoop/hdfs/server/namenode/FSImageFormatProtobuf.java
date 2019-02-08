@@ -304,8 +304,11 @@ public final class FSImageFormatProtobuf {
             summary.getCodec(), in);
 
         String n = s.getName();
-
-        switch (SectionName.fromString(n)) {
+        SectionName sectionName = SectionName.fromString(n);
+        if (sectionName == null) {
+          throw new IOException("Unrecognized section " + n);
+        }
+        switch (sectionName) {
         case NS_INFO:
           loadNameSystemSection(in);
           break;
