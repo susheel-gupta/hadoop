@@ -1,8 +1,7 @@
 Changes in HDP and not in Apache Hadoop-3.1.1 release
 =========================================================================
 
-YARN and MAPREDUCE
-------------------
+####  (NOTE - This is -generated from git-log, don't add entries to this file directly - see BUG-112676 for instructions.) ###
 
 
 HDFS and HADOOP-COMMON
@@ -65,12 +64,21 @@ HADOOP-15661. ABFS: Add support for ACL. Contributed by Junhua Gu and Da Zhou.
 HADOOP-15660. ABFS: Add support for OAuth Contributed by Da Zhou, Rajeev Bansal, and Junhua Gu.
 HADOOP-15669. ABFS: Improve HTTPS Performance. Contributed by Vishwajeet Dusane.
 HADOOP-15659. Code changes for bug fix and new tests. Contributed by Da Zhou.
+HADOOP-15446. ABFS: tune imports & javadocs; stabilise tests. Contributed by Steve Loughran and Da Zhou.
 HDFS-13750. RBF: Router ID in RouterRpcClient is always null. Contributed by Takanobu Asanuma.
+YARN-8679. [ATSv2] If HBase cluster is down for long time, high chances that NM ContainerManager dispatcher get blocked. Contributed by Wangda Tan.
 HADOOP-15674. Test failure TestSSLHttpServer.testExcludedCiphers with TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 cipher suite. Contributed by Szilard Nemeth.
 HDFS-13747. Statistic for list_located_status is incremented incorrectly by listStatusIterator. Contributed by Antal Mihalyi.
+YARN-8612. Fix NM Collector Service Port issue in YarnConfiguration. Contributed by Prabha Manepalli.
 HDFS-13746. Still occasional "Should be different group" failure in TestRefreshUserMappings#testGroupMappingRefresh (Contributed by Siyao Meng via Daniel Templeton)
+YARN-8318. [UI2] IP address in component page shows N/A. Contributed by Yesha Vora.
+YARN-8474. Fixed ApiServiceClient kerberos negotiation.            Contributed by Billie Rinaldi
+YARN-8667. Cleanup symlinks when container restarted by NM.
+YARN-8656. container-executor should not write cgroup tasks files for docker containers. Contributed by Jim Brennan
+YARN-8614. Fix few annotation typos in YarnConfiguration. Contributed by Sen Zhao.
 HDFS-13788. Update EC documentation about rack fault tolerance. Contributed by Kitti Nanasi.
 HDFS-13758. DatanodeManager should throw exception if it has BlockRecoveryCommand but the block is not under construction. Contributed by chencan.
+YARN-8640. Restore previous state in container-executor after failure. Contributed by Jim Brennan
 HDFS-13738. fsck -list-corruptfileblocks has infinite loop if user is not privileged. Contributed by Yuen-Kuei Hsueh.
 HDFS-13813. Exit NameNode if dangling child inode is detected when saving FsImage. Contributed by Siyao Meng.
 HDFS-13786. EC: Display erasure coding policy for sub-directories is not working. Contributed by Ayush Saxena.
@@ -78,79 +86,66 @@ HDFS-13735. Make QJM HTTP URL connection timeout configurable. Contributed by Ch
 HDFS-13721. NPE in DataNode due to uninitialized DiskBalancer.
 HDFS-13823. NameNode UI : "Utilities -> Browse the file system -> open a file -> Head the file" is not working. Contributed by Nanda kumar.
 HADOOP-15638. KMS Accept Queue Size default changed from 500 to 128 in Hadoop 3.x. Contributed by Wei-Chiu Chuang.
+Remove super user privilege requirement for NameNode.getServiceStatus. Contributed by Chao Sun.
+YARN-8520. Document best practice for user management. Contributed by Eric Yang
 HDFS-13721. NPE in DataNode due to uninitialized DiskBalancer.
+YARN-8575. Avoid committing allocation proposal to unavailable nodes in async scheduling. Contributed by Tao Yang.
+YARN-8521. NPE in AllocationTagsManager when a container is removed more than once. Contributed by Weiwei Yang.
+YARN-8136. Add version attribute to site doc examples and quickstart. (Eric Yang via wangda)
+YARN-8588. Logging improvements for better debuggability. (Suma Shivaprasad via wangda)
+YARN-8559. Expose mutable-conf scheduler's configuration in RM /scheduler-conf endpoint. Contributed by Weiwei Yang.
+YARN-8331. Race condition in NM container launched after done. Contributed by Pradeep Ambati
+YARN-8633. Update DataTables version in yarn-common in line with JQuery 3 upgrade. Contributed by Akhil PB.
+YARN-8568. Replace the deprecated zk-address property in the HA config example in ResourceManagerHA.md (bsteinbach via rkanter)
+YARN-8601. Print ExecutionType in Container report CLI. Contributed by Bilwa S T.
 HDFS-13728. Disk Balancer should not fail if volume usage is greater than capacity. Contributed by Stephen O'Donnell.
+HADOOP-15547. WASB: improve listStatus performance. Contributed by Thomas Marquardt.
+YARN-8407. Container launch exception in AM log should be printed in ERROR level. (Yesha Vora via wangda)
+YARN-8407. Container launch exception in AM log should be printed in ERROR level. (Yesha Vora via wangda)
+YARN-8629. Container cleanup fails while trying to delete Cgroups. (Suma Shivaprasad via wangda)
+YARN-8624. Updated verbiage around entry point support.            Contributed by Craig Condit
+YARN-8287. Update documentation and yarn-default related to the Docker runtime. Contributed by Craig Condit
+YARN-8615. [UI2] Resource Usage tab shows only memory related info. No info available for vcores/gpu. Contributed by Akhil PB.
+YARN-8620. [UI2] YARN Services UI new submission failures are not debuggable. Contributed by Akhil PB.
+YARN-8608. [UI2] No information available per application appAttempt about 'Total Outstanding Resource Requests'. Contributed by Akhil PB.
+YARN-8603. [UI2] Latest run application should be listed first in the RM UI. Contributed by Akhil PB.
+YARN-8263. DockerClient still touches hadoop.tmp.dir. Contributed by Craig Condit
+YARN-8592. [UI2] rmip:port/ui2 endpoint shows a blank page in windows OS and Chrome browser. Contributed by Akhil PB.
+YARN-8594. [UI2] Display current logged in user. Contributed by Akhil PB.
+YARN-8593. Add RM web service endpoint to get user information. Contributed by Akhil PB.
+YARN-8610.  Fixed initiate upgrade error message.             Contributed by Chandni Singh
+YARN-8403. Change the log level for fail to download resource from INFO to ERROR. Contributed by Eric Yang
+YARN-8595. [UI2] Container diagnostic information is missing from container page. Contributed by Akhil PB.
+YARN-8318. [UI2] IP address in component page shows N/A. Contributed by Yesha Vora.
+YARN-8403. Change the log level for fail to download resource from INFO to ERROR. Contributed by Eric Yang
+YARN-8397. Potential thread leak in ActivitiesManager. Contributed by Rohith Sharma K S.
+YARN-8579.  Recover NMToken of previous attempted component data.             Contributed by Gour Saha
+YARN-7974. Allow updating application tracking url after registration. Contributed by Jonathan Hung
 HADOOP-15637. LocalFs#listLocatedStatus does not filter out hidden .crc files. Contributed by Erik Krogen.
-HADOOP-15637. LocalFs#listLocatedStatus does not filter out hidden .crc files. Contributed by Erik Krogen.
+YARN-8584. Several typos in Log Aggregation related classes. Contributed by Szilard Nemeth.
 HDFS-12716. 'dfs.datanode.failed.volumes.tolerated' to support minimum number of volumes to be available. Contributed by Ranith Sardar and usharani
 HADOOP-15607. AliyunOSS: fix duplicated partNumber issue in AliyunOSSBlockOutputStream. Contributed by Jinhu Wu.
 HDFS-13727. Log full stack trace if DiskBalancer exits with an unhandled exception. Contributed by Gabor Bota.
 BUG-10842: 5HADOOP-15609. Retry KMS calls when SSLHandshakeException occurs. Contributed by Kitti Nanasi.
+YARN-8360. Improve YARN service restart policy and node manager auto restart policy.            Contributed by Suma Shivaprasad
+YARN-8571. Validate service principal format prior to launching yarn service. Contributed by Eric Yang
+YARN-8429. Improve diagnostic message when artifact is not set properly.            Contributed by Gour Saha
+YARN-8361. Change App Name Placement Rule to use App Name instead of App Id for configuration. Contributed by Zian Chen.
 HADOOP-15382. Log kinit output in credential renewal thread. Contributed by Gabor Bota.
+YARN-8016. Refine PlacementRule interface and add a app-name queue mapping rule as an example. Contributed by Zian Chen.
 HADOOP-15560. ABFS: removed dependency injection and unnecessary dependencies. Contributed by Da Zhou.
 HADOOP-15407. HADOOP-15540. Support Windows Azure Storage - Blob file system "ABFS" in Hadoop: Core Commit.
 BUG-103209: Dependency upgrades related to blackduck scan.
 BUG-104243: Dependency jackson-databind dependency related to blackduck scan.
 HADOOP-15299. Bump Jackson 2 version to Jackson 2.9.x.
+BUG-103055 Remove aiyun, openstack from hadoop-cloud-project
 BUG-102169 Include Google Connector in Hadoop
 BUG-102156. HDFS-13512. WebHdfs getFileStatus doesn't return ecPolicy. Contributed by Ajay Kumar.
 BUG-101422. Disable HDFS and Hadoop unit tests that are flaky in Mawo.
 BUG-65303. NameNode, DataNode, SecondaryNameNode should shutdown if out of memory error occurs. Extension of BUG-5700 contributed by Chris Nauroth.
 BUG-100895. Ignore UTs failing due to environmental issues.
-Remove super user privilege requirement for NameNode.getServiceStatus. Contributed by Chao Sun.
-HADOOP-15677. WASB: Add support for StreamCapabilities. Contributed by Thomas Marquardt.
-BUG-111427. HADOOP-15748. S3 listing inconsistency can raise NPE in globber. Contributed by Steve Loughran.
-
-    BUG-111485. YARN-8720. CapacityScheduler does not enforce max resource
-    allocation check at queue level. Contributed by Tarun Parimi.
-
-    BUG-111853. MAPREDUCE-7125. JobResourceUploader creates LocalFileSystem when
-    it's not necessary. (Peter Cseh via wangda)
-
-    HADOOP-15793. ABFS: Skip unsupported test cases when non namespace enabled
-    in ITestAzureBlobFileSystemAuthorization Contributed by Yuan Gao.
-
-    HADOOP-15792. typo in AzureBlobFileSystem.getIsNamespaceEnabeld. Contributed
-    by Abhishek Modi.
-
-    HADOOP-15795. Make HTTPS the default protocol for ABFS. Contributed by Da
-    Zhou.
-
-    HADOOP-15680. ITestNativeAzureFileSystemConcurrencyLive times out.
-    Contributed by Andras Bokor.
-
-    BUG-111586. YARN-8758. Support getting PreemptionMessage when using
-    AMRMClientAsyn. (Zian Chen via wangda)
-
-    BUG-112689. HADOOP-15809. ABFS: better exception handling when making
-    getAccessToken call. Contributed by Da Zhou
-
-    BUG-112690. HADOOP-15825. ABFS: Enable some tests for namespace not enabled
-    account using OAuth. Contributed by Da Zhou.
-
-    HADOOP-15851. Disable wildfly logs to the console. Contributed by Vishwajeet
-    Dusane.
-
-    HDFS-13662. TestBlockReaderLocal#testStatisticsForErasureCodingRead is flaky
-
-    HADOOP-15839. Review + update cloud store sensitive keys in hadoop.security
-    .sensitive-config-keys. Contributed by Steve Loughran.
-
-    HADOOP-15823. ABFS: Stop requiring client ID and tenant ID for MSI
-    (Contributed by Da Zhou via Daniel Templeton)
-
-    HADOOP-15812. ABFS: Improve AbfsRestOperationException format to ensure full
-    msg can be displayed on console.
-
-    HADOOP-15846. ABFS: fix mask related bugs in setAcl, modifyAclEntries and
-    removeAclEntries.
-
-    HADOOP-15872. ABFS: Update to target 2018-11-09 REST version for ADLS Gen 2.
-
-    MAPREDUCE-7158. Inefficient Flush Logic in JobHistory EventWriter. (Zichen
-    Sun via wangda)
-
-    HADOOP-15968. ABFS: add try catch for UGI failure when initializing ABFS.
+BUG-100252. HDFS-13433. webhdfs requests can be routed incorrectly in federated cluster. Contributed by Arpit Agarwal.
+HADOOP-15968. ABFS: add try catch for UGI failure when initializing ABFS.
 
     HADOOP-15434. Upgrade to ADLS SDK that exposes current timeout.
 
@@ -176,6 +171,14 @@ BUG-111427. HADOOP-15748. S3 listing inconsistency can raise NPE in globber. Con
     HDFS-13941. make storageId in BlockPoolTokenSecretManager.checkAccess
     optional. Contributed by Wei-Chiu Chuang.
 
+    HADOOP-16169. ABFS: Bug fix for getPathProperties.
 
-    HDFS-14026. Overload BlockPoolTokenSecretManager.checkAccess to make
-    storageId and storageType optional. Contributed by Arpit Agarwal.
+    HADOOP-16068. ABFS Authentication and Delegation Token plugins to optionally
+    be bound to specific URI of the store.
+
+    HADOOP-16157. [Clean-up] Remove NULL check before instanceof in
+    AzureNativeFileSystemStore (Contributed by Shweta Yakkali via Daniel
+    Templeton)
+
+    HADOOP-16104. Wasb tests to downgrade to skip when test a/c is namespace
+    enabled. Contributed by Masatake Iwasaki.
