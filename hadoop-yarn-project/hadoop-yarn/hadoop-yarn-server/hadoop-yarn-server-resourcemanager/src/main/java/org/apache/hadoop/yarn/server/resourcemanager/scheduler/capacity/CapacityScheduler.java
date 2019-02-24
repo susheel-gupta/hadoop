@@ -48,7 +48,6 @@ import org.apache.hadoop.util.Time;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Container;
-import org.apache.hadoop.yarn.api.records.ContainerExitStatus;
 import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.api.records.ContainerStatus;
 import org.apache.hadoop.yarn.api.records.ExecutionType;
@@ -2033,26 +2032,6 @@ public class CapacityScheduler extends
     LeafQueue queue = (LeafQueue) application.getQueue();
     queue.completedContainer(getClusterResource(), application, node,
         rmContainer, containerStatus, event, null, true);
-    if (ContainerExitStatus.PREEMPTED == containerStatus.getExitStatus()) {
-      updateQueuePreemptionMetrics(queue, rmContainer);
-    }
-  }
-
-  private void updateQueuePreemptionMetrics(
-      CSQueue queue, RMContainer rmc) {
-    QueueMetrics qMetrics = queue.getMetrics();
-    final long usedMillis = rmc.getFinishTime() - rmc.getCreationTime();
-    final long usedSeconds = usedMillis / DateUtils.MILLIS_PER_SECOND;
-    Resource containerResource = rmc.getAllocatedResource();
-    qMetrics.preemptContainer();
-    long mbSeconds = (containerResource.getMemorySize() * usedMillis)
-        / DateUtils.MILLIS_PER_SECOND;
-    long vcSeconds = (containerResource.getVirtualCores() * usedMillis)
-        / DateUtils.MILLIS_PER_SECOND;
-    qMetrics.updatePreemptedMemoryMBSeconds(mbSeconds);
-    qMetrics.updatePreemptedVcoreSeconds(vcSeconds);
-    qMetrics.updatePreemptedSecondsForCustomResources(containerResource,
-        usedSeconds);
   }
 
   @Lock(Lock.NoLock.class)
