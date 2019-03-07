@@ -355,8 +355,8 @@ public abstract class AbstractYarnScheduler
 
   protected void containerLaunchedOnNode(
       ContainerId containerId, SchedulerNode node) {
+    readLock.lock();
     try {
-      readLock.lock();
       // Get the application for the finished container
       SchedulerApplicationAttempt application =
           getCurrentAttemptForContainer(containerId);
@@ -497,8 +497,8 @@ public abstract class AbstractYarnScheduler
 
   public void recoverContainersOnNode(List<NMContainerStatus> containerReports,
       RMNode nm) {
+    writeLock.lock();
     try {
-      writeLock.lock();
       if (!rmContext.isWorkPreservingRecoveryEnabled()
           || containerReports == null || (containerReports != null
           && containerReports.isEmpty())) {
@@ -785,8 +785,8 @@ public abstract class AbstractYarnScheduler
   @Override
   public void moveAllApps(String sourceQueue, String destQueue)
       throws YarnException {
+    writeLock.lock();
     try {
-      writeLock.lock();
       // check if destination queue is a valid leaf queue
       try {
         getQueueInfo(destQueue, false, false);
@@ -816,8 +816,8 @@ public abstract class AbstractYarnScheduler
   @Override
   public void killAllAppsInQueue(String queueName)
       throws YarnException {
+    writeLock.lock();
     try {
-      writeLock.lock();
       // check if queue is a valid
       List<ApplicationAttemptId> apps = getAppsInQueue(queueName);
       if (apps == null) {
@@ -842,8 +842,8 @@ public abstract class AbstractYarnScheduler
    */
   public void updateNodeResource(RMNode nm,
       ResourceOption resourceOption) {
+    writeLock.lock();
     try {
-      writeLock.lock();
       SchedulerNode node = getSchedulerNode(nm.getNodeID());
       Resource newResource = resourceOption.getResource();
       Resource oldResource = node.getTotalResource();

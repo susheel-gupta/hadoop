@@ -44,8 +44,8 @@ public class PlacementManager {
   }
 
   public void updateRules(List<PlacementRule> rules) {
+    writeLock.lock();
     try {
-      writeLock.lock();
       this.rules = rules;
     } finally {
       writeLock.unlock();

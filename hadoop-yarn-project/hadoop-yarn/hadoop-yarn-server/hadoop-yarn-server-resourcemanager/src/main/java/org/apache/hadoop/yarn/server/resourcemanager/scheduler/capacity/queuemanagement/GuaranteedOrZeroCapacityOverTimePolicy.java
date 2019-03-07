@@ -206,8 +206,8 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
         new HashMap<String, Float>();
 
     private float getAbsoluteActivatedChildQueueCapacity(String nodeLabel) {
+      readLock.lock();
       try {
-        readLock.lock();
         Float totalActivatedCapacity = getAbsActivatedChildQueueCapacityByLabel(
             nodeLabel);
         if (totalActivatedCapacity != null) {
@@ -222,8 +222,8 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
 
     private void incAbsoluteActivatedChildCapacity(String nodeLabel,
         float childQueueCapacity) {
+      writeLock.lock();
       try {
-        writeLock.lock();
         Float activatedChildCapacity = getAbsActivatedChildQueueCapacityByLabel(
             nodeLabel);
         if (activatedChildCapacity != null) {
@@ -240,8 +240,8 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
 
     private void decAbsoluteActivatedChildCapacity(String nodeLabel,
         float childQueueCapacity) {
+      writeLock.lock();
       try {
-        writeLock.lock();
         Float activatedChildCapacity = getAbsActivatedChildQueueCapacityByLabel(
             nodeLabel);
         if (activatedChildCapacity != null) {
@@ -370,8 +370,8 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
     //synch/add missing leaf queue(s) if any to state
     updateLeafQueueState();
 
+    readLock.lock();
     try {
-      readLock.lock();
       List<QueueManagementChange> queueManagementChanges = new ArrayList<>();
       List<FiCaSchedulerApp> pendingApps = getSortedPendingApplications();
 
@@ -511,8 +511,8 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
 
   @VisibleForTesting
   void updateLeafQueueState() {
+    writeLock.lock();
     try {
-      writeLock.lock();
       Set<String> newPartitions = new HashSet<>();
       Set<String> newQueues = new HashSet<>();
 
@@ -598,8 +598,8 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
   @VisibleForTesting
   public boolean isActive(final AutoCreatedLeafQueue leafQueue,
       String nodeLabel) throws SchedulerDynamicEditException {
+    readLock.lock();
     try {
-      readLock.lock();
       LeafQueueStatePerPartition leafQueueStatus = getLeafQueueState(leafQueue,
           nodeLabel);
       return leafQueueStatus.isActive();
@@ -677,8 +677,8 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
   public void commitQueueManagementChanges(
       List<QueueManagementChange> queueManagementChanges)
       throws SchedulerDynamicEditException {
+    writeLock.lock();
     try {
-      writeLock.lock();
       for (QueueManagementChange queueManagementChange :
           queueManagementChanges) {
         AutoCreatedLeafQueueConfig updatedQueueTemplate =
@@ -736,8 +736,8 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
 
   private void activate(final AbstractAutoCreatedLeafQueue leafQueue,
       String nodeLabel) throws SchedulerDynamicEditException {
+    writeLock.lock();
     try {
-      writeLock.lock();
       getLeafQueueState(leafQueue, nodeLabel).activate();
       parentQueueState.incAbsoluteActivatedChildCapacity(nodeLabel,
           leafQueueTemplateCapacities.getAbsoluteCapacity(nodeLabel));
@@ -748,8 +748,8 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
 
   private void deactivate(final AbstractAutoCreatedLeafQueue leafQueue,
       String nodeLabel) throws SchedulerDynamicEditException {
+    writeLock.lock();
     try {
-      writeLock.lock();
       getLeafQueueState(leafQueue, nodeLabel).deactivate();
 
       parentQueueState.decAbsoluteActivatedChildCapacity(nodeLabel,
@@ -806,9 +806,8 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
               .getClass());
     }
 
+    writeLock.lock();
     try {
-      writeLock.lock();
-
       QueueCapacities capacities = new QueueCapacities(false);
       for (String nodeLabel : leafQueueTemplateNodeLabels) {
         if (!leafQueueState.createLeafQueueStateIfNotExists(leafQueue,
@@ -863,8 +862,8 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
   @VisibleForTesting
   LeafQueueStatePerPartition getLeafQueueState(LeafQueue queue,
       String partition) throws SchedulerDynamicEditException {
+    readLock.lock();
     try {
-      readLock.lock();
       String queuePath = queue.getQueuePath();
       if (!leafQueueState.containsLeafQueue(queuePath, partition)) {
         throw new SchedulerDynamicEditException(

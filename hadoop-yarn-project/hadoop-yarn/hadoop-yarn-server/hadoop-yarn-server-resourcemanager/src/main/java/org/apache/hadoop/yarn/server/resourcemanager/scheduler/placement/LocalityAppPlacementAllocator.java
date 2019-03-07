@@ -155,9 +155,9 @@ public class LocalityAppPlacementAllocator <N extends SchedulerNode>
   public PendingAskUpdateResult updatePendingAsk(
       Collection<ResourceRequest> requests,
       boolean recoverPreemptedRequestForAContainer) {
-    try {
-      this.writeLock.lock();
 
+    this.writeLock.lock();
+    try {
       PendingAskUpdateResult updateResult = null;
 
       // Update resource requests
@@ -228,8 +228,8 @@ public class LocalityAppPlacementAllocator <N extends SchedulerNode>
 
   @Override
   public PendingAsk getPendingAsk(String resourceName) {
+    readLock.lock();
     try {
-      readLock.lock();
       ResourceRequest request = getResourceRequest(resourceName);
       if (null == request) {
         return PendingAsk.ZERO;
@@ -245,8 +245,8 @@ public class LocalityAppPlacementAllocator <N extends SchedulerNode>
 
   @Override
   public int getOutstandingAsksCount(String resourceName) {
+    readLock.lock();
     try {
-      readLock.lock();
       ResourceRequest request = getResourceRequest(resourceName);
       if (null == request) {
         return 0;
@@ -359,8 +359,8 @@ public class LocalityAppPlacementAllocator <N extends SchedulerNode>
 
   @Override
   public boolean canAllocate(NodeType type, SchedulerNode node) {
+    readLock.lock();
     try {
-      readLock.lock();
       ResourceRequest r = resourceRequestMap.get(
           ResourceRequest.ANY);
       if (r == null || r.getNumContainers() <= 0) {
@@ -387,8 +387,8 @@ public class LocalityAppPlacementAllocator <N extends SchedulerNode>
 
   @Override
   public boolean canDelayTo(String resourceName) {
+    readLock.lock();
     try {
-      readLock.lock();
       ResourceRequest request = getResourceRequest(resourceName);
       return request == null || request.getRelaxLocality();
     } finally {
@@ -438,8 +438,8 @@ public class LocalityAppPlacementAllocator <N extends SchedulerNode>
   @Override
   public ContainerRequest allocate(SchedulerRequestKey schedulerKey,
       NodeType type, SchedulerNode node) {
+    writeLock.lock();
     try {
-      writeLock.lock();
 
       List<ResourceRequest> resourceRequests = new ArrayList<>();
 

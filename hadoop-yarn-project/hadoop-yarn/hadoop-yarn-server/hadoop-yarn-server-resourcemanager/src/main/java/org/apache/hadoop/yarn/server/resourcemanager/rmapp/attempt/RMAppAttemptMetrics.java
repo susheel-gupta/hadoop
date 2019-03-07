@@ -72,8 +72,8 @@ public class RMAppAttemptMetrics {
   }
 
   public void updatePreemptionInfo(Resource resource, RMContainer container) {
+    writeLock.lock();
     try {
-      writeLock.lock();
       resourcePreempted = Resources.addTo(resourcePreempted, resource);
     } finally {
       writeLock.unlock();
@@ -96,8 +96,8 @@ public class RMAppAttemptMetrics {
   }
   
   public Resource getResourcePreempted() {
+    readLock.lock();
     try {
-      readLock.lock();
       return Resource.newInstance(resourcePreempted);
     } finally {
       readLock.unlock();

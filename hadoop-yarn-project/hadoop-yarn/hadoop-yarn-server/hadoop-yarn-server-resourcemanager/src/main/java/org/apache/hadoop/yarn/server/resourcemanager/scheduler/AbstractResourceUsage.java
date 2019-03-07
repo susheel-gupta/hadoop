@@ -117,8 +117,8 @@ public class AbstractResourceUsage {
       return normalize(noLabelUsages.resArr.get(type.idx));
     }
 
+    readLock.lock();
     try {
-      readLock.lock();
       UsageByLabel usage = usages.get(label);
       if (null == usage) {
         return Resources.none();
@@ -130,8 +130,8 @@ public class AbstractResourceUsage {
   }
 
   protected Resource _getAll(ResourceType type) {
+    readLock.lock();
     try {
-      readLock.lock();
       Resource allOfType = Resources.createResource(0);
       for (Map.Entry<String, UsageByLabel> usageEntry : usages.entrySet()) {
         //all usages types are initialized
@@ -158,8 +158,8 @@ public class AbstractResourceUsage {
   }
 
   protected void _set(String label, ResourceType type, Resource res) {
+    writeLock.lock();
     try {
-      writeLock.lock();
       UsageByLabel usage = getAndAddIfMissing(label);
       usage.resArr.set(type.idx, res);
     } finally {
@@ -168,8 +168,8 @@ public class AbstractResourceUsage {
   }
 
   protected void _inc(String label, ResourceType type, Resource res) {
+    writeLock.lock();
     try {
-      writeLock.lock();
       UsageByLabel usage = getAndAddIfMissing(label);
       usage.resArr.set(type.idx,
           Resources.add(usage.resArr.get(type.idx), res));
@@ -179,8 +179,8 @@ public class AbstractResourceUsage {
   }
 
   protected void _dec(String label, ResourceType type, Resource res) {
+    writeLock.lock();
     try {
-      writeLock.lock();
       UsageByLabel usage = getAndAddIfMissing(label);
       usage.resArr.set(type.idx,
           Resources.subtract(usage.resArr.get(type.idx), res));
@@ -191,8 +191,8 @@ public class AbstractResourceUsage {
 
   @Override
   public String toString() {
+    readLock.lock();
     try {
-      readLock.lock();
       return usages.toString();
     } finally {
       readLock.unlock();
@@ -200,8 +200,8 @@ public class AbstractResourceUsage {
   }
 
   public Set<String> getNodePartitionsSet() {
+    readLock.lock();
     try {
-      readLock.lock();
       return usages.keySet();
     } finally {
       readLock.unlock();

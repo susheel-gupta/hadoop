@@ -79,8 +79,8 @@ public class ManagedParentQueue extends AbstractManagedParentQueue {
   public void reinitialize(CSQueue newlyParsedQueue, Resource clusterResource)
       throws IOException {
 
+    writeLock.lock();
     try {
-      writeLock.lock();
       validate(newlyParsedQueue);
 
       shouldFailAutoCreationWhenGuaranteedCapacityExceeded =
@@ -261,9 +261,9 @@ public class ManagedParentQueue extends AbstractManagedParentQueue {
   @Override
   public void addChildQueue(CSQueue childQueue)
       throws SchedulerDynamicEditException, IOException {
-    try {
-      writeLock.lock();
 
+    writeLock.lock();
+    try {
       if (childQueue == null || !(childQueue instanceof AutoCreatedLeafQueue)) {
         throw new SchedulerDynamicEditException(
             "Expected child queue to be an instance of AutoCreatedLeafQueue");
@@ -329,8 +329,8 @@ public class ManagedParentQueue extends AbstractManagedParentQueue {
   }
 
   public List<FiCaSchedulerApp> getScheduleableApplications() {
+    readLock.lock();
     try {
-      readLock.lock();
       List<FiCaSchedulerApp> apps = new ArrayList<>();
       for (CSQueue childQueue : getChildQueues()) {
         apps.addAll(((LeafQueue) childQueue).getApplications());
@@ -342,8 +342,8 @@ public class ManagedParentQueue extends AbstractManagedParentQueue {
   }
 
   public List<FiCaSchedulerApp> getPendingApplications() {
+    readLock.lock();
     try {
-      readLock.lock();
       List<FiCaSchedulerApp> apps = new ArrayList<>();
       for (CSQueue childQueue : getChildQueues()) {
         apps.addAll(((LeafQueue) childQueue).getPendingApplications());
@@ -355,8 +355,8 @@ public class ManagedParentQueue extends AbstractManagedParentQueue {
   }
 
   public List<FiCaSchedulerApp> getAllApplications() {
+    readLock.lock();
     try {
-      readLock.lock();
       List<FiCaSchedulerApp> apps = new ArrayList<>();
       for (CSQueue childQueue : getChildQueues()) {
         apps.addAll(((LeafQueue) childQueue).getAllApplications());
@@ -384,9 +384,9 @@ public class ManagedParentQueue extends AbstractManagedParentQueue {
   public void validateAndApplyQueueManagementChanges(
       List<QueueManagementChange> queueManagementChanges)
       throws IOException, SchedulerDynamicEditException {
-    try {
-      writeLock.lock();
 
+    writeLock.lock();
+    try {
       validateQueueManagementChanges(queueManagementChanges);
 
       applyQueueManagementChanges(queueManagementChanges);

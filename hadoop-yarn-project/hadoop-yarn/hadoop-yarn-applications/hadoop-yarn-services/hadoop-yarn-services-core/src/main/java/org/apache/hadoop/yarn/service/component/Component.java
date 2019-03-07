@@ -1083,8 +1083,8 @@ public class Component implements EventHandler<ComponentEvent> {
 
   @Override
   public void handle(ComponentEvent event) {
+    writeLock.lock();
     try {
-      writeLock.lock();
       ComponentState oldState = getState();
       try {
         stateMachine.doTransition(event.getType(), event);

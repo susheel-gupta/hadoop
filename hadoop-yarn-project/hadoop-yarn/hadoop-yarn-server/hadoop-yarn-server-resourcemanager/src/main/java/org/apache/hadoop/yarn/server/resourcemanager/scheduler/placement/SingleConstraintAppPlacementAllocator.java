@@ -414,8 +414,8 @@ public class SingleConstraintAppPlacementAllocator<N extends SchedulerNode>
 
   @Override
   public void showRequests() {
+    readLock.lock();
     try {
-      readLock.lock();
       if (schedulingRequest != null) {
         LOG.info(schedulingRequest.toString());
       }

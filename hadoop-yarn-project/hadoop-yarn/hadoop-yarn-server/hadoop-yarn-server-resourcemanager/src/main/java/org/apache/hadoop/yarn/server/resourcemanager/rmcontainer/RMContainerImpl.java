@@ -304,8 +304,8 @@ public class RMContainerImpl implements RMContainer {
 
   @Override
   public Resource getAllocatedResource() {
+    readLock.lock();
     try {
-      readLock.lock();
       return container.getResource();
     } finally {
       readLock.unlock();
@@ -314,8 +314,8 @@ public class RMContainerImpl implements RMContainer {
 
   @Override
   public Resource getLastConfirmedResource() {
+    readLock.lock();
     try {
-      readLock.lock();
       return this.lastConfirmedResource;
     } finally {
       readLock.unlock();
@@ -344,8 +344,8 @@ public class RMContainerImpl implements RMContainer {
 
   @Override
   public long getFinishTime() {
+    readLock.lock();
     try {
-      readLock.lock();
       return finishTime;
     } finally {
       readLock.unlock();
@@ -354,8 +354,8 @@ public class RMContainerImpl implements RMContainer {
 
   @Override
   public String getDiagnosticsInfo() {
+    readLock.lock();
     try {
-      readLock.lock();
       if (finishedStatus != null) {
         return finishedStatus.getDiagnostics();
       } else {
@@ -368,8 +368,8 @@ public class RMContainerImpl implements RMContainer {
 
   @Override
   public String getLogURL() {
+    readLock.lock();
     try {
-      readLock.lock();
       StringBuilder logURL = new StringBuilder();
       logURL.append(WebAppUtils.getHttpSchemePrefix(rmContext
           .getYarnConfiguration()));
@@ -384,8 +384,8 @@ public class RMContainerImpl implements RMContainer {
 
   @Override
   public int getContainerExitStatus() {
+    readLock.lock();
     try {
-      readLock.lock();
       if (finishedStatus != null) {
         return finishedStatus.getExitStatus();
       } else {
@@ -398,8 +398,8 @@ public class RMContainerImpl implements RMContainer {
 
   @Override
   public ContainerState getContainerState() {
+    readLock.lock();
     try {
-      readLock.lock();
       if (finishedStatus != null) {
         return finishedStatus.getState();
       } else {
@@ -412,8 +412,8 @@ public class RMContainerImpl implements RMContainer {
 
   @Override
   public ContainerRequest getContainerRequest() {
+    readLock.lock();
     try {
-      readLock.lock();
       return containerRequestForRecovery;
     } finally {
       readLock.unlock();
@@ -436,8 +436,8 @@ public class RMContainerImpl implements RMContainer {
   
   @Override
   public boolean isAMContainer() {
+    readLock.lock();
     try {
-      readLock.lock();
       return isAMContainer;
     } finally {
       readLock.unlock();
@@ -445,8 +445,8 @@ public class RMContainerImpl implements RMContainer {
   }
 
   public void setAMContainer(boolean isAMContainer) {
+    writeLock.lock();
     try {
-      writeLock.lock();
       this.isAMContainer = isAMContainer;
     } finally {
       writeLock.unlock();
@@ -468,8 +468,9 @@ public class RMContainerImpl implements RMContainer {
       LOG.debug("Processing " + event.getContainerId() + " of type " + event
               .getType());
     }
+
+    writeLock.lock();
     try {
-      writeLock.lock();
       RMContainerState oldState = getState();
       try {
          stateMachine.doTransition(event.getType(), event);
@@ -806,8 +807,8 @@ public class RMContainerImpl implements RMContainer {
 
   @Override
   public String getNodeHttpAddress() {
+    readLock.lock();
     try {
-      readLock.lock();
       if (container.getNodeHttpAddress() != null) {
         StringBuilder httpAddress = new StringBuilder();
         httpAddress.append(WebAppUtils.getHttpSchemePrefix(rmContext
@@ -877,8 +878,8 @@ public class RMContainerImpl implements RMContainer {
 
   @Override
   public Resource getAllocatedOrReservedResource() {
+    readLock.lock();
     try {
-      readLock.lock();
       if (getState().equals(RMContainerState.RESERVED)) {
         return getReservedResource();
       } else {
