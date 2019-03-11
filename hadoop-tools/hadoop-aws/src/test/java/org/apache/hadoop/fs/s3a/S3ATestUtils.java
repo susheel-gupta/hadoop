@@ -719,21 +719,6 @@ public final class S3ATestUtils {
   }
 
   /**
-   * Remove any values from a bucket and the base values too.
-   * @param bucket bucket whose overrides are to be removed. Can be null/empty.
-   * @param conf config
-   * @param options list of fs.s3a options to remove
-   */
-  public static void removeBaseAndBucketOverrides(final String bucket,
-      final Configuration conf,
-      final String... options) {
-    for (String option : options) {
-      conf.unset(option);
-    }
-    removeBucketOverrides(bucket, conf, options);
-  }
-
-  /**
    * Call a function; any exception raised is logged at info.
    * This is for test teardowns.
    * @param log log to use.
@@ -790,6 +775,21 @@ public final class S3ATestUtils {
   public static <T extends Service> T terminateService(final T service) {
     ServiceOperations.stopQuietly(LOG, service);
     return null;
+  }
+
+  /**
+   * Remove any values from a bucket and the base values too.
+   * @param bucket bucket whose overrides are to be removed. Can be null/empty.
+   * @param conf config
+   * @param options list of fs.s3a options to remove
+   */
+  public static void removeBaseAndBucketOverrides(final String bucket,
+      final Configuration conf,
+      final String... options) {
+    for (String option : options) {
+      conf.unset(option);
+    }
+    removeBucketOverrides(bucket, conf, options);
   }
 
   /**
