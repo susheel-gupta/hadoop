@@ -188,3 +188,6 @@ HADOOP-15968. ABFS: add try catch for UGI failure when initializing ABFS.
 
     YARN-7417. Remove duplicated code from IndexedFileAggregatedLogsBlock
     and TFileAggregatedLogsBlock.            Contributed by Zian Chen
+
+    YARN-9336. JobHistoryServer leaks CLOSE_WAIT tcp connections when using
+    LogAggregationIndexedFileController. Contributed by Tarun Parimi.
