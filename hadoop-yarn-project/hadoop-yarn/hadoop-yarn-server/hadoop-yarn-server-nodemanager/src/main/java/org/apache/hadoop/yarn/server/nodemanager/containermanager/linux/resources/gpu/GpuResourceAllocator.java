@@ -118,6 +118,7 @@ public class GpuResourceAllocator {
               + containerId);
     }
 
+    LOG.info("Starting recovery of GpuDevice for " + containerId + ".");
     for (Serializable gpuDeviceSerializable : c.getResourceMappings()
         .getAssignedResources(GPU_URI)) {
       if (!(gpuDeviceSerializable instanceof GpuDevice)) {
@@ -145,7 +146,9 @@ public class GpuResourceAllocator {
       }
 
       usedDevices.put(gpuDevice, containerId);
+      LOG.info("ContainerId " + containerId + " is assigned to GpuDevice " + gpuDevice + " on recovery.");
     }
+    LOG.info("Finished recovery of GpuDevice for + " + containerId + ".");
   }
 
   /**
