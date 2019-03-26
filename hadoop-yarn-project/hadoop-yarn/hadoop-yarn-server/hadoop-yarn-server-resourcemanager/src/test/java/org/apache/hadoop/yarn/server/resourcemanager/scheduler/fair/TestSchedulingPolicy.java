@@ -30,6 +30,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
+import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
+import org.apache.hadoop.yarn.server.resourcemanager.placement.PlacementManager;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.policies.DominantResourceFairnessPolicy;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.policies.FairSharePolicy;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.policies.FifoPolicy;
@@ -40,6 +42,8 @@ import org.junit.Test;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class TestSchedulingPolicy {
   private static final Log LOG = LogFactory.getLog(TestSchedulingPolicy.class);
@@ -52,6 +56,11 @@ public class TestSchedulingPolicy {
   public void setUp() throws Exception {
     scheduler = new FairScheduler();
     conf = new FairSchedulerConfiguration();
+    // since this runs outside of the normal context we need to set one
+    RMContext rmContext = mock(RMContext.class);
+    PlacementManager placementManager = new PlacementManager();
+    when(rmContext.getQueuePlacementManager()).thenReturn(placementManager);
+    scheduler.setRMContext(rmContext);
   }
 
   public void testParseSchedulingPolicy()
