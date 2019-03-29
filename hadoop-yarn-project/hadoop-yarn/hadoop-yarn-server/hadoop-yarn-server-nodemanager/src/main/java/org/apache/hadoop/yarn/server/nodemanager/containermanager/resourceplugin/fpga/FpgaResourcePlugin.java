@@ -43,6 +43,7 @@ public class FpgaResourcePlugin implements ResourcePlugin {
 
   private AbstractFpgaVendorPlugin vendorPlugin = null;
   private FpgaNodeResourceUpdateHandler fpgaNodeResourceUpdateHandler = null;
+  private FpgaDiscoverer fpgaDiscoverer;
 
   private AbstractFpgaVendorPlugin createFpgaVendorPlugin(Configuration conf) {
     String vendorPluginClass = conf.get(YarnConfiguration.NM_FPGA_VENDOR_PLUGIN,
@@ -67,9 +68,11 @@ public class FpgaResourcePlugin implements ResourcePlugin {
   public void initialize(Context context) throws YarnException {
     // Get vendor plugin from configuration
     this.vendorPlugin = createFpgaVendorPlugin(context.getConf());
-    FpgaDiscoverer.getInstance().setResourceHanderPlugin(vendorPlugin);
-    FpgaDiscoverer.getInstance().initialize(context.getConf());
-    fpgaNodeResourceUpdateHandler = new FpgaNodeResourceUpdateHandler();
+    fpgaDiscoverer = new FpgaDiscoverer();
+    fpgaDiscoverer.setResourceHanderPlugin(vendorPlugin);
+    fpgaDiscoverer.initialize(context.getConf());
+    fpgaNodeResourceUpdateHandler =
+        new FpgaNodeResourceUpdateHandler(fpgaDiscoverer);
   }
 
   @Override
@@ -78,7 +81,8 @@ public class FpgaResourcePlugin implements ResourcePlugin {
       PrivilegedOperationExecutor privilegedOperationExecutor) {
     if (fpgaResourceHandler == null) {
       fpgaResourceHandler = new FpgaResourceHandlerImpl(nmContext,
-          cGroupsHandler, privilegedOperationExecutor, vendorPlugin);
+          cGroupsHandler, privilegedOperationExecutor, vendorPlugin,
+          fpgaDiscoverer);
     }
     return fpgaResourceHandler;
   }
