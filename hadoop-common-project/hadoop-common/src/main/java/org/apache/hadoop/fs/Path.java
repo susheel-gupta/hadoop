@@ -69,6 +69,9 @@ public class Path implements Comparable, Serializable, ObjectInputValidation {
   private static final Pattern HAS_DRIVE_LETTER_SPECIFIER =
       Pattern.compile("^/?[a-zA-Z]:");
 
+  /** Pre-compiled regular expressions to detect duplicated slashes. */
+  private static final Pattern SLASHES = Pattern.compile("/+");
+
   private static final long serialVersionUID = 0xad00f;
 
   private URI uri; // a hierarchical uri
@@ -290,8 +293,8 @@ public class Path implements Comparable, Serializable, ObjectInputValidation {
    * @return the normalized path string
    */
   private static String normalizePath(String scheme, String path) {
-    // Remove double forward slashes.
-    path = StringUtils.replace(path, "//", "/");
+    // Remove duplicated slashes.
+    path = SLASHES.matcher(path).replaceAll("/");
 
     // Remove backslashes if this looks like a Windows path. Avoid
     // the substitution if it looks like a non-local URI.
