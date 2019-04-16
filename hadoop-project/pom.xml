@@ -144,6 +144,7 @@
     <hbase.two.version>2.0.0-beta-1</hbase.two.version>
     <gcs.version>1.9.10.7.0.0.0-SNAPSHOT</gcs.version>
     <knox.version>1.0.0.7.0.0.0-30</knox.version>
+    <assertj.version>3.12.2</assertj.version>
   </properties>
 
   <dependencyManagement>
@@ -1404,7 +1405,7 @@
         <dependency>
           <groupId>org.assertj</groupId>
           <artifactId>assertj-core</artifactId>
-          <version>3.8.0</version>
+          <version>${assertj.version}</version>
           <scope>test</scope>
         </dependency>
       <dependency>
