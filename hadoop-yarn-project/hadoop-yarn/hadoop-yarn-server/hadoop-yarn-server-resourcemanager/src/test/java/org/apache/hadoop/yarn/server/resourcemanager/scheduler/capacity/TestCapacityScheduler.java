@@ -49,6 +49,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
+import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hadoop.net.NetworkTopology;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.Groups;
@@ -215,6 +216,8 @@ public class TestCapacityScheduler extends CapacitySchedulerTestBase {
   @After
   public void tearDown() throws Exception {
     if (resourceManager != null) {
+      QueueMetrics.clearQueueMetrics();
+      DefaultMetricsSystem.shutdown();
       resourceManager.stop();
     }
   }
@@ -1823,13 +1826,13 @@ public class TestCapacityScheduler extends CapacitySchedulerTestBase {
     MockRM rm = setUpMove();
     AbstractYarnScheduler scheduler =
         (AbstractYarnScheduler) rm.getResourceScheduler();
-
+    QueueMetrics metrics = scheduler.getRootQueueMetrics();
+    Assert.assertEquals(0, metrics.getAppsPending());
     // submit an app
     RMApp app = rm.submitApp(GB, "test-move-1", "user_0", null, "a1");
     ApplicationAttemptId appAttemptId =
         rm.getApplicationReport(app.getApplicationId())
             .getCurrentApplicationAttemptId();
-
     // check preconditions
     List<ApplicationAttemptId> appsInA1 = scheduler.getAppsInQueue("a1");
     assertEquals(1, appsInA1.size());
@@ -1845,6 +1848,8 @@ public class TestCapacityScheduler extends CapacitySchedulerTestBase {
     List<ApplicationAttemptId> appsInRoot = scheduler.getAppsInQueue("root");
     assertTrue(appsInRoot.contains(appAttemptId));
     assertEquals(1, appsInRoot.size());
+
+    assertEquals(1, metrics.getAppsPending());
 
     List<ApplicationAttemptId> appsInB1 = scheduler.getAppsInQueue("b1");
     assertTrue(appsInB1.isEmpty());
@@ -1871,12 +1876,75 @@ public class TestCapacityScheduler extends CapacitySchedulerTestBase {
     assertTrue(appsInRoot.contains(appAttemptId));
     assertEquals(1, appsInRoot.size());
 
+    assertEquals(1, metrics.getAppsPending());
+
     appsInA1 = scheduler.getAppsInQueue("a1");
     assertTrue(appsInA1.isEmpty());
 
     appsInA = scheduler.getAppsInQueue("a");
     assertTrue(appsInA.isEmpty());
 
+    rm.stop();
+  }
+
+  @Test
+  public void testMoveAppPendingMetrics() throws Exception {
+    MockRM rm = setUpMove();
+    AbstractYarnScheduler scheduler =
+        (AbstractYarnScheduler) rm.getResourceScheduler();
+    QueueMetrics metrics = scheduler.getRootQueueMetrics();
+    List<ApplicationAttemptId> appsInA1 = scheduler.getAppsInQueue("a1");
+    List<ApplicationAttemptId> appsInB1 = scheduler.getAppsInQueue("b1");
+
+    assertEquals(0, appsInA1.size());
+    assertEquals(0, appsInB1.size());
+    Assert.assertEquals(0, metrics.getAppsPending());
+
+    // submit two apps in a1
+    RMApp app1 = rm.submitApp(GB, "test-move-1", "user_0", null, "a1");
+    RMApp app2 = rm.submitApp(GB, "test-move-2", "user_0", null, "a1");
+
+    appsInA1 = scheduler.getAppsInQueue("a1");
+    appsInB1 = scheduler.getAppsInQueue("b1");
+    assertEquals(2, appsInA1.size());
+    assertEquals(0, appsInB1.size());
+    assertEquals(2, metrics.getAppsPending());
+
+    // submit one app in b1
+    RMApp app3 = rm.submitApp(GB, "test-move-2", "user_0", null, "b1");
+
+    appsInA1 = scheduler.getAppsInQueue("a1");
+    appsInB1 = scheduler.getAppsInQueue("b1");
+    assertEquals(2, appsInA1.size());
+    assertEquals(1, appsInB1.size());
+    assertEquals(3, metrics.getAppsPending());
+
+    // now move the app1 from a1 to b1
+    scheduler.moveApplication(app1.getApplicationId(), "b1");
+
+    appsInA1 = scheduler.getAppsInQueue("a1");
+    appsInB1 = scheduler.getAppsInQueue("b1");
+    assertEquals(1, appsInA1.size());
+    assertEquals(2, appsInB1.size());
+    assertEquals(3, metrics.getAppsPending());
+
+    // now move the app2 from a1 to b1
+    scheduler.moveApplication(app2.getApplicationId(), "b1");
+
+    appsInA1 = scheduler.getAppsInQueue("a1");
+    appsInB1 = scheduler.getAppsInQueue("b1");
+    assertEquals(0, appsInA1.size());
+    assertEquals(3, appsInB1.size());
+    assertEquals(3, metrics.getAppsPending());
+
+    // now move the app3 from b1 to a1
+    scheduler.moveApplication(app3.getApplicationId(), "a1");
+
+    appsInA1 = scheduler.getAppsInQueue("a1");
+    appsInB1 = scheduler.getAppsInQueue("b1");
+    assertEquals(1, appsInA1.size());
+    assertEquals(2, appsInB1.size());
+    assertEquals(3, metrics.getAppsPending());
     rm.stop();
   }
 
