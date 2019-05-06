@@ -22,6 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.activities.DiagnosticsCollector;
 import org.apache.hadoop.yarn.api.records.ExecutionType;
 import org.apache.hadoop.yarn.api.records.ResourceRequest;
 import org.apache.hadoop.yarn.api.records.ResourceSizing;
@@ -47,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -347,7 +349,8 @@ public class SingleConstraintAppPlacementAllocator<N extends SchedulerNode>
     }
   }
 
-  private boolean checkCardinalityAndPending(SchedulerNode node) {
+  private boolean checkCardinalityAndPending(SchedulerNode node,
+      Optional<DiagnosticsCollector> dcOpt) {
     // Do we still have pending resource?
     if (schedulingRequest.getResourceSizing().getNumAllocations() <= 0) {
       return false;
@@ -357,7 +360,7 @@ public class SingleConstraintAppPlacementAllocator<N extends SchedulerNode>
     try {
       return PlacementConstraintsUtil.canSatisfyConstraints(
           appSchedulingInfo.getApplicationId(), schedulingRequest, node,
-          placementConstraintManager, allocationTagsManager);
+          placementConstraintManager, allocationTagsManager, dcOpt);
     } catch (InvalidAllocationTagsQueryException e) {
       LOG.warn("Failed to query node cardinality:", e);
       return false;
@@ -366,9 +369,9 @@ public class SingleConstraintAppPlacementAllocator<N extends SchedulerNode>
 
   @Override
   public boolean canAllocate(NodeType type, SchedulerNode node) {
+    readLock.lock();
     try {
-      readLock.lock();
-      return checkCardinalityAndPending(node);
+      return checkCardinalityAndPending(node, Optional.empty());
     } finally {
       readLock.unlock();
     }
@@ -382,6 +385,13 @@ public class SingleConstraintAppPlacementAllocator<N extends SchedulerNode>
   @Override
   public boolean precheckNode(SchedulerNode schedulerNode,
       SchedulingMode schedulingMode) {
+    return precheckNode(schedulerNode, schedulingMode, Optional.empty());
+  }
+
+  @Override
+  public boolean precheckNode(SchedulerNode schedulerNode,
+      SchedulingMode schedulingMode,
+      Optional<DiagnosticsCollector> dcOpt) {
     // We will only look at node label = nodeLabelToLookAt according to
     // schedulingMode and partition of node.
     String nodePartitionToLookAt;
@@ -394,8 +404,15 @@ public class SingleConstraintAppPlacementAllocator<N extends SchedulerNode>
     readLock.lock();
     try {
       // Check node partition as well as cardinality/pending resources.
-      return this.targetNodePartition.equals(nodePartitionToLookAt)
-          && checkCardinalityAndPending(schedulerNode);
+      boolean rst = this.targetNodePartition.equals(nodePartitionToLookAt);
+      if (!rst) {
+        if (dcOpt.isPresent()) {
+          dcOpt.get().collectPartitionDiagnostics(targetNodePartition,
+              nodePartitionToLookAt);
+        }
+        return rst;
+      }
+      return checkCardinalityAndPending(schedulerNode, dcOpt);
     } finally {
       readLock.unlock();
     }

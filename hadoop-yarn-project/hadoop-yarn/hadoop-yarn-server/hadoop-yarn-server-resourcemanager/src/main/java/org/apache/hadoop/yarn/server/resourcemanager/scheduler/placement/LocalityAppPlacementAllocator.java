@@ -30,6 +30,8 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.AppSchedulingInfo
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.NodeType;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerNode;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerApplicationAttempt;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.activities.DiagnosticsCollector;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.SchedulingMode;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.ApplicationSchedulingConfig;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.ContainerRequest;
@@ -41,6 +43,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -399,7 +402,8 @@ public class LocalityAppPlacementAllocator <N extends SchedulerNode>
 
   @Override
   public boolean precheckNode(SchedulerNode schedulerNode,
-      SchedulingMode schedulingMode) {
+      SchedulingMode schedulingMode,
+      Optional<DiagnosticsCollector> dcOpt) {
     // We will only look at node label = nodeLabelToLookAt according to
     // schedulingMode and partition of node.
     if(LOG.isDebugEnabled()) {
@@ -413,7 +417,18 @@ public class LocalityAppPlacementAllocator <N extends SchedulerNode>
       nodePartitionToLookAt = RMNodeLabelsManager.NO_LABEL;
     }
 
-    return primaryRequestedPartition.equals(nodePartitionToLookAt);
+    boolean rst = primaryRequestedPartition.equals(nodePartitionToLookAt);
+    if (!rst && dcOpt.isPresent()) {
+      dcOpt.get().collectPartitionDiagnostics(primaryRequestedPartition,
+          nodePartitionToLookAt);
+    }
+    return rst;
+  }
+
+  @Override
+  public boolean precheckNode(SchedulerNode schedulerNode,
+      SchedulingMode schedulingMode) {
+    return precheckNode(schedulerNode, schedulingMode, Optional.empty());
   }
 
   @Override
