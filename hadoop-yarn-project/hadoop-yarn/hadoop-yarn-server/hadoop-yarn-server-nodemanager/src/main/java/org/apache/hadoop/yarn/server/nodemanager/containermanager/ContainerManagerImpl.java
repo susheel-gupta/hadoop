@@ -23,6 +23,7 @@ import com.google.protobuf.ByteString;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.container.UpdateContainerTokenEvent;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.loghandler.event.LogHandlerTokenUpdatedEvent;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.scheduler.ContainerSchedulerEvent;
+import org.apache.hadoop.yarn.server.nodemanager.recovery.RecoveryIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
@@ -226,6 +227,7 @@ public class ContainerManagerImpl extends CompositeService implements
 
   // NM metrics publisher is set only if the timeline service v.2 is enabled
   private NMTimelinePublisher nmMetricsPublisher;
+  private boolean timelineServiceV2Enabled;
 
   public ContainerManagerImpl(Context context, ContainerExecutor exec,
       DeletionService deletionContext, NodeStatusUpdater nodeStatusUpdater,
@@ -262,11 +264,13 @@ public class ContainerManagerImpl extends CompositeService implements
     // initialize the metrics publisher if the timeline service v.2 is enabled
     // and the system publisher is enabled
     Configuration conf = context.getConf();
-    if (YarnConfiguration.timelineServiceV2Enabled(conf) &&
-        YarnConfiguration.systemMetricsPublisherEnabled(conf)) {
-      LOG.info("YARN system metrics publishing service is enabled");
-      nmMetricsPublisher = createNMTimelinePublisher(context);
-      context.setNMTimelinePublisher(nmMetricsPublisher);
+    if (YarnConfiguration.timelineServiceV2Enabled(conf)) {
+      if (YarnConfiguration.systemMetricsPublisherEnabled(conf)) {
+        LOG.info("YARN system metrics publishing service is enabled");
+        nmMetricsPublisher = createNMTimelinePublisher(context);
+        context.setNMTimelinePublisher(nmMetricsPublisher);
+      }
+      this.timelineServiceV2Enabled = true;
     }
     this.containersMonitor = createContainersMonitor(exec);
     addService(this.containersMonitor);
@@ -356,19 +360,26 @@ public class ContainerManagerImpl extends CompositeService implements
           stateStore.loadLocalizationState());
 
       RecoveredApplicationsState appsState = stateStore.loadApplicationsState();
-      for (ContainerManagerApplicationProto proto :
-           appsState.getApplications()) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Recovering application with state: " + proto.toString());
+      try (RecoveryIterator<ContainerManagerApplicationProto> rasIterator =
+               appsState.getIterator()) {
+        while (rasIterator.hasNext()) {
+          ContainerManagerApplicationProto proto = rasIterator.next();
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Recovering application with state: " + proto.toString());
+          }
+          recoverApplication(proto);
         }
-        recoverApplication(proto);
       }
 
-      for (RecoveredContainerState rcs : stateStore.loadContainersState()) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Recovering container with state: " + rcs);
+      try (RecoveryIterator<RecoveredContainerState> rcsIterator =
+               stateStore.getContainerStateIterator()) {
+        while (rcsIterator.hasNext()) {
+          RecoveredContainerState rcs = rcsIterator.next();
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Recovering container with state: " + rcs);
+          }
+          recoverContainer(rcs);
         }
-        recoverContainer(rcs);
       }
 
       // Recovery AMRMProxy state after apps and containers are recovered
@@ -497,7 +508,7 @@ public class ContainerManagerImpl extends CompositeService implements
     Container container = new ContainerImpl(getConfig(), dispatcher,
         launchContext, credentials, metrics, token, context, rcs);
     context.getContainers().put(token.getContainerID(), container);
-    containerScheduler.recoverActiveContainer(container, rcs.getStatus());
+    containerScheduler.recoverActiveContainer(container, rcs);
     app.handle(new ApplicationContainerInitEvent(container));
   }
 
@@ -611,7 +622,7 @@ public class ContainerManagerImpl extends CompositeService implements
     if (conf.getBoolean(
         CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION, 
         false)) {
-      refreshServiceAcls(conf, new NMPolicyProvider());
+      refreshServiceAcls(conf, NMPolicyProvider.getInstance());
     }
     
     String bindHost = conf.get(YarnConfiguration.NM_BIND_HOST);
@@ -1176,7 +1187,7 @@ public class ContainerManagerImpl extends CompositeService implements
   private FlowContext getFlowContext(ContainerLaunchContext launchContext,
       ApplicationId applicationID) {
     FlowContext flowContext = null;
-    if (YarnConfiguration.timelineServiceV2Enabled(getConfig())) {
+    if (timelineServiceV2Enabled) {
       String flowName = launchContext.getEnvironment()
           .get(TimelineUtils.FLOW_NAME_TAG_PREFIX);
       String flowVersion = launchContext.getEnvironment()

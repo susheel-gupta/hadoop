@@ -281,11 +281,10 @@ public class ApiServiceClient extends AppAdminClient {
   private Builder getApiClient(String requestPath)
       throws IOException {
     Client client = Client.create(getClientConfig());
-    Configuration conf = getConfig();
     client.setChunkedEncodingSize(null);
     Builder builder = client
         .resource(requestPath).type(MediaType.APPLICATION_JSON);
-    if (conf.get("hadoop.http.authentication.type").equals("kerberos")) {
+    if (UserGroupInformation.isSecurityEnabled()) {
       try {
         URI url = new URI(requestPath);
         String challenge = generateToken(url.getHost());
@@ -741,6 +740,34 @@ public class ApiServiceClient extends AppAdminClient {
       result = processResponse(response);
     } catch (Exception e) {
       LOG.error("Failed to cancel upgrade: ", e);
+      result = EXIT_EXCEPTION_THROWN;
+    }
+    return result;
+  }
+
+  @Override
+  public int actionDecommissionInstances(String appName, List<String>
+      componentInstances) throws IOException, YarnException {
+    int result = EXIT_SUCCESS;
+    try {
+      Service service = new Service();
+      service.setName(appName);
+      for (String instance : componentInstances) {
+        String componentName = ServiceApiUtil.parseComponentName(instance);
+        Component component = service.getComponent(componentName);
+        if (component == null) {
+          component = new Component();
+          component.setName(componentName);
+          service.addComponent(component);
+        }
+        component.addDecommissionedInstance(instance);
+      }
+      String buffer = jsonSerDeser.toJson(service);
+      ClientResponse response = getApiClient(getServicePath(appName))
+          .put(ClientResponse.class, buffer);
+      result = processResponse(response);
+    } catch (Exception e) {
+      LOG.error("Fail to decommission instance: ", e);
       result = EXIT_EXCEPTION_THROWN;
     }
     return result;

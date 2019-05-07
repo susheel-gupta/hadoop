@@ -586,6 +586,15 @@ public class MockRM extends ResourceManager {
           true, false, false, null, 0, null, true, null);
   }
 
+  public RMApp submitApp(Resource resource, String name, String user,
+      Map<ApplicationAccessType, String> acls, boolean unManaged, String queue)
+      throws Exception {
+    return submitApp(resource, name, user, acls, unManaged, queue,
+        super.getConfig().getInt(YarnConfiguration.RM_AM_MAX_ATTEMPTS,
+                YarnConfiguration.DEFAULT_RM_AM_MAX_ATTEMPTS), null, null, true,
+        false, false, null, 0, null, true, null);
+  }
+
   public RMApp submitApp(int masterMemory, String name, String user,
       Map<ApplicationAccessType, String> acls, String queue, 
       boolean waitForAccepted) throws Exception {
@@ -700,6 +709,17 @@ public class MockRM extends ResourceManager {
         amResourceRequests.get(0).getNodeLabelExpression(), null, null);
   }
 
+  public RMApp submitApp(List<ResourceRequest> amResourceRequests,
+      String appNodeLabel) throws Exception {
+    return submitApp(amResourceRequests, "app1", "user", null, false, null,
+        super.getConfig().getInt(YarnConfiguration.RM_AM_MAX_ATTEMPTS,
+            YarnConfiguration.DEFAULT_RM_AM_MAX_ATTEMPTS), null, null, true,
+        false, false, null, 0, null, true,
+        amResourceRequests.get(0).getPriority(),
+        amResourceRequests.get(0).getNodeLabelExpression(), null, null, null,
+        appNodeLabel);
+  }
+
   public RMApp submitApp(Resource capability, String name, String user,
       Map<ApplicationAccessType, String> acls, boolean unmanaged, String queue,
       int maxAppAttempts, Credentials ts, String appType,
@@ -732,7 +752,39 @@ public class MockRM extends ResourceManager {
       LogAggregationContext logAggregationContext,
       boolean cancelTokensWhenComplete, Priority priority, String amLabel,
       Map<ApplicationTimeoutType, Long> applicationTimeouts,
-      ByteBuffer tokensConf)
+      ByteBuffer tokensConf) throws Exception {
+    return submitApp(amResourceRequests, name, user, acls, unmanaged, queue,
+        maxAppAttempts, ts, appType, waitForAccepted, keepContainers,
+        isAppIdProvided, applicationId, attemptFailuresValidityInterval,
+        logAggregationContext, cancelTokensWhenComplete, priority, amLabel,
+        applicationTimeouts, tokensConf, null);
+  }
+
+  public RMApp submitApp(List<ResourceRequest> amResourceRequests, String name,
+      String user, Map<ApplicationAccessType, String> acls, boolean unmanaged,
+      String queue, int maxAppAttempts, Credentials ts, String appType,
+      boolean waitForAccepted, boolean keepContainers, boolean isAppIdProvided,
+      ApplicationId applicationId, long attemptFailuresValidityInterval,
+      LogAggregationContext logAggregationContext,
+      boolean cancelTokensWhenComplete, Priority priority, String amLabel,
+      Map<ApplicationTimeoutType, Long> applicationTimeouts,
+      ByteBuffer tokensConf, Set<String> applicationTags) throws Exception {
+    return submitApp(amResourceRequests, name, user, acls, unmanaged, queue,
+        maxAppAttempts, ts, appType, waitForAccepted, keepContainers,
+        isAppIdProvided, applicationId, attemptFailuresValidityInterval,
+        logAggregationContext, cancelTokensWhenComplete, priority, amLabel,
+        applicationTimeouts, tokensConf, applicationTags, null);
+  }
+
+  public RMApp submitApp(List<ResourceRequest> amResourceRequests, String name,
+      String user, Map<ApplicationAccessType, String> acls, boolean unmanaged,
+      String queue, int maxAppAttempts, Credentials ts, String appType,
+      boolean waitForAccepted, boolean keepContainers, boolean isAppIdProvided,
+      ApplicationId applicationId, long attemptFailuresValidityInterval,
+      LogAggregationContext logAggregationContext,
+      boolean cancelTokensWhenComplete, Priority priority, String amLabel,
+      Map<ApplicationTimeoutType, Long> applicationTimeouts,
+      ByteBuffer tokensConf, Set<String> applicationTags, String appNodeLabel)
       throws Exception {
     ApplicationId appId = isAppIdProvided ? applicationId : null;
     ApplicationClientProtocol client = getClientRMService();
@@ -760,6 +812,9 @@ public class MockRM extends ResourceManager {
     }
     if (priority != null) {
       sub.setPriority(priority);
+    }
+    if (appNodeLabel != null) {
+      sub.setNodeLabelExpression(appNodeLabel);
     }
     sub.setApplicationType(appType);
     ContainerLaunchContext clc = Records

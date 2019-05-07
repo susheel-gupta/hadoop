@@ -69,7 +69,7 @@ NodeManager hosts. A simple way to load an image is by issuing a Docker pull
 request. For example:
 
 ```
-    sudo docker pull images/hadoop-docker:latest
+    sudo docker pull library/openjdk:8
 ```
 
 The following properties should be set in yarn-site.xml:
@@ -257,6 +257,7 @@ are allowed. It contains the following properties:
 | `docker.trusted.registries` | Comma separated list of trusted docker registries for running trusted privileged docker containers.  By default, no registries are defined. |
 | `docker.inspect.max.retries` | Integer value to check docker container readiness.  Each inspection is set with 3 seconds delay.  Default value of 10 will wait 30 seconds for docker container to become ready before marked as container failed. |
 | `docker.no-new-privileges.enabled` | Enable/disable the no-new-privileges flag for docker run. Set to "true" to enable, disabled by default. |
+| `docker.allowed.runtimes` | Comma seperated runtimes that containers are allowed to use. By default no runtimes are allowed to be added.|
 
 Please note that if you wish to run Docker containers that require access to the YARN local directories, you must add them to the docker.allowed.rw-mounts list.
 
@@ -347,9 +348,11 @@ environment variables in the application's environment:
 | `YARN_CONTAINER_RUNTIME_DOCKER_IMAGE` | Names which image will be used to launch the Docker container. Any image name that could be passed to the Docker client's run command may be used. The image name may include a repo prefix. |
 | `YARN_CONTAINER_RUNTIME_DOCKER_RUN_OVERRIDE_DISABLE` | Controls whether the Docker container's default command is overridden.  When set to true, the Docker container's command will be "bash _path\_to\_launch\_script_". When unset or set to false, the Docker container's default command is used. |
 | `YARN_CONTAINER_RUNTIME_DOCKER_CONTAINER_NETWORK` | Sets the network type to be used by the Docker container. It must be a valid value as determined by the yarn.nodemanager.runtime.linux.docker.allowed-container-networks property. |
+| `YARN_CONTAINER_RUNTIME_DOCKER_PORTS_MAPPING` | Allows a user to specify ports mapping for the bridge network Docker container. The value of the environment variable should be a comma-separated list of ports mapping. It's the same to "-p" option for the Docker run command. If the value is empty, "-P" will be added. |
 | `YARN_CONTAINER_RUNTIME_DOCKER_CONTAINER_PID_NAMESPACE` | Controls which PID namespace will be used by the Docker container. By default, each Docker container has its own PID namespace. To share the namespace of the host, the yarn.nodemanager.runtime.linux.docker.host-pid-namespace.allowed property must be set to true. If the host PID namespace is allowed and this environment variable is set to host, the Docker container will share the host's PID namespace. No other value is allowed. |
 | `YARN_CONTAINER_RUNTIME_DOCKER_RUN_PRIVILEGED_CONTAINER` | Controls whether the Docker container is a privileged container. In order to use privileged containers, the yarn.nodemanager.runtime.linux.docker.privileged-containers.allowed property must be set to true, and the application owner must appear in the value of the yarn.nodemanager.runtime.linux.docker.privileged-containers.acl property. If this environment variable is set to true, a privileged Docker container will be used if allowed. No other value is allowed, so the environment variable should be left unset rather than setting it to false. |
-| `YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS` | Adds additional volume mounts to the Docker container. The value of the environment variable should be a comma-separated list of mounts. All such mounts must be given as "source:dest:mode" and the mode must be "ro" (read-only) or "rw" (read-write) to specify the type of access being requested. The requested mounts will be validated by container-executor based on the values set in container-executor.cfg for docker.allowed.ro-mounts and docker.allowed.rw-mounts. |
+| `YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS` | Adds additional volume mounts to the Docker container. The value of the environment variable should be a comma-separated list of mounts. All such mounts must be given as `source:dest[:mode]` and the mode must be "ro" (read-only) or "rw" (read-write) to specify the type of access being requested. If neither is specified, read-write will be  assumed. The mode may include a bind propagation option. In that case, the mode should either be of the form `[option]`, `rw+[option]`, or `ro+[option]`. Valid bind propagation options are shared, rshared, slave, rslave, private, and rprivate. The requested mounts will be validated by container-executor based on the values set in container-executor.cfg for `docker.allowed.ro-mounts` and `docker.allowed.rw-mounts`. |
+| `YARN_CONTAINER_RUNTIME_DOCKER_TMPFS_MOUNTS` | Adds additional tmpfs mounts to the Docker container. The value of the environment variable should be a comma-separated list of absolute mount points within the container. |
 | `YARN_CONTAINER_RUNTIME_DOCKER_DELAYED_REMOVAL` | Allows a user to request delayed deletion of the Docker container on a per container basis. If true, Docker containers will not be removed until the duration defined by yarn.nodemanager.delete.debug-delay-sec has elapsed. Administrators can disable this feature through the yarn-site property yarn.nodemanager.runtime.linux.docker.delayed-removal.allowed. This feature is disabled by default. When this feature is disabled or set to false, the container will be removed as soon as it exits. |
 
 The first two are required. The remainder can be set as needed. While
@@ -392,10 +395,13 @@ supplied by the user must either match or be a child of the specified
 directory.
 
 The user supplied mount list is defined as a comma separated list in the form
-*source*:*destination*:*mode*. The source is the file or directory on the host.
-The destination is the path within the contatiner where the source will be bind
-mounted. The mode defines the mode the user expects for the mount, which can be
-ro (read-only) or rw (read-write).
+*source*:*destination* or *source*:*destination*:*mode*. The source is the file
+or directory on the host. The destination is the path within the container
+where the source will be bind mounted. The mode defines the mode the user
+expects for the mount, which can be ro (read-only) or rw (read-write). If not
+specified, rw is assumed. The mode may also include a bind propagation option
+ (shared, rshared, slave, rslave, private, or rprivate). In that case, the
+ mode should be of the form *option*, rw+*option*, or ro+*option*.
 
 The following example outlines how to use this feature to mount the commonly
 needed /sys/fs/cgroup directory into the container running on YARN.
@@ -661,32 +667,64 @@ repo.
 Example: MapReduce
 ------------------
 
+This example assumes that Hadoop is installed to `/usr/local/hadoop`.
+
+Additionally, `docker.allowed.ro-mounts` in `container-executor.cfg` has been
+updated to include the directories: `/usr/local/hadoop,/etc/passwd,/etc/group`.
+
 To submit the pi job to run in Docker containers, run the following commands:
 
 ```
-    vars="YARN_CONTAINER_RUNTIME_TYPE=docker,YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=hadoop-docker"
-    hadoop jar hadoop-examples.jar pi -Dyarn.app.mapreduce.am.env=$vars \
-        -Dmapreduce.map.env=$vars -Dmapreduce.reduce.env=$vars 10 100
+  HADOOP_HOME=/usr/local/hadoop
+  YARN_EXAMPLES_JAR=$HADOOP_HOME/share/hadoop/mapreduce/hadoop-mapreduce-examples-*.jar
+  MOUNTS="$HADOOP_HOME:$HADOOP_HOME:ro,/etc/passwd:/etc/passwd:ro,/etc/group:/etc/group:ro"
+  IMAGE_ID="library/openjdk:8"
+
+  export YARN_CONTAINER_RUNTIME_TYPE=docker
+  export YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=$IMAGE_ID
+  export YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS=$MOUNTS
+
+  yarn jar $YARN_EXAMPLES_JAR pi \
+    -Dmapreduce.map.env.YARN_CONTAINER_RUNTIME_TYPE=docker \
+    -Dmapreduce.map.env.YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS=$MOUNTS \
+    -Dmapreduce.map.env.YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=$IMAGE_ID \
+    -Dmapreduce.reduce.env.YARN_CONTAINER_RUNTIME_TYPE=docker \
+    -Dmapreduce.reduce.env.YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS=$MOUNTS \
+    -Dmapreduce.reduce.env.YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=$IMAGE_ID \
+    1 40000
 ```
 
 Note that the application master, map tasks, and reduce tasks are configured
-independently. In this example, we are using the hadoop-docker image for all
-three.
+independently. In this example, we are using the `openjdk:8` image for all three.
 
 Example: Spark
 --------------
 
+This example assumes that Hadoop is installed to `/usr/local/hadoop` and Spark
+is installed to `/usr/local/spark`.
+
+Additionally, `docker.allowed.ro-mounts` in `container-executor.cfg` has been
+updated to include the directories: `/usr/local/hadoop,/etc/passwd,/etc/group`.
+
 To run a Spark shell in Docker containers, run the following command:
 
 ```
-    spark-shell --master yarn --conf spark.executorEnv.YARN_CONTAINER_RUNTIME_TYPE=docker \
-        --conf spark.executorEnv.YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=hadoop-docker \
-        --conf spark.yarn.AppMasterEnv.YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=hadoop-docker \
-        --conf spark.yarn.AppMasterEnv.YARN_CONTAINER_RUNTIME_TYPE=docker
+  HADOOP_HOME=/usr/local/hadoop
+  SPARK_HOME=/usr/local/spark
+  MOUNTS="$HADOOP_HOME:$HADOOP_HOME:ro,/etc/passwd:/etc/passwd:ro,/etc/group:/etc/group:ro"
+  IMAGE_ID="library/openjdk:8"
+
+  $SPARK_HOME/bin/spark-shell --master yarn \
+    --conf spark.yarn.appMasterEnv.YARN_CONTAINER_RUNTIME_TYPE=docker \
+    --conf spark.yarn.appMasterEnv.YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=$IMAGE_ID \
+    --conf spark.yarn.appMasterEnv.YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS=$MOUNTS \
+    --conf spark.executorEnv.YARN_CONTAINER_RUNTIME_TYPE=docker \
+    --conf spark.executorEnv.YARN_CONTAINER_RUNTIME_DOCKER_IMAGE=$IMAGE_ID \
+    --conf spark.executorEnv.YARN_CONTAINER_RUNTIME_DOCKER_MOUNTS=$MOUNTS
 ```
 
 Note that the application master and executors are configured
-independently. In this example, we are using the hadoop-docker image for both.
+independently. In this example, we are using the `openjdk:8` image for both.
 
 Docker Container ENTRYPOINT Support
 ------------------------------------

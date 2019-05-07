@@ -189,6 +189,8 @@ public class Client {
   private ExecutionType containerType = ExecutionType.GUARANTEED;
   // Whether to auto promote opportunistic containers
   private boolean autoPromoteContainers = false;
+  // Whether to enforce execution type of containers
+  private boolean enforceExecType = false;
 
   // Placement specification
   private String placementSpec = "";
@@ -330,6 +332,8 @@ public class Client {
     opts.addOption("promote_opportunistic_after_start", false,
         "Flag to indicate whether to automatically promote opportunistic"
             + " containers to guaranteed.");
+    opts.addOption("enforce_execution_type", false,
+        "Flag to indicate whether to enforce execution type of containers");
     opts.addOption("log_properties", true, "log4j.properties file");
     opts.addOption("keep_containers_across_application_attempts", false,
         "Flag to indicate whether to keep containers across application "
@@ -522,6 +526,9 @@ public class Client {
     if (cliParser.hasOption("promote_opportunistic_after_start")) {
       autoPromoteContainers = true;
     }
+    if (cliParser.hasOption("enforce_execution_type")) {
+      enforceExecType = true;
+    }
     containerMemory =
         Integer.parseInt(cliParser.getOptionValue("container_memory", "-1"));
     containerVirtualCores =
@@ -648,6 +655,12 @@ public class Client {
     }
 
     QueueInfo queueInfo = yarnClient.getQueueInfo(this.amQueue);
+    if (queueInfo == null) {
+      throw new IllegalArgumentException(String
+          .format("Queue %s not present in scheduler configuration.",
+              this.amQueue));
+    }
+
     LOG.info("Queue info"
         + ", queueName=" + queueInfo.getQueueName()
         + ", queueCurrentCapacity=" + queueInfo.getCurrentCapacity()
@@ -868,6 +881,9 @@ public class Client {
     if (autoPromoteContainers) {
       vargs.add("--promote_opportunistic_after_start");
     }
+    if (enforceExecType) {
+      vargs.add("--enforce_execution_type");
+    }
     if (containerMemory > 0) {
       vargs.add("--container_memory " + String.valueOf(containerMemory));
     }
@@ -1053,14 +1069,17 @@ public class Client {
             + " YarnState=" + state.toString() + ", DSFinalStatus=" + dsStatus.toString()
             + ". Breaking monitoring loop");
         return false;
-      }			
-
-      if (System.currentTimeMillis() > (clientStartTime + clientTimeout)) {
-        LOG.info("Reached client specified timeout for application. Killing application");
-        forceKillApplication(appId);
-        return false;				
       }
-    }			
+
+      // The value equal or less than 0 means no timeout
+      if (clientTimeout > 0
+          && System.currentTimeMillis() > (clientStartTime + clientTimeout)) {
+        LOG.info("Reached client specified timeout for application. " +
+            "Killing application");
+        forceKillApplication(appId);
+        return false;
+      }
+    }
 
   }
 

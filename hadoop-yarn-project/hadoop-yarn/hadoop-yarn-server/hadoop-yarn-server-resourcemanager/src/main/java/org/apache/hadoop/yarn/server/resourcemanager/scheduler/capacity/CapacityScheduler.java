@@ -345,7 +345,7 @@ public class CapacityScheduler extends
         throw new YarnRuntimeException("RM uses DefaultResourceCalculator which"
             + " used only memory as resource-type but invalid resource-types"
             + " specified " + ResourceUtils.getResourceTypes() + ". Use"
-            + " DomainantResourceCalculator instead to make effective use of"
+            + " DominantResourceCalculator instead to make effective use of"
             + " these resource-types");
       }
       this.usePortForNodeName = this.conf.getUsePortForNodeName();
@@ -1575,8 +1575,8 @@ public class CapacityScheduler extends
             .add(node.getUnallocatedResource(), node.getTotalKillableResources()),
         minimumAllocation) <= 0) {
       if (LOG.isDebugEnabled()) {
-        LOG.debug("This node or this node partition doesn't have available or"
-            + "killable resource");
+        LOG.debug("This node or node partition doesn't have available or" +
+            " preemptible resource");
       }
       return null;
     }
@@ -2087,8 +2087,8 @@ public class CapacityScheduler extends
         super.completedContainer(killableContainer, SchedulerUtils
             .createPreemptedContainerStatus(killableContainer.getContainerId(),
                 SchedulerUtils.PREEMPTED_CONTAINER), RMContainerEventType.KILL);
-      } else{
-        FiCaSchedulerNode node = (FiCaSchedulerNode) getSchedulerNode(
+      } else {
+        FiCaSchedulerNode node = getSchedulerNode(
             killableContainer.getAllocatedNode());
 
         FiCaSchedulerApp application = getCurrentAttemptForContainer(
@@ -2120,7 +2120,7 @@ public class CapacityScheduler extends
                 + nonKillableContainer.toString());
       }
 
-      FiCaSchedulerNode node = (FiCaSchedulerNode) getSchedulerNode(
+      FiCaSchedulerNode node = getSchedulerNode(
           nonKillableContainer.getAllocatedNode());
 
       FiCaSchedulerApp application = getCurrentAttemptForContainer(
@@ -2476,7 +2476,17 @@ public class CapacityScheduler extends
       LOG.error("queue " + queueName + " is not an leaf queue");
       return getMaximumResourceCapability();
     }
-    return ((LeafQueue)queue).getMaximumAllocation();
+
+    // queue.getMaxAllocation returns *configured* maximum allocation.
+    // getMaximumResourceCapability() returns maximum allocation considers
+    // per-node maximum resources. So return (component-wise) min of the two.
+
+    Resource queueMaxAllocation = ((LeafQueue)queue).getMaximumAllocation();
+    Resource clusterMaxAllocationConsiderNodeMax =
+        getMaximumResourceCapability();
+
+    return Resources.componentwiseMin(queueMaxAllocation,
+        clusterMaxAllocationConsiderNodeMax);
   }
 
   private String handleMoveToPlanQueue(String targetQueueName) {

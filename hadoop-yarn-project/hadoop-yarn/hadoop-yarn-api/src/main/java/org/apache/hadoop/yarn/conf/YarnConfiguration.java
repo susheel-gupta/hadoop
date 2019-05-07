@@ -100,6 +100,7 @@ public class YarnConfiguration extends Configuration {
     addDeprecatedKeys();
     Configuration.addDefaultResource(YARN_DEFAULT_CONFIGURATION_FILE);
     Configuration.addDefaultResource(YARN_SITE_CONFIGURATION_FILE);
+    Configuration.addDefaultResource(RESOURCE_TYPES_CONFIGURATION_FILE);
   }
 
   private static void addDeprecatedKeys() {
@@ -1582,9 +1583,6 @@ public class YarnConfiguration extends Configuration {
   public static final String NM_GPU_PATH_TO_EXEC =
       NM_GPU_RESOURCE_PREFIX + "path-to-discovery-executables";
 
-  @Private
-  public static final String DEFAULT_NM_GPU_PATH_TO_EXEC = "";
-
   /**
    * Settings to control which implementation of docker plugin for GPU will be
    * used.
@@ -1597,6 +1595,9 @@ public class YarnConfiguration extends Configuration {
 
   @Private
   public static final String NVIDIA_DOCKER_V1 = "nvidia-docker-v1";
+
+  @Private
+  public static final String NVIDIA_DOCKER_V2 = "nvidia-docker-v2";
 
   @Private
   public static final String DEFAULT_NM_GPU_DOCKER_PLUGIN_IMPL =
@@ -1828,7 +1829,7 @@ public class YarnConfiguration extends Configuration {
 
   /**
    * Comma separated list of runtimes that are allowed when using
-   * LinuxContainerExecutor. The allowed values are:
+   * LinuxContainerExecutor. The standard values are:
    * <ul>
    *   <li>default</li>
    *   <li>docker</li>
@@ -1837,6 +1838,9 @@ public class YarnConfiguration extends Configuration {
    */
   public static final String LINUX_CONTAINER_RUNTIME_ALLOWED_RUNTIMES =
       LINUX_CONTAINER_RUNTIME_PREFIX + "allowed-runtimes";
+
+  public static final String LINUX_CONTAINER_RUNTIME_CLASS_FMT =
+      LINUX_CONTAINER_RUNTIME_PREFIX + "%s.class";
 
   /** The default list of allowed runtimes when using LinuxContainerExecutor. */
   public static final String[] DEFAULT_LINUX_CONTAINER_RUNTIME_ALLOWED_RUNTIMES
@@ -1960,6 +1964,11 @@ public class YarnConfiguration extends Configuration {
    *  Docker containers that use DockerContainerRuntime. */
   public static final String NM_DOCKER_DEFAULT_RW_MOUNTS =
       DOCKER_CONTAINER_RUNTIME_PREFIX + "default-rw-mounts";
+
+  /** The default list of tmpfs mounts to be mounted into all
+   *  Docker containers that use DockerContainerRuntime. */
+  public static final String NM_DOCKER_DEFAULT_TMPFS_MOUNTS =
+      DOCKER_CONTAINER_RUNTIME_PREFIX + "default-tmpfs-mounts";
 
   /** The mode in which the Java Container Sandbox should run detailed by
    *  the JavaSandboxLinuxContainerRuntime. */
@@ -2204,6 +2213,9 @@ public class YarnConfiguration extends Configuration {
   public static final String 
   YARN_SECURITY_SERVICE_AUTHORIZATION_APPLICATIONMASTER_PROTOCOL =
       "security.applicationmaster.protocol.acl";
+  public static final String
+      YARN_SECURITY_SERVICE_AUTHORIZATION_DISTRIBUTEDSCHEDULING_PROTOCOL =
+      "security.distributedscheduling.protocol.acl";
 
   public static final String 
   YARN_SECURITY_SERVICE_AUTHORIZATION_CONTAINER_MANAGEMENT_PROTOCOL =
@@ -2219,6 +2231,10 @@ public class YarnConfiguration extends Configuration {
   public static final String
       YARN_SECURITY_SERVICE_AUTHORIZATION_COLLECTOR_NODEMANAGER_PROTOCOL =
       "security.collector-nodemanager.protocol.acl";
+
+  public static final String
+      YARN_SECURITY_SERVICE_AUTHORIZATION_APPLICATIONMASTER_NODEMANAGER_PROTOCOL =
+      "security.applicationmaster-nodemanager.applicationmaster.protocol.acl";
 
   /** No. of milliseconds to wait between sending a SIGTERM and SIGKILL
    * to a running container */
