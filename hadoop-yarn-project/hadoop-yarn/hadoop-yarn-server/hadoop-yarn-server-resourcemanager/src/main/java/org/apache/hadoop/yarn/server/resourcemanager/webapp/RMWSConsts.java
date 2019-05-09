@@ -257,6 +257,8 @@ public final class RMWSConsts {
   public static final String NAME = "name";
   public static final String SIGNAL = "signal";
   public static final String COMMAND = "command";
+  public static final String REQUEST_PRIORITIES = "requestPriorities";
+  public static final String ALLOCATION_REQUEST_IDS = "allocationRequestIds";
 
   private RMWSConsts() {
     // not called
