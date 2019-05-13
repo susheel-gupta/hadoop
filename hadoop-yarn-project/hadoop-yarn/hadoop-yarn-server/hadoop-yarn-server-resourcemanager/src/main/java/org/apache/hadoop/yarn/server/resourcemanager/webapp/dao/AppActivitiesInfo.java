@@ -20,6 +20,7 @@ package org.apache.hadoop.yarn.server.resourcemanager.webapp.dao;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.activities.AppAllocation;
 import org.apache.hadoop.yarn.util.SystemClock;
@@ -75,5 +76,10 @@ public class AppActivitiesInfo {
         this.allocations.add(appAllocationInfo);
       }
     }
+  }
+
+  @VisibleForTesting
+  public List<AppAllocationInfo> getAllocations() {
+    return allocations;
   }
 }
