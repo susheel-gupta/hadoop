@@ -3796,4 +3796,14 @@
     <value>/usr/bin/numactl</value>
   </property>
 
+  <property>
+    <description>
+      Comma separated extra class path parameters for yarn services AM.
+      These path elements will be appended to the end of the YARN service AM
+      classpath.
+    </description>
+    <name>yarn.service.classpath</name>
+    <value></value>
+  </property>
+
 </configuration>
