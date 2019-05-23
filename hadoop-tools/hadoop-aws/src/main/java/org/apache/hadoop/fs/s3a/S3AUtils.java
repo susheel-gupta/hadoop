@@ -49,7 +49,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.s3a.auth.IAMInstanceCredentialsProvider;
-import org.apache.hadoop.fs.s3a.auth.NoAuthWithAWSException;
 import org.apache.hadoop.fs.s3native.S3xLoginHelper;
 import org.apache.hadoop.net.ConnectTimeoutException;
 import org.apache.hadoop.security.ProviderUtils;
@@ -196,7 +195,7 @@ public final class S3AUtils {
         // call considered an sign of connectivity failure
         return (EOFException)new EOFException(message).initCause(exception);
       }
-      if (exception instanceof NoAuthWithAWSException) {
+      if (exception instanceof CredentialInitializationException) {
         // the exception raised by AWSCredentialProvider list if the
         // credentials were not accepted.
         return (AccessDeniedException)new AccessDeniedException(path, null,
