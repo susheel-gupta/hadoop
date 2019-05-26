@@ -448,10 +448,12 @@ public class RouterWebServices implements RMWebServiceProtocol {
       MediaType.APPLICATION_XML + "; " + JettyUtils.UTF_8 })
   @Override
   public ActivitiesInfo getActivities(@Context HttpServletRequest hsr,
-      @QueryParam(RMWSConsts.NODEID) String nodeId) {
+      @QueryParam(RMWSConsts.NODEID) String nodeId,
+      @QueryParam(RMWSConsts.GROUP_BY) String groupBy) {
     init();
     RequestInterceptorChainWrapper pipeline = getInterceptorChain(hsr);
-    return pipeline.getRootInterceptor().getActivities(hsr, nodeId);
+    return pipeline.getRootInterceptor()
+        .getActivities(hsr, nodeId, groupBy);
   }
 
   @GET

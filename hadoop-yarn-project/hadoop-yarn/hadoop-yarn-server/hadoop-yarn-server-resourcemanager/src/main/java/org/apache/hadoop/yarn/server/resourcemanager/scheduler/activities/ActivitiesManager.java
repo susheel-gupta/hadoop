@@ -26,6 +26,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.util.resource.ResourceCalculator;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.yarn.server.resourcemanager.webapp.RMWSConsts;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.service.AbstractService;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -60,7 +61,7 @@ public class ActivitiesManager extends AbstractService {
   // An empty node ID, we use this variable as a placeholder
   // in the activity records when recording multiple nodes assignments.
   public static final NodeId EMPTY_NODE_ID = NodeId.newInstance("", 0);
-  public static final String DIAGNOSTICS_DETAILS_SEPARATOR = "\n";
+  public static final char DIAGNOSTICS_DETAILS_SEPARATOR = '\n';
   public static final String EMPTY_DIAGNOSTICS = "";
   private ThreadLocal<Map<NodeId, List<NodeAllocation>>>
       recordingNodesAllocation;
@@ -210,7 +211,7 @@ public class ActivitiesManager extends AbstractService {
     } else {
       allocations = completedNodeAllocations.get(NodeId.fromString(nodeId));
     }
-    return new ActivitiesInfo(allocations, nodeId);
+    return new ActivitiesInfo(allocations, nodeId, groupBy);
   }
 
   public void recordNextNodeUpdateActivities(String nodeId) {

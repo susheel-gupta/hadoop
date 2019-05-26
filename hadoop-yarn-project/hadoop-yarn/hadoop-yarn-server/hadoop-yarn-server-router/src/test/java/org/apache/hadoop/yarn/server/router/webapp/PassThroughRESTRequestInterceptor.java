@@ -168,8 +168,9 @@ public class PassThroughRESTRequestInterceptor
   }
 
   @Override
-  public ActivitiesInfo getActivities(HttpServletRequest hsr, String nodeId) {
-    return getNextInterceptor().getActivities(hsr, nodeId);
+  public ActivitiesInfo getActivities(HttpServletRequest hsr, String nodeId,
+      String groupBy) {
+    return getNextInterceptor().getActivities(hsr, nodeId, groupBy);
   }
 
   @Override

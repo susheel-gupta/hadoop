@@ -21,8 +21,10 @@ package org.apache.hadoop.yarn.server.resourcemanager.webapp.dao;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import com.google.common.base.Strings;
+
 import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.activities.NodeAllocation;
+import org.apache.hadoop.yarn.server.resourcemanager.webapp.RMWSConsts;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -52,7 +54,8 @@ public class ActivitiesInfo {
     this.nodeId = nodeId;
   }
 
-  public ActivitiesInfo(List<NodeAllocation> nodeAllocations, String nodeId) {
+  public ActivitiesInfo(List<NodeAllocation> nodeAllocations, String nodeId,
+      RMWSConsts.ActivitiesGroupBy groupBy) {
     this.nodeId = nodeId;
     this.allocations = new ArrayList<>();
 
@@ -77,7 +80,7 @@ public class ActivitiesInfo {
         for (int i = 0; i < nodeAllocations.size(); i++) {
           NodeAllocation nodeAllocation = nodeAllocations.get(i);
           NodeAllocationInfo allocationInfo = new NodeAllocationInfo(
-              nodeAllocation);
+              nodeAllocation, groupBy);
           this.allocations.add(allocationInfo);
         }
       }

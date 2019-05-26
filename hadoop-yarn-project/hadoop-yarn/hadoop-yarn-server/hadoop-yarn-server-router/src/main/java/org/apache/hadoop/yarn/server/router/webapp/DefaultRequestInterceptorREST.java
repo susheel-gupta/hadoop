@@ -184,7 +184,8 @@ public class DefaultRequestInterceptorREST
   }
 
   @Override
-  public ActivitiesInfo getActivities(HttpServletRequest hsr, String nodeId) {
+  public ActivitiesInfo getActivities(HttpServletRequest hsr, String nodeId,
+      String groupBy) {
     // nodeId is specified inside hsr
     return RouterWebServiceUtil.genericForward(webAppAddress, hsr,
         ActivitiesInfo.class, HTTPMethods.GET,

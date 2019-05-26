@@ -254,13 +254,14 @@ public final class RMWSConsts {
   public static final String DESELECTS = "deSelects";
   public static final String CONTAINERS = "containers";
   public static final String QUEUE_ACL_TYPE = "queue-acl-type";
-  public static final String NAME = "name";
-  public static final String SIGNAL = "signal";
-  public static final String COMMAND = "command";
   public static final String REQUEST_PRIORITIES = "requestPriorities";
   public static final String ALLOCATION_REQUEST_IDS = "allocationRequestIds";
+  public static final String GROUP_BY = "groupBy";
+  public static final String SIGNAL = "signal";
+  public static final String COMMAND = "command";
   public static final String ACTIONS = "actions";
   public static final String SUMMARIZE = "summarize";
+  public static final String NAME = "name";
 
   private RMWSConsts() {
     // not called

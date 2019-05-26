@@ -676,7 +676,8 @@ public class RMWebServices extends WebServices implements RMWebServiceProtocol {
       MediaType.APPLICATION_XML + "; " + JettyUtils.UTF_8 })
   @Override
   public ActivitiesInfo getActivities(@Context HttpServletRequest hsr,
-      @QueryParam(RMWSConsts.NODEID) String nodeId) {
+      @QueryParam(RMWSConsts.NODEID) String nodeId,
+      @QueryParam(RMWSConsts.GROUP_BY) String groupBy) {
     initForReadableEndpoints();
 
     YarnScheduler scheduler = rm.getRMContext().getScheduler();
@@ -691,6 +692,13 @@ public class RMWebServices extends WebServices implements RMWebServiceProtocol {
       if (null == activitiesManager) {
         errMessage = "Not Capacity Scheduler";
         return new ActivitiesInfo(errMessage, nodeId);
+      }
+
+      RMWSConsts.ActivitiesGroupBy activitiesGroupBy;
+      try {
+        activitiesGroupBy = parseActivitiesGroupBy(groupBy);
+      } catch (IllegalArgumentException e) {
+        return new ActivitiesInfo(e.getMessage(), nodeId);
       }
 
       List<FiCaSchedulerNode> nodeList =
@@ -733,7 +741,7 @@ public class RMWebServices extends WebServices implements RMWebServiceProtocol {
 
       if (!illegalInput) {
         activitiesManager.recordNextNodeUpdateActivities(nodeId);
-        return activitiesManager.getActivitiesInfo(nodeId);
+        return activitiesManager.getActivitiesInfo(nodeId, activitiesGroupBy);
       }
 
       // Return a activities info with error message

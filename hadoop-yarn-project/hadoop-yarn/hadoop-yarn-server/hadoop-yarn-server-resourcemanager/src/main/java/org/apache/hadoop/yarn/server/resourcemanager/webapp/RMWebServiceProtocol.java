@@ -220,9 +220,12 @@ public interface RMWebServiceProtocol {
    * @param hsr the servlet request
    * @param nodeId the node we want to retrieve the activities. It is a
    *          QueryParam.
+   * @param groupBy the groupBy type by which the activities should be
+   *          aggregated. It is a QueryParam.
    * @return all the activities in the specific node
    */
-  ActivitiesInfo getActivities(HttpServletRequest hsr, String nodeId);
+  ActivitiesInfo getActivities(HttpServletRequest hsr, String nodeId,
+      String groupBy);
 
   /**
    * This method retrieves all the activities for a specific app for a specific
