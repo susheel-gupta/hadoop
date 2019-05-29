@@ -366,4 +366,9 @@ public class MockRESTRequestInterceptor extends AbstractRESTRequestInterceptor {
     return new ContainerInfo();
   }
 
+  @Override
+  public Response signalToContainer(String containerId, String command,
+      HttpServletRequest req) {
+    return Response.status(Status.OK).build();
+  }
 }
