@@ -225,6 +225,8 @@ public class ApplicationMaster {
   @VisibleForTesting
   UserGroupInformation appSubmitterUgi;
 
+  private Path homeDirectory;
+
   // Handle to communicate with the Node Manager
   private NMClientAsync nmClientAsync;
   // Listen to process the response from the Node Manager
@@ -388,8 +390,9 @@ public class ApplicationMaster {
    */
   public static void main(String[] args) {
     boolean result = false;
+    ApplicationMaster appMaster = null;
     try {
-      ApplicationMaster appMaster = new ApplicationMaster();
+      appMaster = new ApplicationMaster();
       LOG.info("Initializing ApplicationMaster");
       boolean doRun = appMaster.init(args);
       if (!doRun) {
@@ -401,6 +404,10 @@ public class ApplicationMaster {
       LOG.error("Error running ApplicationMaster", t);
       LogManager.shutdown();
       ExitUtil.terminate(1, t);
+    } finally {
+      if (appMaster != null) {
+        appMaster.cleanup();
+      }
     }
     if (result) {
       LOG.info("Application Master completed successfully. exiting");
@@ -507,6 +514,7 @@ public class ApplicationMaster {
             + "retrieved by"
             + " the new application attempt ");
     opts.addOption("localized_files", true, "List of localized files");
+    opts.addOption("homedir", true, "Home Directory of Job Owner");
 
     opts.addOption("help", false, "Print usage");
     CommandLine cliParser = new GnuParser().parse(opts, args);
@@ -537,6 +545,11 @@ public class ApplicationMaster {
     if (cliParser.hasOption("debug")) {
       dumpOutDebugInfo();
     }
+
+    homeDirectory = cliParser.hasOption("homedir") ?
+        new Path(cliParser.getOptionValue("homedir")) :
+        new Path("/user/" + System.getenv(ApplicationConstants.
+        Environment.USER.name()));
 
     if (cliParser.hasOption("placement_spec")) {
       String placementSpec = cliParser.getOptionValue("placement_spec");
@@ -749,6 +762,23 @@ public class ApplicationMaster {
    */
   private void printUsage(Options opts) {
     new HelpFormatter().printHelp("ApplicationMaster", opts);
+  }
+
+  private void cleanup() {
+    try {
+      appSubmitterUgi.doAs(new PrivilegedExceptionAction<Void>() {
+        @Override
+        public Void run() throws IOException {
+          FileSystem fs = FileSystem.get(conf);
+          Path dst = new Path(homeDirectory,
+              getRelativePath(appName, appId.toString(), ""));
+          fs.delete(dst, true);
+          return null;
+        }
+      });
+    } catch(Exception e) {
+      LOG.warn("Failed to remove application staging directory", e);
+    }
   }
 
   /**
@@ -1451,7 +1481,7 @@ public class ApplicationMaster {
             String relativePath =
                 getRelativePath(appName, appId.toString(), fileName);
             Path dst =
-                new Path(fs.getHomeDirectory(), relativePath);
+                new Path(homeDirectory, relativePath);
             FileStatus fileStatus = fs.getFileStatus(dst);
             LocalResource localRes = LocalResource.newInstance(
                 URL.fromURI(dst.toUri()),
