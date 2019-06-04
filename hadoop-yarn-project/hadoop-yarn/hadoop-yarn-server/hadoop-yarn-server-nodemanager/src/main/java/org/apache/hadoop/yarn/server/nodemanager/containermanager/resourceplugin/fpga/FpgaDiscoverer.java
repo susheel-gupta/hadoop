@@ -121,6 +121,7 @@ public class FpgaDiscoverer {
 
     if (allowed == null || allowed.equalsIgnoreCase(
         YarnConfiguration.AUTOMATICALLY_DISCOVER_GPU_DEVICES)) {
+      currentFpgaInfo = ImmutableList.copyOf(list);
       return list;
     } else if (allowed.matches("(\\d,)*\\d")){
       Set<String> minors = Sets.newHashSet(allowed.split(","));
@@ -130,6 +131,8 @@ public class FpgaDiscoverer {
         .stream()
         .filter(dev -> minors.contains(String.valueOf(dev.getMinor())))
         .collect(Collectors.toList());
+
+      currentFpgaInfo = ImmutableList.copyOf(list);
 
       // if the count of user configured is still larger than actual
       if (list.size() != minors.size()) {
@@ -141,8 +144,6 @@ public class FpgaDiscoverer {
       throw new ResourceHandlerException("Invalid value configured for " +
           YarnConfiguration.NM_FPGA_ALLOWED_DEVICES + ":\"" + allowed + "\"");
     }
-
-    currentFpgaInfo = ImmutableList.copyOf(list);
 
     return list;
   }
