@@ -465,7 +465,7 @@ public class TestRMWebServicesSchedulerActivities
       //Check app activities
       verifyNumberOfAllocations(json, 1);
       JSONObject allocations = json.getJSONObject("allocations");
-      verifyStateOfAllocations(allocations, "allocationState", "ACCEPTED");
+      verifyStateOfAllocations(allocations, "allocationState", "ALLOCATED");
       //Check request allocation
       JSONObject requestAllocationObj =
           allocations.getJSONObject("requestAllocation");
@@ -532,7 +532,7 @@ public class TestRMWebServicesSchedulerActivities
       JSONArray allocations = json.getJSONArray("allocations");
       for (int i = 0; i < allocations.length(); i++) {
         verifyStateOfAllocations(allocations.getJSONObject(i),
-            "allocationState", "ACCEPTED");
+            "allocationState", "ALLOCATED");
       }
     } finally {
       rm.stop();

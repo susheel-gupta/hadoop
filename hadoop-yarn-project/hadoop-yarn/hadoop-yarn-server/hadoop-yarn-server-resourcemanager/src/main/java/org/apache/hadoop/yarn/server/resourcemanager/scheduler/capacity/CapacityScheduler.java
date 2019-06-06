@@ -1678,9 +1678,9 @@ public class CapacityScheduler extends
           node, reservedContainer.getContainerId(),
           AllocationState.ALLOCATED_FROM_RESERVED);
     } else{
-      ActivitiesLogger.QUEUE.recordQueueActivity(activitiesManager, node,
+     ActivitiesLogger.QUEUE.recordQueueActivity(activitiesManager, node,
           queue.getParent().getQueuePath(), queue.getQueuePath(),
-          ActivityState.ACCEPTED, ActivityDiagnosticConstant.EMPTY);
+          ActivityState.RE_RESERVED, ActivityDiagnosticConstant.EMPTY);
       ActivitiesLogger.NODE.finishAllocatedNodeAllocation(activitiesManager,
           node, reservedContainer.getContainerId(), AllocationState.SKIPPED);
     }

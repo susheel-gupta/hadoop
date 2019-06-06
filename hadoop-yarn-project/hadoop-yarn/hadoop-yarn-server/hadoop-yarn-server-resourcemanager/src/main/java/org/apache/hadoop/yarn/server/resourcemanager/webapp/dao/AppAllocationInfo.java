@@ -42,6 +42,7 @@ public class AppAllocationInfo {
   private long timestamp;
   private String dateTime;
   private String allocationState;
+  private String diagnostic;
   private List<AppRequestAllocationInfo> requestAllocation;
 
   AppAllocationInfo() {
@@ -55,6 +56,7 @@ public class AppAllocationInfo {
     this.timestamp = allocation.getTime();
     this.dateTime = new Date(allocation.getTime()).toString();
     this.allocationState = allocation.getAppState().name();
+    this.diagnostic = allocation.getDiagnostic();
     Map<String, List<ActivityNode>> requestToActivityNodes =
         allocation.getAllocationAttempts().stream().collect(Collectors
             .groupingBy((e) -> e.getRequestPriority() + "_" + e
@@ -93,5 +95,9 @@ public class AppAllocationInfo {
 
   public List<AppRequestAllocationInfo> getRequestAllocation() {
     return requestAllocation;
+  }
+
+  public String getDiagnostic() {
+    return diagnostic;
   }
 }
