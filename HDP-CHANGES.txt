@@ -191,3 +191,6 @@ HADOOP-15968. ABFS: add try catch for UGI failure when initializing ABFS.
 
     YARN-9336. JobHistoryServer leaks CLOSE_WAIT tcp connections when using
     LogAggregationIndexedFileController. Contributed by Tarun Parimi.
+
+    YARN-9581.  Fixed yarn logs cli to access RM2.             Contributed by
+    Prabhu Joseph
