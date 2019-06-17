@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.apache.commons.lang.SerializationUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.conf.Configuration;
@@ -190,9 +191,14 @@ public class LogAggregationIndexedFileController
             indexedLogsMeta.setCompressName(compressName);
           }
           Path aggregatedLogFile = null;
+          Pair<Path, Boolean> initializationResult = null;
+          boolean createdNew;
+
           if (context.isLogAggregationInRolling()) {
-            aggregatedLogFile = initializeWriterInRolling(
+            initializationResult = initializeWriterInRolling(
                 remoteLogFile, appId, nodeId);
+            aggregatedLogFile = initializationResult.getLeft();
+            createdNew = initializationResult.getRight();
           } else {
             aggregatedLogFile = remoteLogFile;
             fsDataOStream = fc.create(remoteLogFile,
@@ -203,22 +209,28 @@ public class LogAggregationIndexedFileController
             }
             fsDataOStream.write(uuid);
             fsDataOStream.flush();
+            createdNew = true;
           }
 
-          long aggregatedLogFileLength = fc.getFileStatus(
-              aggregatedLogFile).getLen();
-          // append a simple character("\n") to move the writer cursor, so
-          // we could get the correct position when we call
-          // fsOutputStream.getStartPos()
-          final byte[] dummyBytes = "\n".getBytes(Charset.forName("UTF-8"));
-          fsDataOStream.write(dummyBytes);
-          fsDataOStream.flush();
+          if (!createdNew) {
+            long aggregatedLogFileLength = fc.getFileStatus(
+                aggregatedLogFile).getLen();
+            // append a simple character("\n") to move the writer cursor, so
+            // we could get the correct position when we call
+            // fsOutputStream.getStartPos()
+            final byte[] dummyBytes = "\n".getBytes(Charset.forName("UTF-8"));
+            fsDataOStream.write(dummyBytes);
+            fsDataOStream.flush();
 
-          if (fsDataOStream.getPos() >= (aggregatedLogFileLength
-              + dummyBytes.length)) {
-            currentOffSet = 0;
+            if (fsDataOStream.getPos() < (aggregatedLogFileLength
+                + dummyBytes.length)) {
+              currentOffSet = fc.getFileStatus(
+                      aggregatedLogFile).getLen();
+            } else {
+              currentOffSet = 0;
+            }
           } else {
-            currentOffSet = aggregatedLogFileLength;
+            currentOffSet = 0;
           }
           return null;
         }
@@ -228,8 +240,10 @@ public class LogAggregationIndexedFileController
     }
   }
 
-  private Path initializeWriterInRolling(final Path remoteLogFile,
-      final ApplicationId appId, final String nodeId) throws Exception {
+  private Pair<Path, Boolean> initializeWriterInRolling(
+      final Path remoteLogFile, final ApplicationId appId,
+      final String nodeId) throws Exception {
+    boolean createdNew = false;
     Path aggregatedLogFile = null;
     // check uuid
     // if we can not find uuid, we would load the uuid
@@ -289,6 +303,7 @@ public class LogAggregationIndexedFileController
       // writes the uuid
       fsDataOStream.write(uuid);
       fsDataOStream.flush();
+      createdNew = true;
     } else {
       aggregatedLogFile = currentRemoteLogFile;
       fsDataOStream = fc.create(currentRemoteLogFile,
@@ -297,8 +312,13 @@ public class LogAggregationIndexedFileController
     }
     // recreate checksum file if needed before aggregate the logs
     if (overwriteCheckSum) {
-      final long currentAggregatedLogFileLength = fc
-          .getFileStatus(aggregatedLogFile).getLen();
+      long currentAggregatedLogFileLength;
+      if (createdNew) {
+        currentAggregatedLogFileLength = 0;
+      } else {
+        currentAggregatedLogFileLength = fc
+            .getFileStatus(aggregatedLogFile).getLen();
+      }
       FSDataOutputStream checksumFileOutputStream = null;
       try {
         checksumFileOutputStream = fc.create(remoteLogCheckSumFile,
@@ -315,7 +335,8 @@ public class LogAggregationIndexedFileController
         IOUtils.cleanupWithLogger(LOG, checksumFileOutputStream);
       }
     }
-    return aggregatedLogFile;
+
+    return Pair.of(aggregatedLogFile, createdNew);
   }
 
   @Override
