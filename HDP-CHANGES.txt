@@ -202,3 +202,4 @@ HADOOP-15968. ABFS: add try catch for UGI failure when initializing ABFS.
 
     HDFS-14499. Misleading REM_QUOTA value with snapshot and trash feature
     enabled for a directory. Contributed by Shashikant Banerjee.
+YARN-9209. When nodePartition is not set in Placement Constraints, containers are allocated only in default partition. Contributed by Tarun Parimi.
