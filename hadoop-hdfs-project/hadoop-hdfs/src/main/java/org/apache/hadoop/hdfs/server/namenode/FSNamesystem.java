@@ -461,7 +461,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
 
   /** The namespace tree. */
   FSDirectory dir;
-  private final BlockManager blockManager;
+  private BlockManager blockManager;
   private final SnapshotManager snapshotManager;
   private final CacheManager cacheManager;
   private final DatanodeStatistics datanodeStatistics;
@@ -6233,6 +6233,11 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
   /** @return the block manager. */
   public BlockManager getBlockManager() {
     return blockManager;
+  }
+
+  @VisibleForTesting
+  public void setBlockManagerForTesting(BlockManager bm) {
+    this.blockManager = bm;
   }
 
   /** @return the FSDirectory. */
