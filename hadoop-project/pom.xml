@@ -101,6 +101,7 @@
     <hikari.version>2.4.12</hikari.version>
     <mssql.version>6.2.1.jre7</mssql.version>
     <okhttp.version>2.7.5</okhttp.version>
+    <jna.version>5.2.0</jna.version>
 
     <!-- define the Java language version used by the compiler -->
     <javac.version>1.8</javac.version>
@@ -1524,6 +1525,11 @@
         <groupId>javax.activation</groupId>
         <artifactId>javax.activation-api</artifactId>
         <version>1.2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>net.java.dev.jna</groupId>
+        <artifactId>jna</artifactId>
+        <version>${jna.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
