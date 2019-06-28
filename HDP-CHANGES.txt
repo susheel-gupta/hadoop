@@ -194,3 +194,6 @@ HADOOP-15968. ABFS: add try catch for UGI failure when initializing ABFS.
 
     YARN-9581.  Fixed yarn logs cli to access RM2.             Contributed by
     Prabhu Joseph
+
+    YARN-9581. Add support for get multiple RM webapp URLs.
+    Contributed by Prabhu Joseph
