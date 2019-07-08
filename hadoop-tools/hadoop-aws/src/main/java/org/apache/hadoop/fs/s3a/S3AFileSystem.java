@@ -2282,6 +2282,7 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
       while (files.hasNext()) {
         result.add(files.next());
       }
+      // merge the results. This will update the store as needed
       return S3Guard.dirListingUnion(metadataStore, path, result, dirMeta,
           allowAuthoritative, ttlTimeProvider);
     } else {
@@ -3638,7 +3639,6 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
           final PathMetadata pm = metadataStore.get(path, true);
           // shouldn't need to check pm.isDeleted() because that will have
           // been caught by getFileStatus above.
-
           MetadataStoreListFilesIterator metadataStoreListFilesIterator =
               new MetadataStoreListFilesIterator(metadataStore, pm,
                   allowAuthoritative);

@@ -980,6 +980,7 @@ public class DynamoDBMetadataStore implements MetadataStore,
   @Retries.RetryTranslated
   public void put(DirListingMetadata meta) throws IOException {
     LOG.debug("Saving to table {} in region {}: {}", tableName, region, meta);
+
     // directory path
     Path path = meta.getPath();
     DDBPathMetadata ddbPathMeta =
