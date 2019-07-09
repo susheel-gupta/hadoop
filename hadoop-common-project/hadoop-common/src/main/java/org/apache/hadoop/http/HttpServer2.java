@@ -27,6 +27,7 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -64,6 +65,7 @@ import org.apache.hadoop.security.AuthenticationFilterInitializer;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
+import org.apache.hadoop.security.authentication.server.ProxyUserAuthenticationFilterInitializer;
 import org.apache.hadoop.security.authentication.util.SignerSecretProvider;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.security.ssl.SSLFactory;
@@ -678,10 +680,16 @@ public final class HttpServer2 implements FilterContainer {
       return null;
     }
 
-    FilterInitializer[] initializers = new FilterInitializer[classes.length];
-    for(int i = 0; i < classes.length; i++) {
+    List<Class<?>> classList = new ArrayList<>(Arrays.asList(classes));
+    if (classList.contains(AuthenticationFilterInitializer.class) &&
+        classList.contains(ProxyUserAuthenticationFilterInitializer.class)) {
+      classList.remove(AuthenticationFilterInitializer.class);
+    }
+
+    FilterInitializer[] initializers = new FilterInitializer[classList.size()];
+    for(int i = 0; i < classList.size(); i++) {
       initializers[i] = (FilterInitializer)ReflectionUtils.newInstance(
-          classes[i], conf);
+          classList.get(i), conf);
     }
     return initializers;
   }

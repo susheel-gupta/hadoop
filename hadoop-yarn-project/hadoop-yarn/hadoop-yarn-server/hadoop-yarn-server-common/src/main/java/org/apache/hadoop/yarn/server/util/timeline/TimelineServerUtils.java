@@ -25,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.AuthenticationFilterInitializer;
+import org.apache.hadoop.security.authentication.server.ProxyUserAuthenticationFilterInitializer;
 import org.apache.hadoop.yarn.server.timeline.security.TimelineAuthenticationFilter;
 import org.apache.hadoop.yarn.server.timeline.security.TimelineAuthenticationFilterInitializer;
 import org.apache.hadoop.yarn.server.timeline.security.TimelineDelgationTokenSecretManagerService;
@@ -49,12 +50,16 @@ public final class TimelineServerUtils {
    */
   public static void setTimelineFilters(Configuration conf,
       String configuredInitializers, Set<String> defaultInitializers) {
+    Set<String> ignoreInitializers = new LinkedHashSet<>();
+    ignoreInitializers.add(AuthenticationFilterInitializer.class.getName());
+    ignoreInitializers.add(
+        ProxyUserAuthenticationFilterInitializer.class.getName());
+
     String[] parts = configuredInitializers.split(",");
     Set<String> target = new LinkedHashSet<String>();
     for (String filterInitializer : parts) {
       filterInitializer = filterInitializer.trim();
-      if (filterInitializer.equals(
-          AuthenticationFilterInitializer.class.getName()) ||
+      if (ignoreInitializers.contains(filterInitializer) ||
           filterInitializer.isEmpty()) {
         continue;
       }

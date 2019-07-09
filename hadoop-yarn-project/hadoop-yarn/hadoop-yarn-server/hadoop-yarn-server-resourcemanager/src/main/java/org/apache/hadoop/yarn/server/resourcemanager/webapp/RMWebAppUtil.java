@@ -45,6 +45,7 @@ import org.apache.hadoop.security.HttpCrossOriginFilterInitializer;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.server.AuthenticationFilter;
 import org.apache.hadoop.security.authentication.server.KerberosAuthenticationHandler;
+import org.apache.hadoop.security.authentication.server.ProxyUserAuthenticationFilterInitializer;
 import org.apache.hadoop.security.authorize.AccessControlList;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
@@ -159,6 +160,8 @@ public final class RMWebAppUtil {
           }
           target.add(filterInitializer.getName());
         }
+        target.remove(ProxyUserAuthenticationFilterInitializer.class.getName());
+
         actualInitializers = StringUtils.join(",", target);
 
         LOG.info("Using RM authentication filter(kerberos/delegation-token)"
