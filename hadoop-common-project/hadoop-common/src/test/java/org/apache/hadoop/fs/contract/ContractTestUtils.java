@@ -456,8 +456,10 @@ public class ContractTestUtils extends Assert {
   public static FileStatus[] deleteChildren(FileSystem fileSystem,
       Path path,
       boolean recursive) throws IOException {
+    LOG.debug("Deleting children of {} (recursive={})", path, recursive);
     FileStatus[] children = listChildren(fileSystem, path);
     for (FileStatus entry : children) {
+      LOG.debug("Deleting {}", entry);
       fileSystem.delete(entry.getPath(), recursive);
     }
     return children;
