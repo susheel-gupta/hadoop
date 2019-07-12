@@ -199,3 +199,6 @@ HADOOP-15968. ABFS: add try catch for UGI failure when initializing ABFS.
     Contributed by Prabhu Joseph
 
     HADOOP-16461. Regression: FileSystem cache lock parses XML within the lock.
+
+    HDFS-14499. Misleading REM_QUOTA value with snapshot and trash feature
+    enabled for a directory. Contributed by Shashikant Banerjee.
