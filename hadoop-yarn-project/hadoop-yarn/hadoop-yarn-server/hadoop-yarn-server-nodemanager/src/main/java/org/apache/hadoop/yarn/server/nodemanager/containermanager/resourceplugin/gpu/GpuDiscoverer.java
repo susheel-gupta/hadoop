@@ -69,6 +69,8 @@ public class GpuDiscoverer {
   private int numOfErrorExecutionSinceLastSucceed = 0;
   private GpuDeviceInformation lastDiscoveredGpuInformation = null;
 
+  private List<GpuDevice> gpuDevicesFromUser;
+
   private void validateConfOrThrowException() throws YarnException {
     if (conf == null) {
       throw new YarnException("Please initialize (call initialize) before use "
@@ -161,15 +163,13 @@ public class GpuDiscoverer {
       throws YarnException {
     validateConfOrThrowException();
 
-    String allowedDevicesStr = conf.get(
-        YarnConfiguration.NM_GPU_ALLOWED_DEVICES,
-        YarnConfiguration.AUTOMATICALLY_DISCOVER_GPU_DEVICES);
-
-    if (allowedDevicesStr.equals(
-        YarnConfiguration.AUTOMATICALLY_DISCOVER_GPU_DEVICES)) {
+    if (isAutoDiscoveryEnabled()) {
       return parseGpuDevicesFromAutoDiscoveredGpuInfo();
     } else {
-      return parseGpuDevicesFromUserDefinedValues(allowedDevicesStr);
+      if (gpuDevicesFromUser == null) {
+        gpuDevicesFromUser = parseGpuDevicesFromUserDefinedValues();
+      }
+      return gpuDevicesFromUser;
     }
   }
 
@@ -201,16 +201,16 @@ public class GpuDiscoverer {
   }
 
   /**
-   * @param devices allowed devices coming from the config.
-   *                          Individual devices should be separated by commas.
-   *                          <br>The format of individual devices should be:
-   *                           &lt;index:&gt;&lt;minorNumber&gt;
    * @return List of GpuDevices
    * @throws YarnException when a GPU device is defined as a duplicate.
    * The first duplicate GPU device will be added to the exception message.
    */
-  private List<GpuDevice> parseGpuDevicesFromUserDefinedValues(String devices)
+  private List<GpuDevice> parseGpuDevicesFromUserDefinedValues()
       throws YarnException {
+    String devices = conf.get(
+        YarnConfiguration.NM_GPU_ALLOWED_DEVICES,
+        YarnConfiguration.AUTOMATICALLY_DISCOVER_GPU_DEVICES);
+
     if (devices.trim().isEmpty()) {
       throw GpuDeviceSpecificationException.createWithEmptyValueSpecified();
     }
@@ -252,19 +252,21 @@ public class GpuDiscoverer {
   public synchronized void initialize(Configuration config)
       throws YarnException {
     this.conf = config;
-    numOfErrorExecutionSinceLastSucceed = 0;
-    lookUpAutoDiscoveryBinary(config);
+    if (isAutoDiscoveryEnabled()) {
+      numOfErrorExecutionSinceLastSucceed = 0;
+      lookUpAutoDiscoveryBinary(config);
 
-    // Try to discover GPU information once and print
-    try {
-      LOG.info("Trying to discover GPU information ...");
-      GpuDeviceInformation info = getGpuDeviceInformation();
-      LOG.info("Discovered GPU information: " + info.toString());
-    } catch (YarnException e) {
-      String msg =
-          "Failed to discover GPU information from system, exception message:"
-              + e.getMessage() + " continue...";
-      LOG.warn(msg);
+      // Try to discover GPU information once and print
+      try {
+        LOG.info("Trying to discover GPU information ...");
+        GpuDeviceInformation info = getGpuDeviceInformation();
+        LOG.info("Discovered GPU information: " + info.toString());
+      } catch (YarnException e) {
+        String msg =
+                "Failed to discover GPU information from system, exception message:"
+                        + e.getMessage() + " continue...";
+        LOG.warn(msg);
+      }
     }
   }
 
