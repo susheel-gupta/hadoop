@@ -3630,6 +3630,7 @@ public class BlockManager implements BlockStatsMXBean {
           while (iter.hasNext() && processed < limit) {
             BlockInfo blk = iter.next();
             MisReplicationResult r = processMisReplicatedBlock(blk);
+            processed++;
             LOG.debug("BLOCK* processMisReplicatedBlocks: " +
                     "Re-scanned block {}, result is {}", blk, r);
           }
