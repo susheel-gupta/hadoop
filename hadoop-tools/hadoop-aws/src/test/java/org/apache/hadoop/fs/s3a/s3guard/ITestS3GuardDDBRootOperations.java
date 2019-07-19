@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.assertj.core.api.Assertions;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -53,7 +54,7 @@ import static org.apache.hadoop.fs.s3a.S3AUtils.applyLocatedFiles;
  * The tests only run if DynamoDB is the metastore.
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ITestS3GuardRootOperations extends AbstractS3ATestBase {
+public class ITestS3GuardDDBRootOperations extends AbstractS3ATestBase {
 
   private StoreContext storeContext;
 
@@ -65,7 +66,7 @@ public class ITestS3GuardRootOperations extends AbstractS3ATestBase {
 
   // this is a switch you can change in your IDE to enable
   // or disable those tests which clean up the metastore.
-  private final boolean cleaning = false;
+  private final boolean cleaning = true;
 
   /**
    * The test timeout is increased in case previous tests have created
@@ -120,10 +121,11 @@ public class ITestS3GuardRootOperations extends AbstractS3ATestBase {
   }
 
   @Test
+  @Ignore
   public void test_050_dump_metastore() throws Throwable {
     File destFile = calculateDumpFileBase();
     describe("Dumping S3Guard store under %s", destFile);
-    DumpS3GuardTable.dumpStore(
+    DumpS3GuardDynamoTable.dumpStore(
         null,
         metastore,
         getConfiguration(),
@@ -135,7 +137,7 @@ public class ITestS3GuardRootOperations extends AbstractS3ATestBase {
   public void test_060_dump_metastore_and_s3() throws Throwable {
     File destFile = calculateDumpFileBase();
     describe("Dumping S3Guard store under %s", destFile);
-    DumpS3GuardTable.dumpStore(
+    DumpS3GuardDynamoTable.dumpStore(
         getFileSystem(),
         metastore,
         getConfiguration(),
@@ -201,11 +203,11 @@ public class ITestS3GuardRootOperations extends AbstractS3ATestBase {
     // recursive treewalk to delete all files
     // does not delete directories.
     applyLocatedFiles(fs.listFilesAndEmptyDirectories(root, true),
-      f -> {
-        Path p = f.getPath();
-        fs.delete(p, true);
-        assertPathDoesNotExist("expected file to be deleted", p);
-      });
+        f -> {
+          Path p = f.getPath();
+          fs.delete(p, true);
+          assertPathDoesNotExist("expected file to be deleted", p);
+        });
     ContractTestUtils.deleteChildren(fs, root, true);
     // everything must be done by now
     StringBuffer sb = new StringBuffer();
@@ -245,10 +247,11 @@ public class ITestS3GuardRootOperations extends AbstractS3ATestBase {
   }
 
   @Test
+  @Ignore
   public void test_600_dump_metastore() throws Throwable {
     File destFile = calculateDumpFileBase();
     describe("Dumping S3Guard store under %s", destFile);
-    DumpS3GuardTable.dumpStore(
+    DumpS3GuardDynamoTable.dumpStore(
         getFileSystem(),
         metastore,
         getConfiguration(),

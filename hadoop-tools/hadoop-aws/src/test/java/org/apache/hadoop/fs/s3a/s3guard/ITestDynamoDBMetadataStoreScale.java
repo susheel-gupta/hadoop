@@ -177,17 +177,15 @@ public class ITestDynamoDBMetadataStoreScale
     if (ddbms != null) {
       S3GuardTableAccess tableAccess = new S3GuardTableAccess(ddbms);
       ExpressionSpecBuilder builder = new ExpressionSpecBuilder();
-      builder.withKeyCondition(
+      builder.withCondition(
           ExpressionSpecBuilder.S(PARENT).beginsWith("/test/"));
 
       Iterable<DDBPathMetadata> entries = tableAccess.scanMetadata(builder);
       List<Path> list = new ArrayList<>();
       entries.iterator().forEachRemaining(e -> {
-        if (!(e instanceof S3GuardTableAccess.VersionMarker)) {
-          Path p = e.getFileStatus().getPath();
-          LOG.info("Deleting {}", p);
-          list.add(p);
-        }
+        Path p = e.getFileStatus().getPath();
+        LOG.info("Deleting {}", p);
+        list.add(p);
       });
       tableAccess.delete(list);
     }

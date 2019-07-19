@@ -28,15 +28,16 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.s3a.S3AFileSystem;
 import org.apache.hadoop.service.launcher.AbstractLaunchableService;
-import org.apache.hadoop.service.launcher.LauncherExitCodes;
 import org.apache.hadoop.service.launcher.ServiceLaunchException;
 
+import static org.apache.hadoop.service.launcher.LauncherExitCodes.EXIT_FAIL;
 import static org.apache.hadoop.service.launcher.LauncherExitCodes.EXIT_USAGE;
 
 /**
- * Entry point for diagnostics operations.
+ * Entry point for S3Guard diagnostics operations against DynamoDB tables.
  */
-public class AbstractS3GuardDiagnostic extends AbstractLaunchableService {
+public class AbstractS3GuardDynamoDBDiagnostic
+    extends AbstractLaunchableService {
 
   private S3AFileSystem filesystem;
 
@@ -50,7 +51,7 @@ public class AbstractS3GuardDiagnostic extends AbstractLaunchableService {
    * Constructor.
    * @param name entry point name.
    */
-  public AbstractS3GuardDiagnostic(final String name) {
+  public AbstractS3GuardDynamoDBDiagnostic(final String name) {
     super(name);
   }
 
@@ -62,7 +63,7 @@ public class AbstractS3GuardDiagnostic extends AbstractLaunchableService {
    * @param store optional metastore.
    * @param uri URI. Must be set if filesystem == null.
    */
-  public AbstractS3GuardDiagnostic(
+  public AbstractS3GuardDynamoDBDiagnostic(
       final String name,
       @Nullable final S3AFileSystem filesystem,
       @Nullable final DynamoDBMetadataStore store,
@@ -100,8 +101,9 @@ public class AbstractS3GuardDiagnostic extends AbstractLaunchableService {
    * @param ex optional nested exception.
    * @return an exception to throw
    */
-  protected static ServiceLaunchException failure(String message, Throwable ex) {
-    return new ServiceLaunchException(LauncherExitCodes.EXIT_FAIL, message, ex);
+  protected static ServiceLaunchException failure(String message,
+      Throwable ex) {
+    return new ServiceLaunchException(EXIT_FAIL, message, ex);
   }
 
   /**
@@ -110,7 +112,7 @@ public class AbstractS3GuardDiagnostic extends AbstractLaunchableService {
    * @return an exception to throw
    */
   protected static ServiceLaunchException failure(String message) {
-    return new ServiceLaunchException(LauncherExitCodes.EXIT_FAIL, message);
+    return new ServiceLaunchException(EXIT_FAIL, message);
   }
 
   @Override
