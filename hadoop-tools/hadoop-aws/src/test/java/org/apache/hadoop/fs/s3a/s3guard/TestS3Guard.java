@@ -153,7 +153,7 @@ public class TestS3Guard extends Assert {
     pm.setLastUpdated(100L);
 
     MetadataStore ms = mock(MetadataStore.class);
-    when(ms.get(path)).thenReturn(pm);
+    when(ms.get(path, false)).thenReturn(pm);
 
     ITtlTimeProvider timeProvider =
         mock(ITtlTimeProvider.class);
@@ -161,7 +161,8 @@ public class TestS3Guard extends Assert {
     when(timeProvider.getMetadataTtl()).thenReturn(1L);
 
     // act
-    final PathMetadata pmExpired = S3Guard.getWithTtl(ms, path, timeProvider);
+    final PathMetadata pmExpired = S3Guard.getWithTtl(ms, path, timeProvider,
+        false);
 
     // assert
     assertNull(pmExpired);
@@ -177,7 +178,7 @@ public class TestS3Guard extends Assert {
     pm.setLastUpdated(100L);
 
     MetadataStore ms = mock(MetadataStore.class);
-    when(ms.get(path)).thenReturn(pm);
+    when(ms.get(path, false)).thenReturn(pm);
 
     ITtlTimeProvider timeProvider =
         mock(ITtlTimeProvider.class);
@@ -186,7 +187,7 @@ public class TestS3Guard extends Assert {
 
     // act
     final PathMetadata pmNotExpired =
-        S3Guard.getWithTtl(ms, path, timeProvider);
+        S3Guard.getWithTtl(ms, path, timeProvider, false);
 
     // assert
     assertNotNull(pmNotExpired);
@@ -204,7 +205,7 @@ public class TestS3Guard extends Assert {
     pm.setLastUpdated(0L);
 
     MetadataStore ms = mock(MetadataStore.class);
-    when(ms.get(path)).thenReturn(pm);
+    when(ms.get(path, false)).thenReturn(pm);
 
     ITtlTimeProvider timeProvider =
         mock(ITtlTimeProvider.class);
@@ -212,7 +213,8 @@ public class TestS3Guard extends Assert {
     when(timeProvider.getMetadataTtl()).thenReturn(2L);
 
     // act
-    final PathMetadata pmExpired = S3Guard.getWithTtl(ms, path, timeProvider);
+    final PathMetadata pmExpired = S3Guard.getWithTtl(ms, path, timeProvider,
+        false);
 
     // assert
     assertNotNull(pmExpired);
