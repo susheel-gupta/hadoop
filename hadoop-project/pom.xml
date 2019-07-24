@@ -11,10 +11,7 @@
   See the License for the specific language governing permissions and
   limitations under the License. See accompanying LICENSE file.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                      https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                       https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.apache.hadoop</groupId>
@@ -146,7 +143,7 @@
     <hbase.one.version>1.2.6</hbase.one.version>
     <hbase.two.version>2.0.0-beta-1</hbase.two.version>
     <gcs.version>1.9.10.7.0.0.0-SNAPSHOT</gcs.version>
-    <knox.version>1.0.0.7.0.0.0-30</knox.version>
+    <knox.version>1.0.0.7.0.0.0-327</knox.version>
     <assertj.version>3.12.2</assertj.version>
   </properties>
 
