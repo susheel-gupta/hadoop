@@ -197,3 +197,5 @@ HADOOP-15968. ABFS: add try catch for UGI failure when initializing ABFS.
 
     YARN-9581. Add support for get multiple RM webapp URLs.
     Contributed by Prabhu Joseph
+
+    HADOOP-16461. Regression: FileSystem cache lock parses XML within the lock.
