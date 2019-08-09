@@ -168,6 +168,7 @@ import org.apache.hadoop.hdfs.server.protocol.NamenodeProtocols;
 import org.apache.hadoop.hdfs.server.protocol.NamenodeRegistration;
 import org.apache.hadoop.hdfs.server.protocol.NamespaceInfo;
 import org.apache.hadoop.hdfs.server.protocol.NodeRegistration;
+import org.apache.hadoop.hdfs.server.protocol.RegisterCommand;
 import org.apache.hadoop.hdfs.server.protocol.RemoteEditLogManifest;
 import org.apache.hadoop.hdfs.server.protocol.SlowDiskReports;
 import org.apache.hadoop.hdfs.server.protocol.SlowPeerReports;
@@ -454,6 +455,7 @@ public class NameNodeRpcServer implements NamenodeProtocols {
         .setNumHandlers(handlerCount)
         .setVerbose(false)
         .setSecretManager(namesystem.getDelegationTokenSecretManager())
+        .setAlignmentContext(new GlobalStateIdContext(namesystem))
         .build();
 
     // Add all the RPC protocols that the namenode implements
@@ -1365,6 +1367,18 @@ public class NameNodeRpcServer implements NamenodeProtocols {
   }
 
   @Override // ClientProtocol
+  public void msync() throws IOException {
+    // Check for write access to ensure that msync only happens on active
+    namesystem.checkOperation(OperationCategory.WRITE);
+  }
+
+  @Override // ClientProtocol
+  public HAServiceState getHAServiceState() throws IOException {
+    checkNNStartup();
+    return nn.getServiceStatus().getState();
+  }
+
+  @Override // ClientProtocol
   public CorruptFileBlocks listCorruptFileBlocks(String path, String cookie)
       throws IOException {
     checkNNStartup();
@@ -1519,21 +1533,29 @@ public class NameNodeRpcServer implements NamenodeProtocols {
     }
     final BlockManager bm = namesystem.getBlockManager(); 
     boolean noStaleStorages = false;
-    for (int r = 0; r < reports.length; r++) {
-      final BlockListAsLongs blocks = reports[r].getBlocks();
-      //
-      // BlockManager.processReport accumulates information of prior calls
-      // for the same node and storage, so the value returned by the last
-      // call of this loop is the final updated value for noStaleStorage.
-      //
-      final int index = r;
-      noStaleStorages = bm.runBlockOp(new Callable<Boolean>() {
-        @Override
-        public Boolean call() throws IOException {
-          return bm.processReport(nodeReg, reports[index].getStorage(),
-              blocks, context);
+    try {
+      if (bm.checkBlockReportLease(context, nodeReg)) {
+        for (int r = 0; r < reports.length; r++) {
+          final BlockListAsLongs blocks = reports[r].getBlocks();
+          //
+          // BlockManager.processReport accumulates information of prior calls
+          // for the same node and storage, so the value returned by the last
+          // call of this loop is the final updated value for noStaleStorage.
+          //
+          final int index = r;
+          noStaleStorages = bm.runBlockOp(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws IOException {
+              return bm.processReport(nodeReg, reports[index].getStorage(),
+                      blocks, context);
+            }
+          });
         }
-      });
+      }
+    } catch (UnregisteredNodeException une) {
+      LOG.debug("Datanode {} is attempting to report but not register yet.",
+          nodeReg);
+      return RegisterCommand.REGISTER;
     }
     bm.removeBRLeaseIfNeeded(nodeReg, context);
 
@@ -1542,7 +1564,7 @@ public class NameNodeRpcServer implements NamenodeProtocols {
 
     if (nn.getFSImage().isUpgradeFinalized() &&
         !namesystem.isRollingUpgrade() &&
-        !nn.isStandbyState() &&
+        nn.isActiveState() &&
         noStaleStorages) {
       return new FinalizeCommand(poolId);
     }
@@ -1729,6 +1751,14 @@ public class NameNodeRpcServer implements NamenodeProtocols {
     checkNNStartup();
     nn.checkHaStateChange(req);
     nn.transitionToStandby();
+  }
+
+  @Override // HAServiceProtocol
+  public synchronized void transitionToObserver(StateChangeRequestInfo req)
+      throws ServiceFailedException, AccessControlException, IOException {
+    checkNNStartup();
+    nn.checkHaStateChange(req);
+    nn.transitionToObserver();
   }
 
   @Override // HAServiceProtocol

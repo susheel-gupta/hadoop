@@ -2563,6 +2563,21 @@ public class BlockManager implements BlockStatsMXBean {
   }
 
   /**
+   * Check block report lease.
+   * @return true if lease exist and not expire
+   */
+  public boolean checkBlockReportLease(BlockReportContext context,
+      final DatanodeID nodeID) throws UnregisteredNodeException {
+    if (context == null) {
+      return true;
+    }
+    DatanodeDescriptor node = datanodeManager.getDatanode(nodeID);
+    final long startTime = Time.monotonicNow();
+    return blockReportLeaseManager.checkLease(node, startTime,
+        context.getLeaseId());
+  }
+
+  /**
    * The given storage is reporting all its blocks.
    * Update the (storage-->block list) and (block-->storage list) maps.
    *
@@ -2607,12 +2622,6 @@ public class BlockManager implements BlockStatsMXBean {
             strBlockReportId, nodeID);
         blockReportLeaseManager.removeLease(node);
         return !node.hasStaleStorages();
-      }
-      if (context != null) {
-        if (!blockReportLeaseManager.checkLease(node, startTime,
-              context.getLeaseId())) {
-          return false;
-        }
       }
 
       if (storageInfo.getBlockReportCount() == 0) {
@@ -3318,7 +3327,8 @@ public class BlockManager implements BlockStatsMXBean {
 
     int curReplicaDelta;
     if (result == AddBlockResult.ADDED) {
-      curReplicaDelta = (node.isDecommissioned()) ? 0 : 1;
+      curReplicaDelta =
+          (node.isDecommissioned() || node.isDecommissionInProgress()) ? 0 : 1;
       if (logEveryBlock) {
         blockLog.debug("BLOCK* addStoredBlock: {} is added to {} (size={})",
             node, storedBlock, storedBlock.getNumBytes());
@@ -3344,9 +3354,11 @@ public class BlockManager implements BlockStatsMXBean {
     int numLiveReplicas = num.liveReplicas();
     int pendingNum = pendingReconstruction.getNumReplicas(storedBlock);
     int numCurrentReplica = numLiveReplicas + pendingNum;
+    int numUsableReplicas = num.liveReplicas() +
+        num.decommissioning() + num.liveEnteringMaintenanceReplicas();
 
     if(storedBlock.getBlockUCState() == BlockUCState.COMMITTED &&
-        hasMinStorage(storedBlock, numLiveReplicas)) {
+        hasMinStorage(storedBlock, numUsableReplicas)) {
       addExpectedReplicasToPending(storedBlock);
       completeBlock(storedBlock, null, false);
     } else if (storedBlock.isComplete() && result == AddBlockResult.ADDED) {
