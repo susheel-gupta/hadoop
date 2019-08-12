@@ -297,11 +297,9 @@ public class TestNetUtils {
   @Test
   public void testWrapIOEWithNoStringConstructor() throws Throwable {
     IOException e = new CharacterCodingException();
-    IOException wrapped = verifyExceptionClass(e, IOException.class);
-    assertInException(wrapped, "Failed on local exception");
-    assertNotInException(wrapped, NetUtils.HADOOP_WIKI);
-    assertInException(wrapped, "Host Details ");
-    assertRemoteDetailsIncluded(wrapped);
+    IOException wrapped =
+        verifyExceptionClass(e, CharacterCodingException.class);
+    assertEquals(null, wrapped.getMessage());
   }
 
   @Test
@@ -313,11 +311,8 @@ public class TestNetUtils {
       }
     }
     IOException e = new TestIOException();
-    IOException wrapped = verifyExceptionClass(e, IOException.class);
-    assertInException(wrapped, "Failed on local exception");
-    assertNotInException(wrapped, NetUtils.HADOOP_WIKI);
-    assertInException(wrapped, "Host Details ");
-    assertRemoteDetailsIncluded(wrapped);
+    IOException wrapped = verifyExceptionClass(e, TestIOException.class);
+    assertEquals(null, wrapped.getMessage());
   }
 
   @Test
