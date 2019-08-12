@@ -231,9 +231,12 @@ public class UserGroupMappingPlacementRule extends PlacementRule {
               //queueName will be same as mapped queue name in case of recovery
               || queueName.equals(mappedQueue.getQueue())
               || overrideWithQueueMappings) {
-            LOG.info("Application " + applicationId + " user " + user
-                + " mapping [" + queueName + "] to [" + mappedQueue
-                + "] override " + overrideWithQueueMappings);
+            LOG.info("Application "
+                + applicationId + " user "
+                + user + " mapping ["
+                + queueName + "] to ["
+                + mappedQueue.getQueue() + "] override "
+                + overrideWithQueueMappings);
             return mappedQueue;
           }
         }
