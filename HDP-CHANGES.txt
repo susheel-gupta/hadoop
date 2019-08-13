@@ -205,3 +205,4 @@ HADOOP-15968. ABFS: add try catch for UGI failure when initializing ABFS.
 YARN-9209. When nodePartition is not set in Placement Constraints, containers are allocated only in default partition. Contributed by Tarun Parimi.
 HADOOP-16640. WASB: Override getCanonicalServiceName() to return URI
 HADOOP-16771. Update checkstyle to 8.26 and maven-checkstyle-plugin to 3.1.0. Contributed by Andras Bokor.
+YARN-9744. RollingLevelDBTimelineStore.getEntityByTime fails with NPE. Contributed by Prabhu Joseph.
