@@ -43,7 +43,6 @@ import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.privileg
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.resources.CGroupsHandler;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.resources.ResourceHandler;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.resources.ResourceHandlerChain;
-import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.resources.ResourceHandlerException;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.resourceplugin.deviceframework.*;
 import org.apache.hadoop.yarn.server.security.ApplicationACLsManager;
 import org.apache.hadoop.yarn.util.resource.ResourceUtils;
@@ -59,6 +58,7 @@ import java.util.Map;
 import java.io.File;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMap;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -124,32 +124,28 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
   private class CustomizedResourceHandler implements ResourceHandler {
 
     @Override
-    public List<PrivilegedOperation> bootstrap(Configuration configuration)
-        throws ResourceHandlerException {
+    public List<PrivilegedOperation> bootstrap(Configuration configuration) {
       return null;
     }
 
     @Override
-    public List<PrivilegedOperation> preStart(Container container)
-        throws ResourceHandlerException {
+    public List<PrivilegedOperation> preStart(Container container) {
       return null;
     }
 
     @Override
-    public List<PrivilegedOperation> reacquireContainer(ContainerId containerId)
-        throws ResourceHandlerException {
+    public List<PrivilegedOperation> reacquireContainer(
+        ContainerId containerId) {
       return null;
     }
 
     @Override
-    public List<PrivilegedOperation> postComplete(ContainerId containerId)
-        throws ResourceHandlerException {
+    public List<PrivilegedOperation> postComplete(ContainerId containerId) {
       return null;
     }
 
     @Override
-    public List<PrivilegedOperation> teardown()
-        throws ResourceHandlerException {
+    public List<PrivilegedOperation> teardown() {
       return null;
     }
   }
@@ -174,9 +170,9 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
         ContainerExecutor exec, DeletionService del,
         NodeStatusUpdater nodeStatusUpdater,
         ApplicationACLsManager aclsManager,
-        LocalDirsHandlerService diskhandler) {
+        LocalDirsHandlerService dirsHandler) {
       return new MyContainerManager(context, exec, del, nodeStatusUpdater,
-      metrics, diskhandler);
+      metrics, dirsHandler);
     }
 
     @Override
@@ -204,7 +200,7 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
     nm = new MyMockNM(rpm);
 
     nm.init(conf);
-    verify(rpm, times(1)).initialize(
+    verify(rpm).initialize(
         any(Context.class));
   }
 
@@ -225,7 +221,7 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
         rpm.getNameToPlugins().get("resource1")
             .getNodeResourceHandlerInstance();
 
-    verify(nodeResourceUpdaterPlugin, times(1))
+    verify(nodeResourceUpdaterPlugin)
         .updateConfiguredResource(any(Resource.class));
   }
 
@@ -233,8 +229,7 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
    * Make sure ResourcePluginManager is used to initialize ResourceHandlerChain
    */
   @Test(timeout = 30000)
-  public void testLinuxContainerExecutorWithResourcePluginsEnabled()
-      throws Exception {
+  public void testLinuxContainerExecutorWithResourcePluginsEnabled() {
     final ResourcePluginManager rpm = stubResourcePluginmanager();
     final LinuxContainerExecutor lce = new MyLCE();
 
@@ -243,8 +238,8 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
       protected NodeStatusUpdater createNodeStatusUpdater(Context context,
           Dispatcher dispatcher, NodeHealthCheckerService healthChecker) {
         ((NMContext)context).setResourcePluginManager(rpm);
-        return new BaseNodeStatusUpdaterForTest(context, dispatcher, healthChecker,
-            metrics, new BaseResourceTrackerForTest());
+        return new BaseNodeStatusUpdaterForTest(context, dispatcher,
+            healthChecker, metrics, new BaseResourceTrackerForTest());
       }
 
       @Override
@@ -252,9 +247,9 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
           ContainerExecutor exec, DeletionService del,
           NodeStatusUpdater nodeStatusUpdater,
           ApplicationACLsManager aclsManager,
-          LocalDirsHandlerService diskhandler) {
+          LocalDirsHandlerService dirsHandler) {
         return new MyContainerManager(context, exec, del, nodeStatusUpdater,
-            metrics, diskhandler);
+            metrics, dirsHandler);
       }
 
       @Override
@@ -302,10 +297,10 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
         false);
     nm.init(conf);
     nm.start();
-    verify(rpmSpy, times(1)).initialize(
+    verify(rpmSpy).initialize(
         any(Context.class));
     verify(rpmSpy, times(0)).initializePluggableDevicePlugins(
-        any(Context.class), any(Configuration.class), any(Map.class));
+        any(Context.class), any(Configuration.class), anyMap());
   }
 
   // No related configuration set.
@@ -319,10 +314,10 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
 
     nm.init(conf);
     nm.start();
-    verify(rpmSpy, times(1)).initialize(
+    verify(rpmSpy).initialize(
         any(Context.class));
     verify(rpmSpy, times(0)).initializePluggableDevicePlugins(
-        any(Context.class), any(Configuration.class), any(Map.class));
+        any(Context.class), any(Configuration.class), anyMap());
   }
 
   // Enable framework and configure pluggable device classes
@@ -341,10 +336,10 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
         FakeTestDevicePlugin1.class.getCanonicalName());
     nm.init(conf);
     nm.start();
-    verify(rpmSpy, times(1)).initialize(
+    verify(rpmSpy).initialize(
         any(Context.class));
-    verify(rpmSpy, times(1)).initializePluggableDevicePlugins(
-        any(Context.class), any(Configuration.class), any(Map.class));
+    verify(rpmSpy).initializePluggableDevicePlugins(
+        any(Context.class), any(Configuration.class), anyMap());
   }
 
   // Enable pluggable framework, but leave device classes un-configured
@@ -356,7 +351,7 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
 
     ResourcePluginManager rpmSpy = spy(rpm);
     nm = new MyMockNM(rpmSpy);
-    Boolean fail = false;
+    boolean fail = false;
     try {
       conf.setBoolean(YarnConfiguration.NM_PLUGGABLE_DEVICE_FRAMEWORK_ENABLED,
           true);
@@ -365,18 +360,16 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
       nm.start();
     } catch (YarnRuntimeException e) {
       fail = true;
-    } catch (Exception e) {
+    } catch (Exception ignored) {
 
     }
-    verify(rpmSpy, times(1)).initializePluggableDevicePlugins(
-        any(Context.class), any(Configuration.class), any(Map.class));
+    verify(rpmSpy).initializePluggableDevicePlugins(
+        any(Context.class), any(Configuration.class), anyMap());
     Assert.assertTrue(fail);
   }
 
   @Test(timeout = 30000)
-  public void testNormalInitializationOfPluggableDeviceClasses()
-      throws Exception {
-
+  public void testNormalInitializationOfPluggableDeviceClasses() {
     ResourcePluginManager rpm = new ResourcePluginManager();
 
     ResourcePluginManager rpmSpy = spy(rpm);
@@ -393,16 +386,15 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
     Assert.assertEquals(1, pluginMap.size());
     ResourcePlugin rp = pluginMap.get("cmpA.com/hdwA");
     if (!(rp instanceof DevicePluginAdapter)) {
-      Assert.assertTrue(false);
+      Assert.fail();
     }
-    verify(rpmSpy, times(1)).checkInterfaceCompatibility(
+    verify(rpmSpy).checkInterfaceCompatibility(
         DevicePlugin.class, FakeTestDevicePlugin1.class);
   }
 
   // Fail to load a class which doesn't implement interface DevicePlugin
   @Test(timeout = 30000)
-  public void testLoadInvalidPluggableDeviceClasses()
-      throws Exception{
+  public void testLoadInvalidPluggableDeviceClasses() {
     ResourcePluginManager rpm = new ResourcePluginManager();
 
     ResourcePluginManager rpmSpy = spy(rpm);
@@ -429,8 +421,7 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
 
   // Fail to register duplicated resource name.
   @Test(timeout = 30000)
-  public void testLoadDuplicateResourceNameDevicePlugin()
-      throws Exception{
+  public void testLoadDuplicateResourceNameDevicePlugin() {
     ResourcePluginManager rpm = new ResourcePluginManager();
 
     ResourcePluginManager rpmSpy = spy(rpm);
@@ -463,8 +454,7 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
    * It doesn't implement the "getRegisterRequestInfo"
    */
   @Test(timeout = 30000)
-  public void testIncompatibleDevicePlugin()
-      throws Exception {
+  public void testIncompatibleDevicePlugin() {
     ResourcePluginManager rpm = new ResourcePluginManager();
 
     ResourcePluginManager rpmSpy = spy(rpm);
@@ -509,16 +499,15 @@ public class TestResourcePluginManager extends NodeManagerTestBase {
     nm.init(conf);
     nm.start();
     // only 1 plugin has the customized scheduler
-    verify(rpmSpy, times(1)).checkInterfaceCompatibility(
+    verify(rpmSpy).checkInterfaceCompatibility(
         DevicePlugin.class, FakeTestDevicePlugin1.class);
-    verify(dmmSpy, times(1)).addDevicePluginScheduler(
+    verify(dmmSpy).addDevicePluginScheduler(
         any(String.class), any(DevicePluginScheduler.class));
     Assert.assertEquals(1, dmm.getDevicePluginSchedulers().size());
   }
 
   @Test(timeout = 30000)
-  public void testRequestedResourceNameIsConfigured()
-      throws Exception{
+  public void testRequestedResourceNameIsConfigured() {
     ResourcePluginManager rpm = new ResourcePluginManager();
     String resourceName = "a.com/a";
     Assert.assertFalse(rpm.isConfiguredResourceName(resourceName));
