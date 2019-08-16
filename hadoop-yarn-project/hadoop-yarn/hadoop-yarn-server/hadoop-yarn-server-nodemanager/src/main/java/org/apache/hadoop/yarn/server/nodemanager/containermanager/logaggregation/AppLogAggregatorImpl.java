@@ -378,7 +378,7 @@ public class AppLogAggregatorImpl implements AppLogAggregator {
       if (logAggregationSucceedInThisCycle && deletionTask != null) {
         delService.delete(deletionTask);
       }
-      if (!diagnosticMessage.isEmpty()) {
+      if (diagnosticMessage != null && !diagnosticMessage.isEmpty()) {
         LOG.debug("Sending log aggregation report along with the " +
             "following diagnostic message:\"{}\"", diagnosticMessage);
       }

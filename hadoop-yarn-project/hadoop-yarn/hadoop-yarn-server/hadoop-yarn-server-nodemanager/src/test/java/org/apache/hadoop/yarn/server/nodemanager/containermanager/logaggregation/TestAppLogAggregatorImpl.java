@@ -45,6 +45,7 @@ import org.apache.hadoop.yarn.server.nodemanager.LocalDirsHandlerService;
 import org.apache.hadoop.yarn.server.nodemanager.NodeManager;
 import org.apache.hadoop.yarn.server.nodemanager.NodeManager.NMContext;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.deletion.task.FileDeletionTask;
+import org.apache.hadoop.yarn.server.nodemanager.logaggregation.tracker.NMLogAggregationStatusTracker;
 import org.apache.hadoop.yarn.server.nodemanager.recovery.NMNullStateStoreService;
 import org.apache.hadoop.yarn.server.nodemanager.security.NMContainerTokenSecretManager;
 import org.apache.hadoop.yarn.server.nodemanager.security.NMTokenSecretManagerInNM;
@@ -451,6 +452,8 @@ public class TestAppLogAggregatorImpl {
         .when(format).closeWriter();
 
     NodeManager.NMContext context = (NMContext) createContext(config);
+    context.setNMLogAggregationStatusTracker(
+        Mockito.mock(NMLogAggregationStatusTracker.class));
 
     final AppLogAggregatorInTest appLogAggregator =
         createAppLogAggregator(appId, LOCAL_LOG_DIR.getAbsolutePath(),
