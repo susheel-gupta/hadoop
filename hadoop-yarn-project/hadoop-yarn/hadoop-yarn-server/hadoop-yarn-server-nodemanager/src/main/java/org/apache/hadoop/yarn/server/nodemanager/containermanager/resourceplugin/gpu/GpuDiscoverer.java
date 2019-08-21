@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.yarn.server.nodemanager.containermanager.resourceplugin.gpu;
 
+import static org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.resources.ResourcesExceptionUtil.throwIfNecessary;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -26,7 +28,6 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.server.nodemanager.webapp.dao.gpu.GpuDeviceInformation;
@@ -58,10 +59,9 @@ public class GpuDiscoverer extends Configured {
   private static final Set<String> DEFAULT_BINARY_SEARCH_DIRS = ImmutableSet.of(
       "/usr/bin", "/bin", "/usr/local/nvidia/bin");
 
-  // command should not run more than 10 sec.
-  private static final int MAX_EXEC_TIMEOUT_MS = 10 * 1000;
   private static final int MAX_REPEATED_ERROR_ALLOWED = 10;
 
+  private NvidiaBinaryHelper nvidiaBinaryHelper;
   private String pathOfGpuBinary = null;
   private Map<String, String> environment = new HashMap<>();
   private GpuDeviceInformationParser parser = new GpuDeviceInformationParser();
@@ -111,23 +111,17 @@ public class GpuDiscoverer extends Configured {
    * @return GpuDeviceInformation
    * @throws YarnException when any error happens
    */
-  synchronized GpuDeviceInformation getGpuDeviceInformation()
+  public synchronized GpuDeviceInformation getGpuDeviceInformation()
       throws YarnException {
-    validateConfOrThrowException();
-
     if (numOfErrorExecutionSinceLastSucceed == MAX_REPEATED_ERROR_ALLOWED) {
       String msg = getErrorMessageOfScriptExecutionThresholdReached();
       LOG.error(msg);
       throw new YarnException(msg);
     }
 
-    String output;
     try {
-      output = Shell.execCommand(environment,
-          new String[] { pathOfGpuBinary, "-x", "-q" }, MAX_EXEC_TIMEOUT_MS);
-      lastDiscoveredGpuInformation = parser.parseXml(output);
-      numOfErrorExecutionSinceLastSucceed = 0;
-      return lastDiscoveredGpuInformation;
+      lastDiscoveredGpuInformation =
+          nvidiaBinaryHelper.getGpuDeviceInformation(pathOfGpuBinary);
     } catch (IOException e) {
       numOfErrorExecutionSinceLastSucceed++;
       String msg = getErrorMessageOfScriptExecution(e.getMessage());
@@ -138,11 +132,11 @@ public class GpuDiscoverer extends Configured {
     } catch (YarnException e) {
       numOfErrorExecutionSinceLastSucceed++;
       String msg = getFailedToParseErrorMessage(e.getMessage());
-      if (LOG.isDebugEnabled()) {
-        LOG.warn(msg, e);
-      }
+      LOG.debug(msg, e);
       throw e;
     }
+
+    return lastDiscoveredGpuInformation;
   }
 
   boolean isAutoDiscoveryEnabled() {
@@ -157,7 +151,6 @@ public class GpuDiscoverer extends Configured {
    * Get list of GPU devices usable by YARN.
    *
    * @return List of GPU devices
-   * @throws YarnException when any issue happens
    */
   public synchronized List<GpuDevice> getGpusUsableByYarn()
       throws YarnException {
@@ -219,16 +212,27 @@ public class GpuDiscoverer extends Configured {
       if (device.trim().length() > 0) {
         String[] splitByColon = device.trim().split(":");
         if (splitByColon.length != 2) {
-          throw GpuDeviceSpecificationException.
-              createWithWrongValueSpecified(device, devices);
+          throwIfNecessary(GpuDeviceSpecificationException
+              .createWithWrongValueSpecified(device, devices), getConf());
+          LOG.warn("Wrong GPU specification string {}, ignored", device);
         }
 
-        GpuDevice gpuDevice = parseGpuDevice(device, splitByColon, devices);
+        GpuDevice gpuDevice;
+        try {
+          gpuDevice = parseGpuDevice(splitByColon);
+        } catch (NumberFormatException e) {
+          throwIfNecessary(GpuDeviceSpecificationException
+              .createWithWrongValueSpecified(device, devices, e), getConf());
+          LOG.warn("Cannot parse GPU device numbers: {}", device);
+          continue;
+        }
+
         if (!gpuDevices.contains(gpuDevice)) {
           gpuDevices.add(gpuDevice);
         } else {
-          throw GpuDeviceSpecificationException
-              .createWithDuplicateValueSpecified(device, devices);
+          throwIfNecessary(GpuDeviceSpecificationException
+              .createWithDuplicateValueSpecified(device, devices), getConf());
+          LOG.warn("CPU device is duplicated: {}", device);
         }
       }
     }
@@ -237,21 +241,16 @@ public class GpuDiscoverer extends Configured {
     return gpuDevices;
   }
 
-  private GpuDevice parseGpuDevice(String device, String[] splitByColon,
-      String allowedDevicesStr) throws YarnException {
-    try {
-      int index = Integer.parseInt(splitByColon[0]);
-      int minorNumber = Integer.parseInt(splitByColon[1]);
-      return new GpuDevice(index, minorNumber);
-    } catch (NumberFormatException e) {
-      throw GpuDeviceSpecificationException.
-          createWithWrongValueSpecified(device, allowedDevicesStr, e);
-    }
+  private GpuDevice parseGpuDevice(String[] splitByColon) {
+    int index = Integer.parseInt(splitByColon[0]);
+    int minorNumber = Integer.parseInt(splitByColon[1]);
+    return new GpuDevice(index, minorNumber);
   }
 
-  public synchronized void initialize(Configuration config)
-      throws YarnException {
+  public synchronized void initialize(Configuration config,
+      NvidiaBinaryHelper nvidiaHelper) throws YarnException {
     setConf(config);
+    this.nvidiaBinaryHelper = nvidiaHelper;
     if (isAutoDiscoveryEnabled()) {
       numOfErrorExecutionSinceLastSucceed = 0;
       lookUpAutoDiscoveryBinary(config);
@@ -286,7 +285,18 @@ public class GpuDiscoverer extends Configured {
       binaryPath = handleConfiguredBinaryPathIsDirectory(configuredBinaryFile);
     } else {
       binaryPath = configuredBinaryFile;
+      // If path exists but file name is incorrect don't execute the file
+      String fileName = binaryPath.getName();
+      if (DEFAULT_BINARY_NAME.equals(fileName)) {
+        String msg = String.format("Please check the configuration value of"
+             +" %s. It should point to an %s binary.",
+             YarnConfiguration.NM_GPU_PATH_TO_EXEC,
+             DEFAULT_BINARY_NAME);
+        throwIfNecessary(new YarnException(msg), config);
+        LOG.warn(msg);
+      }
     }
+
     pathOfGpuBinary = binaryPath.getAbsolutePath();
   }
 
