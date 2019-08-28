@@ -93,6 +93,10 @@ public class QueueMetrics implements MetricsSource {
 
   @Metric("App Attempt First Container Allocation Delay")
     MutableRate appAttemptFirstContainerAllocationDelay;
+  @Metric("Aggregate total of preempted memory MB")
+    MutableCounterLong aggregateMemoryMBPreempted;
+  @Metric("Aggregate total of preempted vcores")
+    MutableCounterLong aggregateVcoresPreempted;
 
   //Metrics updated only for "default" partition
   @Metric("Allocated memory in MB") MutableGaugeLong allocatedMB;
@@ -611,6 +615,23 @@ public class QueueMetrics implements MetricsSource {
     }
   }
 
+  public void updatePreemptedResources(Resource res) {
+    aggregateMemoryMBPreempted.incr(res.getMemorySize());
+    aggregateVcoresPreempted.incr(res.getVirtualCores());
+    if (parent != null) {
+      parent.updatePreemptedResources(res);
+    }
+  }
+
+  public void updatePreemptedForCustomResources(Resource res) {
+    if (queueMetricsForCustomResources != null) {
+      queueMetricsForCustomResources.increaseAggregatedPreempted(res);
+    }
+    if (parent != null) {
+      parent.updatePreemptedForCustomResources(res);
+    }
+  }
+
   public void updatePreemptedSecondsForCustomResources(Resource res,
           long seconds) {
     if (queueMetricsForCustomResources != null) {
@@ -776,6 +797,16 @@ public class QueueMetrics implements MetricsSource {
   @VisibleForTesting
   public MutableCounterLong getAggregateVcoreSecondsPreempted() {
     return aggregateVcoreSecondsPreempted;
+  }
+
+  @VisibleForTesting
+  public long getAggregateMemoryMBPreempted() {
+    return aggregateMemoryMBPreempted.value();
+  }
+
+  @VisibleForTesting
+  public long getAggregateVcoresPreempted() {
+    return aggregateVcoresPreempted.value();
   }
 
   public long getAllocatedMB() {
