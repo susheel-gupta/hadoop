@@ -1594,6 +1594,11 @@ public class CapacityScheduler extends
     if (getNode(node.getNodeID()) != node) {
       LOG.error("Trying to schedule on a removed node, please double check, "
           + "nodeId=" + node.getNodeID());
+      ActivitiesLogger.QUEUE.recordQueueActivity(activitiesManager, node,
+          "", getRootQueue().getQueueName(), ActivityState.REJECTED,
+          ActivityDiagnosticConstant.INIT_CHECK_SINGLE_NODE_REMOVED);
+      ActivitiesLogger.NODE.finishSkippedNodeAllocation(activitiesManager,
+          node);
       return null;
     }
 
@@ -1603,17 +1608,10 @@ public class CapacityScheduler extends
     RMContainer reservedContainer = node.getReservedContainer();
     if (reservedContainer != null) {
       allocateFromReservedContainer(node, withNodeHeartbeat, reservedContainer);
-    }
-
-    // Do not schedule if there are any reservations to fulfill on the node
-    // node.getReservedContainer() is saved to the reservedContainer variable
-    // to ensure that a NPE described in YARN-10295 won't occur
-    reservedContainer = node.getReservedContainer();
-    if (reservedContainer != null) {
+      // Do not schedule if there are any reservations to fulfill on the node
       LOG.debug("Skipping scheduling since node " + node.getNodeID()
           + " is reserved by application "
-          + reservedContainer.
-              getContainerId().getApplicationAttemptId());
+          + reservedContainer.getContainerId().getApplicationAttemptId());
       return null;
     }
 
@@ -1623,8 +1621,14 @@ public class CapacityScheduler extends
     if (calculator.computeAvailableContainers(Resources
             .add(node.getUnallocatedResource(), node.getTotalKillableResources()),
         minimumAllocation) <= 0) {
-      LOG.debug("This node or node partition doesn't have available or" +
-          " preemptible resource");
+      LOG.debug("This node " + node.getNodeID() + " doesn't have sufficient "
+          + "available or preemptible resource for minimum allocation");
+      ActivitiesLogger.QUEUE.recordQueueActivity(activitiesManager, node,
+          "", getRootQueue().getQueueName(), ActivityState.REJECTED,
+          ActivityDiagnosticConstant.
+              INIT_CHECK_SINGLE_NODE_RESOURCE_INSUFFICIENT);
+      ActivitiesLogger.NODE.finishSkippedNodeAllocation(activitiesManager,
+          node);
       return null;
     }
 
@@ -1677,18 +1681,18 @@ public class CapacityScheduler extends
       ActivitiesLogger.NODE.finishAllocatedNodeAllocation(activitiesManager,
           node, reservedContainer.getContainerId(),
           AllocationState.ALLOCATED_FROM_RESERVED);
-    } else{
-     ActivitiesLogger.QUEUE.recordQueueActivity(activitiesManager, node,
+    } else if (assignment.getAssignmentInformation().getNumReservations() > 0) {
+      ActivitiesLogger.QUEUE.recordQueueActivity(activitiesManager, node,
           queue.getParent().getQueuePath(), queue.getQueuePath(),
           ActivityState.RE_RESERVED, ActivityDiagnosticConstant.EMPTY);
       ActivitiesLogger.NODE.finishAllocatedNodeAllocation(activitiesManager,
-          node, reservedContainer.getContainerId(), AllocationState.SKIPPED);
+          node, reservedContainer.getContainerId(), AllocationState.RESERVED);
     }
 
-      assignment.setSchedulingMode(
-          SchedulingMode.RESPECT_PARTITION_EXCLUSIVITY);
-      submitResourceCommitRequest(getClusterResource(), assignment);
-    }
+    assignment.setSchedulingMode(
+        SchedulingMode.RESPECT_PARTITION_EXCLUSIVITY);
+    submitResourceCommitRequest(getClusterResource(), assignment);
+  }
 
   private CSAssignment allocateOrReserveNewContainers(
       CandidateNodeSet<FiCaSchedulerNode> candidates,
@@ -1788,13 +1792,13 @@ public class CapacityScheduler extends
       assignment = allocateContainerOnSingleNode(candidates,
           node, withNodeHeartbeat);
       ActivitiesLogger.NODE.finishNodeUpdateRecording(activitiesManager,
-          node.getNodeID());
+          node.getNodeID(), candidates.getPartition());
     } else{
       ActivitiesLogger.NODE.startNodeUpdateRecording(activitiesManager,
           ActivitiesManager.EMPTY_NODE_ID);
       assignment = allocateContainersOnMultiNodes(candidates);
       ActivitiesLogger.NODE.finishNodeUpdateRecording(activitiesManager,
-          ActivitiesManager.EMPTY_NODE_ID);
+          ActivitiesManager.EMPTY_NODE_ID, candidates.getPartition());
     }
 
     if (assignment != null && assignment.getAssignmentInformation() != null

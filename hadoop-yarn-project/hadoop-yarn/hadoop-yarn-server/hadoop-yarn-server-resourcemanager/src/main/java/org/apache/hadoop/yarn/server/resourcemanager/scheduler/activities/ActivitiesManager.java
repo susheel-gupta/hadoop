@@ -125,7 +125,7 @@ public class ActivitiesManager extends AbstractService {
   }
 
   public AppActivitiesInfo getAppActivitiesInfo(ApplicationId applicationId,
-      Set<String> requestPriorities, Set<String> allocationRequestIds,
+      Set<Integer> requestPriorities, Set<Long> allocationRequestIds,
       RMWSConsts.ActivitiesGroupBy groupBy, int limit, boolean summarize,
       double maxTimeInSeconds) {
     RMApp app = rmContext.getRMApps().get(applicationId);
@@ -187,20 +187,18 @@ public class ActivitiesManager extends AbstractService {
       }
       List<ActivityNode> activityNodes = appAllocation.getAllocationAttempts();
       for (ActivityNode an : activityNodes) {
-        if (an.getNodeId() != null) {
-          nodeActivities.putIfAbsent(
-              an.getRequestPriority() + "_" + an.getAllocationRequestId() + "_"
-                  + an.getNodeId(), an);
-        }
+        nodeActivities.putIfAbsent(
+            an.getRequestPriority() + "_" + an.getAllocationRequestId() + "_"
+                + an.getNodeId(), an);
       }
     }
     AppAllocation lastAppAllocation = allocations.get(allocations.size() - 1);
     AppAllocation summarizedAppAllocation =
         new AppAllocation(lastAppAllocation.getPriority(), null,
             lastAppAllocation.getQueueName());
-    summarizedAppAllocation
-        .updateAppContainerStateAndTime(null, lastAppAllocation.getAppState(),
-            lastAppAllocation.getTime(), lastAppAllocation.getDiagnostic());
+    summarizedAppAllocation.updateAppContainerStateAndTime(null,
+        lastAppAllocation.getActivityState(), lastAppAllocation.getTime(),
+        lastAppAllocation.getDiagnostic());
     summarizedAppAllocation
         .setAllocationAttempts(new ArrayList<>(nodeActivities.values()));
     return summarizedAppAllocation;
@@ -252,19 +250,18 @@ public class ActivitiesManager extends AbstractService {
                   (int) (numNodes * 1.2));
         }
         if (appActivitiesMaxQueueLength != newAppActivitiesMaxQueueLength) {
-          LOG.info("Update max queue length of app activities from {} to {},"
-                  + " configured={}, numNodes={}, numAsyncSchedulerThreads={}"
-                  + " when multi-node placement disabled.",
-              appActivitiesMaxQueueLength, newAppActivitiesMaxQueueLength,
-              configuredAppActivitiesMaxQueueLength, numNodes,
-              numAsyncSchedulerThreads);
+          LOG.info("Update max queue length of app activities from "
+              + appActivitiesMaxQueueLength + " to " + newAppActivitiesMaxQueueLength
+              + ", configured=" + configuredAppActivitiesMaxQueueLength + ", numNodes="
+              + numNodes + ", numAsyncSchedulerThreads=" + numAsyncSchedulerThreads
+              + " when multi-node placement disabled.");
           appActivitiesMaxQueueLength = newAppActivitiesMaxQueueLength;
         }
       } else if (appActivitiesMaxQueueLength
           != configuredAppActivitiesMaxQueueLength) {
-        LOG.info("Update max queue length of app activities from {} to {}"
-                + " when multi-node placement enabled.",
-            appActivitiesMaxQueueLength, configuredAppActivitiesMaxQueueLength);
+        LOG.info("Update max queue length of app activities from " + appActivitiesMaxQueueLength
+            + " to " + configuredAppActivitiesMaxQueueLength
+            + " when multi-node placement enabled.");
         appActivitiesMaxQueueLength = configuredAppActivitiesMaxQueueLength;
       }
     }
@@ -283,7 +280,7 @@ public class ActivitiesManager extends AbstractService {
             Map.Entry<NodeId, List<NodeAllocation>> nodeAllocation = ite.next();
             List<NodeAllocation> allocations = nodeAllocation.getValue();
             if (allocations.size() > 0
-                && curTS - allocations.get(0).getTimeStamp()
+                && curTS - allocations.get(0).getTimestamp()
                 > schedulerActivitiesTTL) {
               ite.remove();
             }
@@ -384,8 +381,8 @@ public class ActivitiesManager extends AbstractService {
 
   // Add queue, application or container activity into specific node allocation.
   void addSchedulingActivityForNode(NodeId nodeId, String parentName,
-      String childName, String priority, ActivityState state, String diagnostic,
-      String type, String allocationRequestId) {
+      String childName, Integer priority, ActivityState state,
+      String diagnostic, ActivityLevel level, Long allocationRequestId) {
     if (shouldRecordThisNode(nodeId)) {
       NodeAllocation nodeAllocation = getCurrentNodeAllocation(nodeId);
 
@@ -398,21 +395,21 @@ public class ActivitiesManager extends AbstractService {
       }
 
       nodeAllocation.addAllocationActivity(parentName, childName, priority,
-          state, diagnostic, type, nodeId, allocationRequestId);
+          state, diagnostic, level, nodeId, allocationRequestId);
     }
   }
 
   // Add queue, application or container activity into specific application
   // allocation.
   void addSchedulingActivityForApp(ApplicationId applicationId,
-      ContainerId containerId, String priority, ActivityState state,
-      String diagnostic, String type, NodeId nodeId,
-      String allocationRequestId) {
+      ContainerId containerId, Integer priority, ActivityState state,
+      String diagnostic, ActivityLevel level, NodeId nodeId,
+      Long allocationRequestId) {
     if (shouldRecordThisApp(applicationId)) {
       AppAllocation appAllocation = appsAllocation.get().get(applicationId);
       appAllocation.addAppAllocationActivity(containerId == null ?
           "Container-Id-Not-Assigned" :
-          containerId.toString(), priority, state, diagnostic, type, nodeId,
+          containerId.toString(), priority, state, diagnostic, level, nodeId,
           allocationRequestId);
     }
   }
@@ -460,16 +457,17 @@ public class ActivitiesManager extends AbstractService {
     }
   }
 
-  void finishNodeUpdateRecording(NodeId nodeID) {
+  void finishNodeUpdateRecording(NodeId nodeID, String partition) {
     List<NodeAllocation> value = recordingNodesAllocation.get().get(nodeID);
-    long timeStamp = SystemClock.getInstance().getTime();
+    long timestamp = SystemClock.getInstance().getTime();
 
     if (value != null) {
       if (value.size() > 0) {
         lastAvailableNodeActivities = value;
         for (NodeAllocation allocation : lastAvailableNodeActivities) {
           allocation.transformToTree();
-          allocation.setTimeStamp(timeStamp);
+          allocation.setTimestamp(timestamp);
+          allocation.setPartition(partition);
         }
         if (recordNextAvailableNode) {
           recordNextAvailableNode = false;
