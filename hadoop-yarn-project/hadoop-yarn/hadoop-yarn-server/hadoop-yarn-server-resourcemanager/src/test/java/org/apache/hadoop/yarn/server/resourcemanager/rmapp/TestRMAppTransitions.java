@@ -19,6 +19,7 @@
 package org.apache.hadoop.yarn.server.resourcemanager.rmapp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.eq;
@@ -111,7 +112,32 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
+/*
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import static org.assertj.core.api.Assertions.assertThat;
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+*/
 
 @RunWith(value = Parameterized.class)
 public class TestRMAppTransitions {
@@ -472,8 +498,12 @@ public class TestRMAppTransitions {
   private void assertAppStateLaunchTimeSaved(long expectedLaunchTime) {
     ArgumentCaptor<ApplicationStateData> state =
         ArgumentCaptor.forClass(ApplicationStateData.class);
-    verify(store, times(1)).updateApplicationState(state.capture());
+    ArgumentCaptor<Boolean> notifyApp =
+        ArgumentCaptor.forClass(Boolean.class);
+    verify(store, times(1)).updateApplicationState(state.capture(),
+        notifyApp.capture());
     assertEquals(expectedLaunchTime, state.getValue().getLaunchTime());
+    assertFalse(notifyApp.getValue());
   }
 
   private void assertKilled(RMApp application) {
