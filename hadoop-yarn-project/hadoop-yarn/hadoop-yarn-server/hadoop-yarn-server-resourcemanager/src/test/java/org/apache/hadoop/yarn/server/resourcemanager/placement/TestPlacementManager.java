@@ -87,33 +87,31 @@ public class TestPlacementManager {
 
     ApplicationSubmissionContext asc = Records.newRecord(
         ApplicationSubmissionContext.class);
+    asc.setQueue(YarnConfiguration.DEFAULT_QUEUE_NAME);
     asc.setApplicationName(APP_NAME);
 
-    boolean caughtException = false;
-    try{
-      pm.placeApplication(asc, USER2);
-    } catch (Exception e) {
-      caughtException = true;
-    }
-    Assert.assertTrue(caughtException);
+
+    Assert.assertNull("Placement should be null",
+        pm.placeApplication(asc, USER2));
 
     QueueMapping queueMappingEntity = QueueMapping.QueueMappingBuilder.create()
-      .type(MappingType.APPLICATION)
-      .source(APP_NAME)
-      .queue(USER1)
-      .parentQueue(PARENT_QUEUE)
-      .build();
+        .type(MappingType.APPLICATION)
+        .source(APP_NAME)
+        .queue(USER1)
+        .parentQueue(PARENT_QUEUE)
+        .build();
 
     AppNameMappingPlacementRule anRule = new AppNameMappingPlacementRule(false,
         Arrays.asList(queueMappingEntity));
     queuePlacementRules.add(anRule);
     pm.updateRules(queuePlacementRules);
-    try{
-      pm.placeApplication(asc, USER2);
+    try {
+      ApplicationPlacementContext pc = pm.placeApplication(asc, USER2);
+      Assert.assertNotNull(pc);
     } catch (Exception e) {
-      caughtException = false;
+      e.printStackTrace();
+      Assert.fail("Exception not expected");
     }
-    Assert.assertFalse(caughtException);
   }
 
 }
