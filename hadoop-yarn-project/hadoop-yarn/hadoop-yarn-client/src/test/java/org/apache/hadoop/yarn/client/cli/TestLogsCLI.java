@@ -32,6 +32,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Matchers.*;
 
+import com.google.common.collect.ImmutableList;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.ClientResponse.Status;
@@ -48,6 +49,7 @@ import java.io.Writer;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -88,8 +90,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestLogsCLI {
+
+  private static final Logger LOG =
+      LoggerFactory.getLogger(TestLogsCLI.class);
 
   ByteArrayOutputStream sysOutStream;
   private PrintStream sysOut;
@@ -397,13 +404,15 @@ public class TestLogsCLI {
     List<String> logTypes = new ArrayList<String>();
     logTypes.add("syslog");
     // create container logs in localLogDir
-    createContainerLogInLocalDir(appLogsDir, containerId1, fs, logTypes);
-    createContainerLogInLocalDir(appLogsDir, containerId2, fs, logTypes);
-
+    createContainerLogInLocalDir(appLogsDir, containerId1, fs, logTypes,
+        ImmutableList.of("empty"));
+    createContainerLogInLocalDir(appLogsDir, containerId2, fs, logTypes,
+        Collections.emptyList());
     // create two logs for container3 in localLogDir
     logTypes.add("stdout");
     logTypes.add("stdout1234");
-    createContainerLogInLocalDir(appLogsDir, containerId3, fs, logTypes);
+    createContainerLogInLocalDir(appLogsDir, containerId3, fs, logTypes,
+        Collections.emptyList());
 
     Path path =
         new Path(remoteLogRootDir + ugi.getShortUserName()
@@ -444,6 +453,7 @@ public class TestLogsCLI {
     cli.setConf(configuration);
 
     int exitCode = cli.run(new String[] { "-applicationId", appId.toString() });
+    LOG.info(sysOutStream.toString());
     assertTrue(exitCode == 0);
     assertTrue(sysOutStream.toString().contains(
         logMessage(containerId1, "syslog")));
@@ -455,6 +465,8 @@ public class TestLogsCLI {
         logMessage(containerId3, "stdout")));
     assertTrue(sysOutStream.toString().contains(
         logMessage(containerId3, "stdout1234")));
+    assertTrue(sysOutStream.toString().contains(
+        createEmptyLog("empty")));
     sysOutStream.reset();
 
     exitCode = cli.run(new String[] {"-applicationId", appId.toString(),
@@ -470,6 +482,8 @@ public class TestLogsCLI {
         logMessage(containerId3, "stdout")));
     assertTrue(sysOutStream.toString().contains(
         logMessage(containerId3, "stdout1234")));
+    assertTrue(sysOutStream.toString().contains(
+        createEmptyLog("empty")));
     sysOutStream.reset();
 
     exitCode = cli.run(new String[] {"-applicationId", appId.toString(),
@@ -485,6 +499,8 @@ public class TestLogsCLI {
         logMessage(containerId3, "stdout")));
     assertTrue(sysOutStream.toString().contains(
         logMessage(containerId3, "stdout1234")));
+    assertTrue(sysOutStream.toString().contains(
+        createEmptyLog("empty")));
     int fullSize = sysOutStream.toByteArray().length;
     sysOutStream.reset();
 
@@ -501,6 +517,8 @@ public class TestLogsCLI {
         logMessage(containerId3, "stdout")));
     assertFalse(sysOutStream.toString().contains(
         logMessage(containerId3, "stdout1234")));
+    assertFalse(sysOutStream.toString().contains(
+        createEmptyLog("empty")));
     sysOutStream.reset();
 
     exitCode = cli.run(new String[] {"-applicationId", appId.toString(),
@@ -516,6 +534,8 @@ public class TestLogsCLI {
         logMessage(containerId3, "stdout")));
     assertTrue(sysOutStream.toString().contains(
         logMessage(containerId3, "stdout1234")));
+    assertFalse(sysOutStream.toString().contains(
+        createEmptyLog("empty")));
     sysOutStream.reset();
 
     exitCode = cli.run(new String[] {"-applicationId", appId.toString(),
@@ -584,6 +604,15 @@ public class TestLogsCLI {
     Assert.assertEquals(new String(logMessage.getBytes(), 0, 5),
         new String(sysOutStream.toByteArray(),
         (fullContextSize - fileContentSize - tailContentSize), 5));
+    sysOutStream.reset();
+
+    // specify how many bytes we should get from an empty log
+    exitCode = cli.run(new String[] {"-applicationId", appId.toString(),
+        "-containerId", containerId1.toString(), "-log_files", "empty",
+        "-size", "5"});
+    assertTrue(exitCode == 0);
+    assertTrue(sysOutStream.toString().contains(
+        createEmptyLog("empty")));
     sysOutStream.reset();
 
     // specify a negative number, it would get the last n bytes from
@@ -789,7 +818,8 @@ public class TestLogsCLI {
     List<String> logTypes = new ArrayList<String>();
     logTypes.add(fileName);
     // create container logs in localLogDir
-    createContainerLogInLocalDir(appLogsDir, containerId1, fs, logTypes);
+    createContainerLogInLocalDir(appLogsDir, containerId1, fs, logTypes,
+        Collections.emptyList());
 
     Path containerDirPath = new Path(appLogsDir, containerId1.toString());
     Path logPath = new Path(containerDirPath, fileName);
@@ -964,7 +994,8 @@ public class TestLogsCLI {
       logTypes.add("syslog");
 
       // create container logs in localLogDir for app
-      createContainerLogInLocalDir(appLogsDir, containerId, fs, logTypes);
+      createContainerLogInLocalDir(appLogsDir, containerId, fs, logTypes,
+          Collections.emptyList());
 
       // create the remote app dir for app
       // but for a different user testUser"
@@ -1450,7 +1481,8 @@ public class TestLogsCLI {
     logTypes.add("syslog");
     // create container logs in localLogDir
     for (ContainerId containerId : containerIds) {
-      createContainerLogInLocalDir(appLogsDir, containerId, fs, logTypes);
+      createContainerLogInLocalDir(appLogsDir, containerId, fs, logTypes,
+          Collections.emptyList());
     }
     Path path =
         new Path(remoteLogRootDir + ugi.getShortUserName()
@@ -1467,7 +1499,8 @@ public class TestLogsCLI {
   }
 
   private static void createContainerLogInLocalDir(Path appLogsDir,
-      ContainerId containerId, FileSystem fs, List<String> logTypes) throws Exception {
+      ContainerId containerId, FileSystem fs, List<String> logTypes,
+      List<String> emptyLogTypes) throws Exception {
     Path containerLogsDir = new Path(appLogsDir, containerId.toString());
     if (fs.exists(containerLogsDir)) {
       fs.delete(containerLogsDir, true);
@@ -1479,12 +1512,22 @@ public class TestLogsCLI {
       writer.write(logMessage(containerId, logType));
       writer.close();
     }
+    for (String emptyLogType : emptyLogTypes) {
+      Writer writer =
+          new FileWriter(new File(containerLogsDir.toString(), emptyLogType));
+      writer.write("");
+      writer.close();
+    }
   }
 
   private static String logMessage(ContainerId containerId, String logType) {
     StringBuilder sb = new StringBuilder();
     sb.append("Hello " + containerId + " in " + logType + "!");
     return sb.toString();
+  }
+
+  private static String createEmptyLog(String logType) {
+    return "LogContents:\n\nEnd of LogType:" + logType;
   }
 
   private static void uploadContainerLogIntoRemoteDir(UserGroupInformation ugi,

@@ -80,6 +80,7 @@ public class TestLogAggregationIndexFileController {
       .createImmutable((short) (0777));
   private static final UserGroupInformation USER_UGI = UserGroupInformation
       .createRemoteUser("testUser");
+  private static final String ZERO_FILE = "zero";
   private FileSystem fs;
   private Configuration conf;
   private ApplicationId appId;
@@ -148,6 +149,8 @@ public class TestLogAggregationIndexFileController {
           logType);
       files.add(file);
     }
+    files.add(createZeroLocalLogFile(appLogsDir));
+
     LogValue value = mock(LogValue.class);
     when(value.getPendingLogFilesToUploadForThisContainer()).thenReturn(files);
 
@@ -207,12 +210,13 @@ public class TestLogAggregationIndexFileController {
     for (ContainerLogMeta log : meta) {
       Assert.assertTrue(log.getContainerId().equals(containerId.toString()));
       Assert.assertTrue(log.getNodeId().equals(nodeId.toString()));
-      Assert.assertTrue(log.getContainerLogMeta().size() == 3);
+      Assert.assertTrue(log.getContainerLogMeta().size() == 4);
       for (ContainerLogFileInfo file : log.getContainerLogMeta()) {
         fileNames.add(file.getFileName());
       }
     }
     fileNames.removeAll(logTypes);
+    fileNames.remove(ZERO_FILE);
     Assert.assertTrue(fileNames.isEmpty());
 
     boolean foundLogs = fileFormat.readAggregatedLogs(logRequest, System.out);
@@ -221,6 +225,7 @@ public class TestLogAggregationIndexFileController {
       Assert.assertTrue(sysOutStream.toString().contains(logMessage(
           containerId, logType)));
     }
+    assertZeroFileIsContained(sysOutStream.toString());
     sysOutStream.reset();
 
     Configuration factoryConf = new Configuration(conf);
@@ -290,14 +295,15 @@ public class TestLogAggregationIndexFileController {
         logRequest);
     Assert.assertEquals(meta.size(), 1);
     for (ContainerLogMeta log : meta) {
-      Assert.assertTrue(log.getContainerId().equals(containerId.toString()));
-      Assert.assertTrue(log.getNodeId().equals(nodeId.toString()));
-      Assert.assertTrue(log.getContainerLogMeta().size() == 3);
+      Assert.assertEquals(containerId.toString(), log.getContainerId());
+      Assert.assertEquals(nodeId.toString(), log.getNodeId());
+      Assert.assertEquals(4, log.getContainerLogMeta().size());
       for (ContainerLogFileInfo file : log.getContainerLogMeta()) {
         fileNames.add(file.getFileName());
       }
     }
     fileNames.removeAll(logTypes);
+    fileNames.remove(ZERO_FILE);
     Assert.assertTrue(fileNames.isEmpty());
     foundLogs = fileFormat.readAggregatedLogs(logRequest, System.out);
     Assert.assertTrue(foundLogs);
@@ -328,6 +334,7 @@ public class TestLogAggregationIndexFileController {
       }
     }
     fileNames.removeAll(newLogTypes);
+    fileNames.remove(ZERO_FILE);
     Assert.assertTrue(fileNames.isEmpty());
     foundLogs = fileFormat.readAggregatedLogs(logRequest, System.out);
     Assert.assertTrue(foundLogs);
@@ -356,6 +363,7 @@ public class TestLogAggregationIndexFileController {
       }
     }
     fileNames.removeAll(newLogTypes);
+    fileNames.remove(ZERO_FILE);
     Assert.assertTrue(fileNames.isEmpty());
     foundLogs = fileFormat.readAggregatedLogs(logRequest, System.out);
     Assert.assertTrue(foundLogs);
@@ -418,8 +426,25 @@ public class TestLogAggregationIndexFileController {
     sysOutStream.reset();
   }
 
+  private void assertZeroFileIsContained(String outStream) {
+    assertTrue(outStream.contains(
+        "LogContents:\n" +
+        "\n" +
+        "End of LogType:zero"));
+  }
+
+  private File createZeroLocalLogFile(Path localLogDir) throws IOException {
+    return createAndWriteLocalLogFile(localLogDir, ZERO_FILE, "");
+  }
+
   private File createAndWriteLocalLogFile(ContainerId containerId,
       Path localLogDir, String logType) throws IOException {
+    return createAndWriteLocalLogFile(localLogDir, logType,
+        logMessage(containerId, logType));
+  }
+
+  private File createAndWriteLocalLogFile(Path localLogDir, String logType,
+      String message) throws IOException {
     File file = new File(localLogDir.toString(), logType);
     if (file.exists()) {
       file.delete();
@@ -428,7 +453,7 @@ public class TestLogAggregationIndexFileController {
     Writer writer = null;
     try {
       writer = new FileWriter(file);
-      writer.write(logMessage(containerId, logType));
+      writer.write(message);
       writer.close();
       return file;
     } finally {
