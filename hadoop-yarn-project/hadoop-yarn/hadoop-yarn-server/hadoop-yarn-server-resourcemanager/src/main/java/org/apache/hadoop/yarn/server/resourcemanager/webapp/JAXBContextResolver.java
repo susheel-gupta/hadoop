@@ -61,7 +61,8 @@ public class JAXBContextResolver implements ContextResolver<JAXBContext> {
     final Class[] rootUnwrappedTypes =
         { NewApplication.class, ApplicationSubmissionContextInfo.class,
             ContainerLaunchContextInfo.class, LocalResourceInfo.class,
-            DelegationToken.class, AppQueue.class, AppPriority.class };
+            DelegationToken.class, AppQueue.class, AppPriority.class,
+            ClusterScalingInfo.class, NodeInstanceTypeList.class};
 
     this.typesContextMap = new HashMap<Class, JAXBContext>();
     context =

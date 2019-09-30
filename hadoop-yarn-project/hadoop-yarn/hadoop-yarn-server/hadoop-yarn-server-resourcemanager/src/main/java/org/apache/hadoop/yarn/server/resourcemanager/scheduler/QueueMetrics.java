@@ -21,8 +21,10 @@ package org.apache.hadoop.yarn.server.resourcemanager.scheduler;
 import static org.apache.hadoop.metrics2.lib.Interns.info;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -44,6 +46,7 @@ import org.apache.hadoop.metrics2.lib.MutableRate;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.hadoop.yarn.exceptions.ResourceNotFoundException;
 import org.apache.hadoop.yarn.server.resourcemanager.nodelabels.RMNodeLabelsManager;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMAppState;
 import org.apache.hadoop.yarn.util.resource.ResourceUtils;
@@ -75,6 +78,19 @@ public class QueueMetrics implements MetricsSource {
       aggregateVcoreSecondsPreempted;
   @Metric("# of active users") MutableGaugeInt activeUsers;
   @Metric("# of active applications") MutableGaugeInt activeApplications;
+
+  public Map<Resource, Integer> getContainerAskToCount() {
+    return containerAskToCount;
+  }
+
+  // put bigger capacity ahead
+  protected Map<Resource, Integer> containerAskToCount = new TreeMap<>(new Comparator<Resource>() {
+    @Override
+    public int compare(Resource o1, Resource o2) {
+      return o2.compareTo(o1);
+    }
+  });
+
   @Metric("App Attempt First Container Allocation Delay")
     MutableRate appAttemptFirstContainerAllocationDelay;
 
@@ -421,6 +437,8 @@ public class QueueMetrics implements MetricsSource {
     if (queueMetricsForCustomResources != null) {
       queueMetricsForCustomResources.increasePending(res, containers);
     }
+    containerAskToCount.put(res,
+        containerAskToCount.getOrDefault(res, 0) + containers);
   }
 
 
@@ -444,6 +462,13 @@ public class QueueMetrics implements MetricsSource {
     pendingVCores.decr(res.getVirtualCores() * containers);
     if (queueMetricsForCustomResources != null) {
       queueMetricsForCustomResources.decreasePending(res, containers);
+    }
+    int c = containerAskToCount.getOrDefault(res, 0);
+    int remaining = c - containers;
+    if(c == 0 || remaining <= 0) {
+      containerAskToCount.remove(res);
+    } else {
+      containerAskToCount.put(res, remaining);
     }
   }
 
