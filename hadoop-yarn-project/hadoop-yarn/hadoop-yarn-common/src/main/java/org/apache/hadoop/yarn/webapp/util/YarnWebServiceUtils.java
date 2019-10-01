@@ -71,14 +71,19 @@ public final class YarnWebServiceUtils {
   private static JSONObject getNodeInfoFromRM(String webAppAddress,
       String nodeId) throws ClientHandlerException, UniformInterfaceException {
     Client webServiceClient = Client.create();
-
-    WebResource webResource = webServiceClient.resource(webAppAddress);
-
-    ClientResponse response = webResource.path("ws").path("v1")
-        .path("cluster").path("nodes")
-        .path(nodeId).accept(MediaType.APPLICATION_JSON)
-        .get(ClientResponse.class);
+    ClientResponse response = null;
+    try {
+      Builder builder = webServiceClient.resource(webAppAddress)
+          .path("ws").path("v1").path("cluster")
+          .path("nodes").path(nodeId).accept(MediaType.APPLICATION_JSON);
+      response = builder.get(ClientResponse.class);
       return response.getEntity(JSONObject.class);
+    } finally {
+      if (response != null) {
+        response.close();
+      }
+      webServiceClient.destroy();
+    }
   }
 
   @SuppressWarnings("rawtypes")
