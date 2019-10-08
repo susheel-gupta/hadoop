@@ -3773,6 +3773,13 @@ public class YarnConfiguration extends Configuration {
   public static final String DEFAULT_NM_NUMA_AWARENESS_NUMACTL_CMD =
       "/usr/bin/numactl";
 
+  // Configuration for the prefix of the tag which contains workflow ID,
+  // followed by the prefix.
+  public static final String YARN_WORKFLOW_ID_TAG_PREFIX =
+      YARN_PREFIX + "workflow-id.tag-prefix";
+  public static final String DEFAULT_YARN_WORKFLOW_ID_TAG_PREFIX =
+      "workflowid:";
+
   public YarnConfiguration() {
     super();
   }
