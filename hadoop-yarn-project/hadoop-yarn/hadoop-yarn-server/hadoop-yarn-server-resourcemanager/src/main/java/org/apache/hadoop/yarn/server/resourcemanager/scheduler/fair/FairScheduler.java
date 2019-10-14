@@ -207,6 +207,8 @@ public class FairScheduler extends
   @VisibleForTesting
   Resource reservationThreshold;
 
+  private boolean migration;
+
   public FairScheduler() {
     super(FairScheduler.class.getName());
     context = new FSContext(this);
@@ -1405,8 +1407,8 @@ public class FairScheduler extends
       allocConf = new AllocationConfiguration(this);
       queueMgr.initialize();
 
-      if (continuousSchedulingEnabled) {
-        // Contiuous scheduling is deprecated log it on startup
+      if (continuousSchedulingEnabled && !migration) {
+        // Continuous scheduling is deprecated log it on startup
         LOG.warn("Continuous scheduling is turned ON. It is deprecated " +
             "because it can cause scheduler slowness due to locking issues. " +
             "Schedulers should use assignmultiple as a replacement.");
@@ -1418,7 +1420,7 @@ public class FairScheduler extends
         schedulingThread.setDaemon(true);
       }
 
-      if (this.conf.getPreemptionEnabled()) {
+      if (this.conf.getPreemptionEnabled() && !migration) {
         createPreemptionThread();
       }
     } finally {
@@ -1472,11 +1474,15 @@ public class FairScheduler extends
 
   @Override
   public void serviceInit(Configuration conf) throws Exception {
+    migration =
+        conf.getBoolean(FairSchedulerConfiguration.MIGRATION_MODE, false);
     initScheduler(conf);
     super.serviceInit(conf);
 
-    // Initialize SchedulingMonitorManager
-    schedulingMonitorManager.initialize(rmContext, conf);
+    if (!migration) {
+      // Initialize SchedulingMonitorManager
+      schedulingMonitorManager.initialize(rmContext, conf);
+    }
   }
 
   @Override

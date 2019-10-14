@@ -93,6 +93,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.QueueEntit
 
 
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.ReleaseContainerEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairSchedulerConfiguration;
 import org.apache.hadoop.yarn.server.scheduler.OpportunisticContainerContext;
 import org.apache.hadoop.yarn.server.scheduler.SchedulerRequestKey;
 import org.apache.hadoop.yarn.server.utils.BuilderUtils;
@@ -174,6 +175,8 @@ public abstract class AbstractYarnScheduler
   protected SchedulingMonitorManager schedulingMonitorManager =
       new SchedulingMonitorManager();
 
+  private boolean migration;
+
   /**
    * Construct the service.
    *
@@ -189,6 +192,9 @@ public abstract class AbstractYarnScheduler
 
   @Override
   public void serviceInit(Configuration conf) throws Exception {
+    migration =
+        conf.getBoolean(FairSchedulerConfiguration.MIGRATION_MODE, false);
+
     nmExpireInterval =
         conf.getInt(YarnConfiguration.RM_NM_EXPIRY_INTERVAL_MS,
           YarnConfiguration.DEFAULT_RM_NM_EXPIRY_INTERVAL_MS);
@@ -201,7 +207,7 @@ public abstract class AbstractYarnScheduler
     nodeTracker.setConfiguredMaxAllocationWaitTime(
         configuredMaximumAllocationWaitTime);
     maxClusterLevelAppPriority = getMaxPriorityFromConf(conf);
-    createReleaseCache();
+
     autoUpdateContainers =
         conf.getBoolean(YarnConfiguration.RM_AUTO_UPDATE_CONTAINERS,
             YarnConfiguration.DEFAULT_RM_AUTO_UPDATE_CONTAINERS);
@@ -219,10 +225,14 @@ public abstract class AbstractYarnScheduler
 
   @Override
   protected void serviceStart() throws Exception {
-    if (updateThread != null) {
-      updateThread.start();
+    if (!migration) {
+      if (updateThread != null) {
+        updateThread.start();
+      }
+      schedulingMonitorManager.startAll();
+      createReleaseCache();
     }
-    schedulingMonitorManager.startAll();
+
     super.serviceStart();
   }
 
