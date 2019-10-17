@@ -47,6 +47,8 @@ public final class YarnConfigurationStoreFactory {
         return new LeveldbConfigurationStore();
       case YarnConfiguration.ZK_CONFIGURATION_STORE:
         return new ZKConfigurationStore();
+      case YarnConfiguration.FS_CONFIGURATION_STORE:
+        return new FSSchedulerConfigurationStore();
       default:
         Class<? extends YarnConfigurationStore> storeClass =
             conf.getClass(YarnConfiguration.SCHEDULER_CONFIGURATION_STORE_CLASS,
