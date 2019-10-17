@@ -34,7 +34,6 @@ import org.apache.hadoop.hdfs.server.namenode.FsImageProto.FileSummary;
 import org.apache.hadoop.hdfs.server.namenode.FsImageProto.INodeSection;
 import org.apache.hadoop.hdfs.server.namenode.FsImageProto.INodeSection.INode;
 import org.apache.hadoop.hdfs.server.namenode.INodeId;
-import org.apache.hadoop.hdfs.server.namenode.SerialNumberManager;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.LimitInputStream;
 import org.apache.hadoop.util.Time;
@@ -487,7 +486,7 @@ abstract class PBImageTextWriter implements Closeable {
     }
   }
 
-  private SerialNumberManager.StringTable stringTable;
+  private String[] stringTable;
   private PrintStream out;
   private MetadataMap metadataMap = null;
   private String delimiter;
