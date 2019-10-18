@@ -157,27 +157,54 @@ public class UserGroupMappingPlacementRule extends PlacementRule {
     this.groups = groups;
   }
 
+  private String getSecondaryGroup(String user) throws IOException {
+    List<String> groupsList = groups.getGroups(user);
+    String secondaryGroup = null;
+    // Traverse all secondary groups (as there could be more than one
+    // and position is not guaranteed) and ensure there is queue with
+    // the same name
+    for (int i = 1; i < groupsList.size(); i++) {
+      if (this.queueManager.getQueue(groupsList.get(i)) != null) {
+        secondaryGroup = groupsList.get(i);
+        break;
+      }
+    }
+    return secondaryGroup;
+  }
+
   private ApplicationPlacementContext getPlacementForUser(String user)
       throws IOException {
     for (QueueMapping mapping : mappings) {
       if (mapping.type == MappingType.USER) {
         if (mapping.source.equals(CURRENT_USER_MAPPING)) {
-          if (mapping.queue.equals(CURRENT_USER_MAPPING)) {
+          if (mapping.getParentQueue() != null
+              && mapping.getParentQueue().equals(PRIMARY_GROUP_MAPPING)
+              && mapping.getQueue().equals(CURRENT_USER_MAPPING)) {
+            return getPlacementContext(
+                new QueueMapping(mapping.getType(), mapping.getSource(),
+                    CURRENT_USER_MAPPING, groups.getGroups(user).get(0)),
+                user);
+          } else if (mapping.getParentQueue() != null
+              && mapping.getParentQueue().equals(SECONDARY_GROUP_MAPPING)
+              && mapping.getQueue().equals(CURRENT_USER_MAPPING)) {
+            String secondaryGroup = getSecondaryGroup(user);
+            if (secondaryGroup != null) {
+              return getPlacementContext(new QueueMapping(mapping.getType(),
+                  mapping.getSource(), CURRENT_USER_MAPPING, secondaryGroup),
+                  user);
+            } else {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("User " + user + " is not associated with any Secondary Group. "
+                    + "Hence it may use the 'default' queue");
+              }
+              return null;
+            }
+          } else if (mapping.queue.equals(CURRENT_USER_MAPPING)) {
             return getPlacementContext(mapping, user);
           } else if (mapping.queue.equals(PRIMARY_GROUP_MAPPING)) {
             return getPlacementContext(mapping, groups.getGroups(user).get(0));
           } else if (mapping.queue.equals(SECONDARY_GROUP_MAPPING)) {
-            List<String> groupsList = groups.getGroups(user);
-            String secondaryGroup = null;
-            // Traverse all secondary groups (as there could be more than one
-            // and position is not guaranteed) and ensure there is queue with
-            // the same name
-            for (int i = 1; i < groupsList.size(); i++) {
-              if (this.queueManager.getQueue(groupsList.get(i)) != null) {
-                secondaryGroup = groupsList.get(i);
-                break;
-              }
-            }
+            String secondaryGroup = getSecondaryGroup(user);
             if (secondaryGroup != null) {
               return getPlacementContext(mapping, secondaryGroup);
             } else {
@@ -375,7 +402,13 @@ public class UserGroupMappingPlacementRule extends PlacementRule {
   private static QueueMapping validateAndGetAutoCreatedQueueMapping(
       CapacitySchedulerQueueManager queueManager, QueueMapping mapping,
       QueuePath queuePath) throws IOException {
-    if (queuePath.hasParentQueue()) {
+    if (queuePath.hasParentQueue()
+        && (queuePath.getParentQueue().equals(PRIMARY_GROUP_MAPPING)
+            || queuePath.getParentQueue().equals(SECONDARY_GROUP_MAPPING))) {
+      // dynamic parent queue
+      return new QueueMapping(mapping.getType(), mapping.getSource(),
+          queuePath.getLeafQueue(), queuePath.getParentQueue());
+    } else if (queuePath.hasParentQueue()) {
       //if parent queue is specified,
       // then it should exist and be an instance of ManagedParentQueue
       validateParentQueue(queueManager.getQueue(queuePath.getParentQueue()),
