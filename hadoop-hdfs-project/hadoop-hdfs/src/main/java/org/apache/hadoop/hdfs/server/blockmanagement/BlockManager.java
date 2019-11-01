@@ -858,7 +858,7 @@ public class BlockManager implements BlockStatsMXBean {
     }
     // source node returned is not used
     chooseSourceDatanodes(blockInfo, containingNodes,
-        containingLiveReplicasNodes, numReplicas,
+        containingLiveReplicasNodes, numReplicas, new ArrayList<Byte>(),
         new LinkedList<Byte>(), LowRedundancyBlocks.LEVEL);
     
     // containingLiveReplicasNodes can include READ_ONLY_SHARED replicas which are 
@@ -2042,9 +2042,10 @@ public class BlockManager implements BlockStatsMXBean {
     List<DatanodeStorageInfo> liveReplicaNodes = new ArrayList<>();
     NumberReplicas numReplicas = new NumberReplicas();
     List<Byte> liveBlockIndices = new ArrayList<>();
+    List<Byte> liveBusyBlockIndices = new ArrayList<>();
     final DatanodeDescriptor[] srcNodes = chooseSourceDatanodes(block,
         containingNodes, liveReplicaNodes, numReplicas,
-        liveBlockIndices, priority);
+        liveBlockIndices, liveBusyBlockIndices, priority);
     short requiredRedundancy = getExpectedLiveRedundancyNum(block,
         numReplicas);
     if(srcNodes == null || srcNodes.length == 0) {
@@ -2097,9 +2098,13 @@ public class BlockManager implements BlockStatsMXBean {
       for (int i = 0 ; i < liveBlockIndices.size(); i++) {
         indices[i] = liveBlockIndices.get(i);
       }
+      byte[] busyIndices = new byte[liveBusyBlockIndices.size()];
+      for (int i = 0; i < liveBusyBlockIndices.size(); i++) {
+        busyIndices[i] = liveBusyBlockIndices.get(i);
+      }
       return new ErasureCodingWork(getBlockPoolId(), block, bc, srcNodes,
           containingNodes, liveReplicaNodes, additionalReplRequired,
-          priority, indices);
+          priority, indices, busyIndices);
     } else {
       return new ReplicationWork(block, bc, srcNodes,
           containingNodes, liveReplicaNodes, additionalReplRequired,
@@ -2310,8 +2315,8 @@ public class BlockManager implements BlockStatsMXBean {
   DatanodeDescriptor[] chooseSourceDatanodes(BlockInfo block,
       List<DatanodeDescriptor> containingNodes,
       List<DatanodeStorageInfo> nodesContainingLiveReplicas,
-      NumberReplicas numReplicas,
-      List<Byte> liveBlockIndices, int priority) {
+      NumberReplicas numReplicas, List<Byte> liveBlockIndices,
+      List<Byte> liveBusyBlockIndices, int priority) {
     containingNodes.clear();
     nodesContainingLiveReplicas.clear();
     List<DatanodeDescriptor> srcNodes = new ArrayList<>();
@@ -2364,12 +2369,6 @@ public class BlockManager implements BlockStatsMXBean {
         continue;
       }
 
-      if (priority != LowRedundancyBlocks.QUEUE_HIGHEST_PRIORITY
-          && (!node.isDecommissionInProgress() && !node.isEnteringMaintenance())
-          && node.getNumberOfBlocksToBeReplicated() >= maxReplicationStreams) {
-        continue; // already reached replication limit
-      }
-
       // for EC here need to make sure the numReplicas replicates state correct
       // because in the scheduleReconstruction it need the numReplicas to check
       // whether need to reconstruct the ec internal block
@@ -2381,7 +2380,19 @@ public class BlockManager implements BlockStatsMXBean {
             liveBitSet, decommissioningBitSet, blockIndex);
       }
 
+      if (priority != LowRedundancyBlocks.QUEUE_HIGHEST_PRIORITY
+          && (!node.isDecommissionInProgress() && !node.isEnteringMaintenance())
+          && node.getNumberOfBlocksToBeReplicated() >= maxReplicationStreams) {
+        if (isStriped && state == StoredReplicaState.LIVE) {
+          liveBusyBlockIndices.add(blockIndex);
+        }
+        continue; // already reached replication limit
+      }
+
       if (node.getNumberOfBlocksToBeReplicated() >= replicationStreamsHardLimit) {
+        if (isStriped && state == StoredReplicaState.LIVE) {
+          liveBusyBlockIndices.add(blockIndex);
+        }
         continue;
       }
 
