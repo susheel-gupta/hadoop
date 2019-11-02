@@ -136,6 +136,9 @@ public abstract class AbstractComparatorOrderingPolicy<S extends SchedulableEnti
   public abstract void demandUpdated(S schedulableEntity);
 
   @Override
+  public abstract String getConfigName();
+
+  @Override
   public abstract String getInfo();
   
 }
