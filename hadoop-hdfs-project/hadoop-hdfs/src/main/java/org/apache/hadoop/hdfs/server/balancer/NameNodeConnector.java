@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.util.concurrent.RateLimiter;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -40,6 +41,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsServerDefaults;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.StreamCapabilities.StreamCapability;
+import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.NameNodeProxies;
 import org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException;
@@ -118,6 +120,7 @@ public class NameNodeConnector implements Closeable {
 
   private final int maxNotChangedIterations;
   private int notChangedIterations = 0;
+  private final RateLimiter getBlocksRateLimiter;
 
   public NameNodeConnector(String name, URI nameNodeUri, Path idPath,
                            List<Path> targetPaths, Configuration conf,
@@ -128,6 +131,16 @@ public class NameNodeConnector implements Closeable {
     this.targetPaths = targetPaths == null || targetPaths.isEmpty() ? Arrays
         .asList(new Path("/")) : targetPaths;
     this.maxNotChangedIterations = maxNotChangedIterations;
+    int getBlocksMaxQps = conf.getInt(
+        DFSConfigKeys.DFS_NAMENODE_GETBLOCKS_MAX_QPS_KEY,
+        DFSConfigKeys.DFS_NAMENODE_GETBLOCKS_MAX_QPS_DEFAULT);
+    if (getBlocksMaxQps > 0) {
+      LOG.info("getBlocks calls for " + nameNodeUri
+          + " will be rate-limited to " + getBlocksMaxQps + " per second");
+      this.getBlocksRateLimiter = RateLimiter.create(getBlocksMaxQps);
+    } else {
+      this.getBlocksRateLimiter = null;
+    }
 
     this.namenode = NameNodeProxies.createProxy(conf, nameNodeUri,
         NamenodeProtocol.class).getProxy();
@@ -164,8 +177,10 @@ public class NameNodeConnector implements Closeable {
 
   /** @return blocks with locations. */
   public BlocksWithLocations getBlocks(DatanodeInfo datanode, long size, long
-      minBlockSize)
-      throws IOException {
+      minBlockSize) throws IOException {
+    if (getBlocksRateLimiter != null) {
+      getBlocksRateLimiter.acquire();
+    }
     return namenode.getBlocks(datanode, size, minBlockSize);
   }
 
