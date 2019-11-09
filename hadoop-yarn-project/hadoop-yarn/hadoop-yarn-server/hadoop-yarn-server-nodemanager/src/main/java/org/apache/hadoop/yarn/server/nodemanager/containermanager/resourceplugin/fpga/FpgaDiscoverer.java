@@ -34,8 +34,6 @@ import org.apache.hadoop.util.Shell.ShellCommandExecutor;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.resources.ResourceHandlerException;
-import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.resources.fpga.FpgaResourceAllocator;
-import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.resources.fpga.FpgaResourceAllocator.FpgaDevice;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.resourceplugin.fpga.discovery.AoclOutputBasedDiscoveryStrategy;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.resourceplugin.fpga.discovery.FPGADiscoveryStrategy;
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.resourceplugin.fpga.discovery.ScriptBasedFPGADiscoveryStrategy;
@@ -52,7 +50,7 @@ public class FpgaDiscoverer extends Configured {
       FpgaDiscoverer.class);
 
   private AbstractFpgaVendorPlugin plugin = null;
-  private List<FpgaResourceAllocator.FpgaDevice> currentFpgaInfo = null;
+  private List<FpgaDevice> currentFpgaInfo = null;
 
   private Function<String, Optional<String>> scriptRunner = this::runScript;
 
@@ -89,7 +87,7 @@ public class FpgaDiscoverer extends Configured {
   /**
    * get avialable devices minor numbers from toolchain or static configuration
    * */
-  public List<FpgaResourceAllocator.FpgaDevice> discover()
+  public List<FpgaDevice> discover()
       throws ResourceHandlerException {
     List<FpgaDevice> list;
     String allowed = getConf().get(YarnConfiguration.NM_FPGA_ALLOWED_DEVICES);
