@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
@@ -98,6 +99,9 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
   private final Map<String, Set<String>> reservations = new HashMap<>();
 
   private final List<FSSchedulerNode> blacklistNodeIds = new ArrayList<>();
+
+  private boolean enableAMPreemption;
+
   /**
    * Delay scheduling: We often want to prioritize scheduling of node-local
    * containers over rack-local or off-switch containers. To achieve this
@@ -120,6 +124,8 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
     this.startTime = scheduler.getClock().getTime();
     this.lastTimeAtFairShare = this.startTime;
     this.appPriority = Priority.newInstance(1);
+    this.enableAMPreemption = scheduler.getConf()
+            .getAMPreemptionEnabled(getQueue().getQueueName());
   }
 
   /**
@@ -592,6 +598,10 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
   boolean canContainerBePreempted(RMContainer container,
                                   Resource alreadyConsideringForPreemption) {
     if (!isPreemptable()) {
+      return false;
+    }
+
+    if (container.isAMContainer() && !enableAMPreemption) {
       return false;
     }
 
@@ -1430,5 +1440,10 @@ public class FSAppAttempt extends SchedulerApplicationAttempt
   @Override
   public boolean isPreemptable() {
     return getQueue().isPreemptable();
+  }
+
+  @VisibleForTesting
+  public void setEnableAMPreemption(boolean enableAMPreemption) {
+    this.enableAMPreemption = enableAMPreemption;
   }
 }

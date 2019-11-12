@@ -228,6 +228,8 @@ public class TestFSAppAttempt extends FairSchedulerTestBase {
 
     final QueueMetrics fakeRootQueueMetrics = Mockito.mock(QueueMetrics.class);
 
+    final FairSchedulerConfiguration mockedFSConfig = Mockito.mock(FairSchedulerConfiguration.class);
+
     Mockito.when(mockQueue.getMaxShare()).thenReturn(queueMaxResources);
     Mockito.when(mockQueue.getFairShare()).thenReturn(queueFairShare);
     Mockito.when(mockQueue.getResourceUsage()).thenReturn(queueUsage);
@@ -237,6 +239,8 @@ public class TestFSAppAttempt extends FairSchedulerTestBase {
         (clusterUsage);
     Mockito.when(mockScheduler.getRootQueueMetrics()).thenReturn
         (fakeRootQueueMetrics);
+    Mockito.when(mockScheduler.getConf()).thenReturn
+        (mockedFSConfig);
 
     ApplicationAttemptId applicationAttemptId = createAppAttemptId(1, 1);
     RMContext rmContext = resourceManager.getRMContext();
