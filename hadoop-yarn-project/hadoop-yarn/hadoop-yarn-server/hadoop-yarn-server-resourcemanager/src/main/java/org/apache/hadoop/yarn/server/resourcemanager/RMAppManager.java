@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -818,7 +819,10 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
     ApplicationPlacementContext placementContext = null;
     if (placementManager != null) {
       try {
-        placementContext = placementManager.placeApplication(context, user);
+        String usernameUsedForPlacement =
+                getUserNameForPlacement(user, context, placementManager);
+        placementContext = placementManager
+                .placeApplication(context, usernameUsedForPlacement);
       } catch (YarnException e) {
         // Placement could also fail if the user doesn't exist in system
         // skip if the user is not found during recovery.
@@ -843,6 +847,80 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
       throw new YarnException(msg);
     }
     return placementContext;
+  }
+
+  @VisibleForTesting
+  protected String getUserNameForPlacement(final String user,
+      final ApplicationSubmissionContext context,
+      final PlacementManager placementManager) throws YarnException {
+
+    boolean applicationTagBasedPlacementEnabled = conf
+        .getBoolean(YarnConfiguration.APPLICATION_TAG_BASED_PLACEMENT_ENABLED,
+        YarnConfiguration.DEFAULT_APPLICATION_TAG_BASED_PLACEMENT_ENABLED);
+
+    String usernameUsedForPlacement = user;
+    if (!applicationTagBasedPlacementEnabled) {
+      return usernameUsedForPlacement;
+    }
+    if (!isWhitelistedUser(user, conf)) {
+      LOG.warn(String.format("User '%s' is not allowed to do placement based " +
+              "on application tag", user));
+      return usernameUsedForPlacement;
+    }
+    LOG.debug("Application tag based placement is enabled, checking for " +
+        "userId in the application tag");
+    Set<String> applicationTags = context.getApplicationTags();
+    String userNameFromAppTag = getUserNameFromApplicationTag(applicationTags);
+    if (userNameFromAppTag != null) {
+      LOG.debug(String.format("Found 'userid' '%s' in application tag", userNameFromAppTag));
+      UserGroupInformation callerUGI = UserGroupInformation
+              .createRemoteUser(userNameFromAppTag);
+      // check if the actual user has rights to submit application to the
+      // user's queue from the application tag
+      String queue = placementManager
+              .placeApplication(context, usernameUsedForPlacement).getQueue();
+      if (callerUGI != null && scheduler
+              .checkAccess(callerUGI, QueueACL.SUBMIT_APPLICATIONS, queue)) {
+        usernameUsedForPlacement = userNameFromAppTag;
+      } else {
+        LOG.warn(String.format("User '%s' from application tag does not have access to " +
+                " queue '%s'. The placement is done for user '%s'",
+                userNameFromAppTag, queue, user));
+      }
+    } else {
+      LOG.warn("userId was not found in application tags");
+    }
+    return usernameUsedForPlacement;
+  }
+
+  private boolean isWhitelistedUser(final String user,
+                                    final Configuration config) {
+    String[] userWhitelist = config.getStrings(YarnConfiguration
+            .APPLICATION_TAG_BASED_PLACEMENT_USER_WHITELIST);
+    if (userWhitelist == null || userWhitelist.length == 0) {
+      return false;
+    }
+    for (String s: userWhitelist) {
+      if (s.equals(user)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private String getUserNameFromApplicationTag(Set<String> applicationTags) {
+    String userIdPrefix = "u=";
+    for (String tag: applicationTags) {
+      if (tag.startsWith(userIdPrefix)) {
+        String[] userIdTag = tag.split("=");
+        if (userIdTag.length == 2) {
+          return userIdTag[1];
+        } else {
+          LOG.warn("Found wrongly qualified username in tag");
+        }
+      }
+    }
+    return null;
   }
 
   private void copyPlacementQueueToSubmissionContext(
