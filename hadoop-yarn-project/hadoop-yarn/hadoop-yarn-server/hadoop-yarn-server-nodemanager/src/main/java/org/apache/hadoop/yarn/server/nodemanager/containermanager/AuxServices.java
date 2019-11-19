@@ -213,7 +213,7 @@ public class AuxServices extends AbstractService
             for (FileStatus sub : allSubDirs) {
               if (sub.getPath().getName().equals(downloadDest.getName())) {
                 reDownload = false;
-                dest = new Path(targetDirPath + Path.SEPARATOR + "*");
+                dest = targetDirPath;
                 break;
               } else {
                 if (sub.getPath().getName().contains(className) &&
