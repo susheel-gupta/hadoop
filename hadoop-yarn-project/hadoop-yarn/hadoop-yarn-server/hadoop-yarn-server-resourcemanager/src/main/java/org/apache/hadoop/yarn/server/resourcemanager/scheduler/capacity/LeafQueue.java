@@ -2035,6 +2035,7 @@ public class LeafQueue extends AbstractCSQueue {
       allocateResource(clusterResource, application, rmContainer.getContainer()
           .getResource(), node.getPartition(), rmContainer);
       LOG.info("movedContainer" + " container=" + rmContainer.getContainer()
+          + " containerState="+ rmContainer.getState()
           + " resource=" + rmContainer.getContainer().getResource()
           + " queueMoveIn=" + this + " usedCapacity=" + getUsedCapacity()
           + " absoluteUsedCapacity=" + getAbsoluteUsedCapacity() + " used="
@@ -2054,6 +2055,7 @@ public class LeafQueue extends AbstractCSQueue {
       releaseResource(clusterResource, application, rmContainer.getContainer()
           .getResource(), node.getPartition(), rmContainer);
       LOG.info("movedContainer" + " container=" + rmContainer.getContainer()
+          + " containerState="+ rmContainer.getState()
           + " resource=" + rmContainer.getContainer().getResource()
           + " queueMoveOut=" + this + " usedCapacity=" + getUsedCapacity()
           + " absoluteUsedCapacity=" + getAbsoluteUsedCapacity() + " used="
