@@ -100,6 +100,8 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
   private YarnAuthorizationProvider authorizer;
   private boolean timelineServiceV2Enabled;
 
+  private static final String USER_ID_PREFIX = "userid=";
+
   public RMAppManager(RMContext context,
       YarnScheduler scheduler, ApplicationMasterService masterService,
       ApplicationACLsManager applicationACLsManager, Configuration conf) {
@@ -868,7 +870,7 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
       return usernameUsedForPlacement;
     }
     LOG.debug("Application tag based placement is enabled, checking for " +
-        "userId in the application tag");
+        "'userid' among the application tags");
     Set<String> applicationTags = context.getApplicationTags();
     String userNameFromAppTag = getUserNameFromApplicationTag(applicationTags);
     if (userNameFromAppTag != null) {
@@ -888,7 +890,7 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
                 userNameFromAppTag, queue, user));
       }
     } else {
-      LOG.warn("userId was not found in application tags");
+      LOG.warn("'userid' was not found in application tags");
     }
     return usernameUsedForPlacement;
   }
@@ -909,9 +911,8 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
   }
 
   private String getUserNameFromApplicationTag(Set<String> applicationTags) {
-    String userIdPrefix = "u=";
     for (String tag: applicationTags) {
-      if (tag.startsWith(userIdPrefix)) {
+      if (tag.startsWith(USER_ID_PREFIX)) {
         String[] userIdTag = tag.split("=");
         if (userIdTag.length == 2) {
           return userIdTag[1];
