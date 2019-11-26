@@ -343,6 +343,9 @@ final class DefaultAMSProcessor implements ApplicationMasterServiceProcessor {
 
     response.setContainersFromPreviousAttempts(
         allocation.getPreviousAttemptContainers());
+
+    response.setRejectedSchedulingRequests(allocation.getRejectedRequest());
+
   }
 
   private void handleInvalidResourceException(InvalidResourceRequestException e,

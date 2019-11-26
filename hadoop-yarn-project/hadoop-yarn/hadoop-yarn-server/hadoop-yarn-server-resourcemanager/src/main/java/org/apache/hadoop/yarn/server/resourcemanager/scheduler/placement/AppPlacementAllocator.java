@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * <p>
@@ -61,6 +62,7 @@ public abstract class AppPlacementAllocator<N extends SchedulerNode> {
   protected AppSchedulingInfo appSchedulingInfo;
   protected SchedulerRequestKey schedulerRequestKey;
   protected RMContext rmContext;
+  private AtomicInteger placementAttempt = new AtomicInteger(0);
   private MultiNodeSortingManager<N> multiNodeSortingManager = null;
   private String multiNodeSortPolicyName;
 
@@ -233,5 +235,19 @@ public abstract class AppPlacementAllocator<N extends SchedulerNode> {
           + " is " + ((multiNodeSortPolicyName != null) ?
           multiNodeSortPolicyName : ""));
     }
+  }
+
+  /**
+   * Get pending SchedulingRequest.
+   * @return SchedulingRequest
+   */
+  public abstract SchedulingRequest getSchedulingRequest();
+
+  public int getPlacementAttempt() {
+    return placementAttempt.get();
+  }
+
+  public void incrementPlacementAttempt() {
+    placementAttempt.getAndIncrement();
   }
 }
