@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.service.ServiceOperations;
+import org.apache.hadoop.service.ServiceStateException;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.nodelabels.CommonNodeLabelsManager;
 import org.apache.hadoop.yarn.server.resourcemanager.MockRM;
@@ -35,7 +36,6 @@ import org.apache.hadoop.yarn.server.resourcemanager.nodelabels.NullRMNodeLabels
 import org.apache.hadoop.yarn.server.resourcemanager.nodelabels.RMNodeLabelsManager;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.policy.PriorityUtilizationQueueOrderingPolicy;
-import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.policy.QueueOrderingPolicy;
 import org.apache.hadoop.yarn.server.resourcemanager.security.ClientToAMTokenSecretManagerInRM;
 import org.apache.hadoop.yarn.server.resourcemanager.security.NMTokenSecretManagerInRM;
 import org.apache.hadoop.yarn.server.resourcemanager.security.RMContainerTokenSecretManager;
@@ -940,7 +940,7 @@ public class TestQueueParsing {
    * Test init a queue configuration, children's capacity for a given label
    * doesn't equals to 100%. This expect IllegalArgumentException thrown.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = ServiceStateException.class)
   public void testQueueParsingFailWhenSumOfChildrenNonLabeledCapacityNot100Percent()
       throws IOException {
     nodeLabelManager.addToCluserNodeLabelsWithDefaultExclusivity(ImmutableSet
@@ -970,7 +970,7 @@ public class TestQueueParsing {
    * Test init a queue configuration, children's capacity for a given label
    * doesn't equals to 100%. This expect IllegalArgumentException thrown.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = ServiceStateException.class)
   public void testQueueParsingFailWhenSumOfChildrenLabeledCapacityNot100Percent()
       throws IOException {
     nodeLabelManager.addToCluserNodeLabelsWithDefaultExclusivity(ImmutableSet
@@ -1001,7 +1001,7 @@ public class TestQueueParsing {
    * Test init a queue configuration, children's capacity for a given label
    * doesn't equals to 100%. This expect IllegalArgumentException thrown.
    */
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = ServiceStateException.class)
   public void testQueueParsingWithSumOfChildLabelCapacityNot100PercentWithWildCard()
       throws IOException {
     nodeLabelManager.addToCluserNodeLabelsWithDefaultExclusivity(ImmutableSet
@@ -1065,7 +1065,7 @@ public class TestQueueParsing {
     capacityScheduler.reinitialize(csConf, rmContext);
   }
 
-  @Test(timeout = 60000, expected = java.lang.IllegalArgumentException.class)
+  @Test(timeout = 60000, expected = ServiceStateException.class)
   public void testRMStartWrongNodeCapacity() throws Exception {
     YarnConfiguration config = new YarnConfiguration();
     nodeLabelManager = new NullRMNodeLabelsManager();
