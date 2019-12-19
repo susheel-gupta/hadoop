@@ -166,6 +166,10 @@ public class DataNodeMetrics {
   private MutableCounterLong ecReconstructionDecodingTimeMillis;
   @Metric("Milliseconds spent on write by erasure coding worker")
   private MutableCounterLong ecReconstructionWriteTimeMillis;
+  @Metric("Sum of all BPServiceActors command queue length")
+  private MutableCounterLong sumOfActorCommandQueueLength;
+  @Metric("Num of processed commands of all BPServiceActors")
+  private MutableCounterLong numProcessedCommands;
 
   final MetricsRegistry registry = new MetricsRegistry("datanode");
   @Metric("Milliseconds spent on calling NN rpc")
@@ -593,5 +597,13 @@ public class DataNodeMetrics {
 
   public void incrECReconstructionDecodingTime(long millis) {
     ecReconstructionDecodingTimeMillis.incr(millis);
+  }
+
+  public void incrActorCmdQueueLength(int delta) {
+    sumOfActorCommandQueueLength.incr(delta);
+  }
+
+  public void incrNumProcessedCommands() {
+    numProcessedCommands.incr();
   }
 }
