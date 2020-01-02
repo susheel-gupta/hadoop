@@ -20,6 +20,7 @@ package org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang.math.RandomUtils;
+import org.apache.hadoop.security.Groups;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.CommonConfigurationKeys;
@@ -304,6 +305,7 @@ public class TestCapacitySchedulerAutoCreatedQueueBase {
         TestGroupsCaching.FakeunPrivilegedGroupMapping.class, ShellBasedUnixGroupsMapping.class);
     conf.set(CommonConfigurationKeys.HADOOP_USER_GROUP_STATIC_OVERRIDES,
         TEST_GROUPUSER +"=" + TEST_GROUP + ";invalid_user=invalid_group");
+    Groups.getUserToGroupsMappingServiceWithLoadedConfiguration(conf);
 
     QueueMapping userQueueMapping = QueueMappingBuilder.create()
                                         .type(QueueMapping.MappingType.GROUP)
