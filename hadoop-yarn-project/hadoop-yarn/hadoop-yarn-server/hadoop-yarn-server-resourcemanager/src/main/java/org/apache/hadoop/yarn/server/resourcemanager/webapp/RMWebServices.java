@@ -501,6 +501,7 @@ public class RMWebServices extends WebServices implements RMWebServiceProtocol {
       @QueryParam(RMWSConsts.FINISHED_TIME_END) String finishEnd,
       @QueryParam(RMWSConsts.APPLICATION_TYPES) Set<String> applicationTypes,
       @QueryParam(RMWSConsts.APPLICATION_TAGS) Set<String> applicationTags,
+      @QueryParam(RMWSConsts.NAME) String name,
       @QueryParam(RMWSConsts.DESELECTS) Set<String> unselectedFields) {
 
     initForReadableEndpoints();
@@ -518,6 +519,7 @@ public class RMWebServices extends WebServices implements RMWebServiceProtocol {
                     .withFinishTimeEnd(finishEnd)
                     .withApplicationTypes(applicationTypes)
                     .withApplicationTags(applicationTags)
+                    .withName(name)
             .build();
 
     List<ApplicationReport> appReports;

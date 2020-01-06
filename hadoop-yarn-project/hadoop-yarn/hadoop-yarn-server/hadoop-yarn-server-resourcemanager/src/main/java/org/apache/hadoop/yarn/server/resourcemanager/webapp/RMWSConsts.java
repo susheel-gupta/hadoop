@@ -229,6 +229,7 @@ public final class RMWSConsts {
   public static final String DESELECTS = "deSelects";
   public static final String CONTAINERS = "containers";
   public static final String QUEUE_ACL_TYPE = "queue-acl-type";
+  public static final String NAME = "name";
 
   private RMWSConsts() {
     // not called
