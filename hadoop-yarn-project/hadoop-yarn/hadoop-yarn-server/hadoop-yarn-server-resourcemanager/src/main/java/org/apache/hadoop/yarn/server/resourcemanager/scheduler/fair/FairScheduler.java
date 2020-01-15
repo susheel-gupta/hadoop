@@ -208,6 +208,7 @@ public class FairScheduler extends
   Resource reservationThreshold;
 
   private boolean migration;
+  private boolean noTerminalRuleCheck;
 
   public FairScheduler() {
     super(FairScheduler.class.getName());
@@ -1476,6 +1477,10 @@ public class FairScheduler extends
   public void serviceInit(Configuration conf) throws Exception {
     migration =
         conf.getBoolean(FairSchedulerConfiguration.MIGRATION_MODE, false);
+    noTerminalRuleCheck = migration &&
+        conf.getBoolean(FairSchedulerConfiguration.NO_TERMINAL_RULE_CHECK,
+            false);
+
     initScheduler(conf);
     super.serviceInit(conf);
 
@@ -1951,5 +1956,9 @@ public class FairScheduler extends
   public long checkAndGetApplicationLifetime(String queueName, long lifetime) {
     // Lifetime is the application lifetime by default.
     return lifetime;
+  }
+
+  public boolean isNoTerminalRuleCheck() {
+    return noTerminalRuleCheck;
   }
 }
