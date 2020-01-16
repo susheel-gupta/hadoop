@@ -246,6 +246,10 @@ public class FSDirectory implements Closeable {
     return this.dirLock.getWriteHoldCount();
   }
 
+  public int getListLimit() {
+    return lsLimit;
+  }
+
   @VisibleForTesting
   public final EncryptionZoneManager ezManager;
 

@@ -88,6 +88,7 @@ import org.apache.hadoop.hdfs.inotify.EventBatchList;
 import org.apache.hadoop.hdfs.protocol.AclException;
 import org.apache.hadoop.hdfs.protocol.AddErasureCodingPolicyResponse;
 import org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException;
+import org.apache.hadoop.hdfs.protocol.BatchedDirectoryListing;
 import org.apache.hadoop.hdfs.protocol.BlockListAsLongs;
 import org.apache.hadoop.hdfs.protocol.BlockStoragePolicy;
 import org.apache.hadoop.hdfs.protocol.CacheDirectiveEntry;
@@ -106,6 +107,7 @@ import org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyInfo;
 import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
 import org.apache.hadoop.hdfs.protocol.FSLimitException;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
+import org.apache.hadoop.hdfs.protocol.HdfsPartialListing;
 import org.apache.hadoop.hdfs.protocol.LastBlockWithStatus;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants.DatanodeReportType;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants.ReencryptAction;
@@ -1147,6 +1149,27 @@ public class NameNodeRpcServer implements NamenodeProtocols {
       metrics.incrFilesInGetListingOps(files.getPartialListing().length);
     }
     return files;
+  }
+
+  @Override // ClientProtocol
+  public BatchedDirectoryListing getBatchedListing(
+      String[] srcs,
+      byte[] startAfter,
+      boolean needLocation) throws IOException {
+    checkNNStartup();
+    BatchedDirectoryListing batchedListing =
+        namesystem.getBatchedListing(srcs, startAfter, needLocation);
+    if (batchedListing != null) {
+      metrics.incrGetListingOps();
+      int numEntries = 0;
+      for (HdfsPartialListing partial : batchedListing.getListings()) {
+        if (partial.getPartialListing() != null) {
+          numEntries += partial.getPartialListing().size();
+        }
+      }
+      metrics.incrFilesInGetListingOps(numEntries);
+    }
+    return batchedListing;
   }
 
   @Override // ClientProtocol
