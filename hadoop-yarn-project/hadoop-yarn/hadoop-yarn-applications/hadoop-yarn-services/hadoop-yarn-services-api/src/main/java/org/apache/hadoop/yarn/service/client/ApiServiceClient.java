@@ -95,7 +95,7 @@ public class ApiServiceClient extends AppAdminClient {
 
   public ApiServiceClient() {
   }
-  
+
   public ApiServiceClient(Configuration c) throws Exception {
     serviceInit(c);
   }
