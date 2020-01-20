@@ -70,6 +70,7 @@ public class TestSchedulingRequestContainerAllocation {
         new Configuration());
     csConf.set(YarnConfiguration.RM_PLACEMENT_CONSTRAINTS_HANDLER,
         YarnConfiguration.SCHEDULER_RM_PLACEMENT_CONSTRAINTS_HANDLER);
+    setCapacitySchedulerAsResourceScheduler(csConf);
 
     // inject node label manager
     MockRM rm1 = new MockRM(csConf) {
@@ -153,6 +154,7 @@ public class TestSchedulingRequestContainerAllocation {
         new Configuration());
     csConf.set(YarnConfiguration.RM_PLACEMENT_CONSTRAINTS_HANDLER,
         YarnConfiguration.SCHEDULER_RM_PLACEMENT_CONSTRAINTS_HANDLER);
+    setCapacitySchedulerAsResourceScheduler(csConf);
 
     // inject node label manager
     MockRM rm1 = new MockRM(csConf) {
@@ -246,6 +248,7 @@ public class TestSchedulingRequestContainerAllocation {
         new Configuration());
     csConf.set(YarnConfiguration.RM_PLACEMENT_CONSTRAINTS_HANDLER,
         YarnConfiguration.SCHEDULER_RM_PLACEMENT_CONSTRAINTS_HANDLER);
+    setCapacitySchedulerAsResourceScheduler(csConf);
 
     // inject node label manager
     MockRM rm1 = new MockRM(csConf) {
@@ -364,6 +367,7 @@ public class TestSchedulingRequestContainerAllocation {
   public void testSchedulingRequestDisabledByDefault() throws Exception {
     Configuration csConf = TestUtils.getConfigurationWithMultipleQueues(
         new Configuration());
+    setCapacitySchedulerAsResourceScheduler(csConf);
 
     // inject node label manager
     MockRM rm1 = new MockRM(csConf) {
@@ -409,6 +413,7 @@ public class TestSchedulingRequestContainerAllocation {
         new Configuration());
     csConf.set(YarnConfiguration.RM_PLACEMENT_CONSTRAINTS_HANDLER,
         YarnConfiguration.SCHEDULER_RM_PLACEMENT_CONSTRAINTS_HANDLER);
+    setCapacitySchedulerAsResourceScheduler(csConf);
 
     // inject node label manager
     MockRM rm1 = new MockRM(csConf) {
@@ -476,5 +481,10 @@ public class TestSchedulingRequestContainerAllocation {
     Assert.assertEquals(4, schedApp.getLiveContainers().size());
 
     rm1.close();
+  }
+
+  private void setCapacitySchedulerAsResourceScheduler(Configuration conf) {
+    conf.setClass(YarnConfiguration.RM_SCHEDULER,
+            CapacityScheduler.class, ResourceScheduler.class);
   }
 }
