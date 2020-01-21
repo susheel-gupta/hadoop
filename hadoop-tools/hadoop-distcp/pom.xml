@@ -119,7 +119,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <forkMode>always</forkMode>
+          <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
           <forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
           <argLine>-Xms2048m -Xmx3072m -XX:MaxPermSize=2048m -XX:+HeapDumpOnOutOfMemoryError</argLine>
           <includes>
