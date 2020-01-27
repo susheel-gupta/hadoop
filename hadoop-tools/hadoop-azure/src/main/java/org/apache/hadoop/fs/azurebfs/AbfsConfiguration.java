@@ -186,6 +186,10 @@ public class AbfsConfiguration{
           DefaultValue = DEFAULT_ABFS_LATENCY_TRACK)
   private boolean trackLatency;
 
+  @BooleanConfigurationValidatorAnnotation(ConfigurationKey = FS_AZURE_ENABLE_READAHEAD,
+      DefaultValue = DEFAULT_ENABLE_READAHEAD)
+  private boolean enabledReadAhead;
+
   private Map<String, String> storageAccountKeys;
 
   public AbfsConfiguration(final Configuration rawConfig, String accountName)
@@ -597,6 +601,10 @@ public class AbfsConfiguration{
     return authorizer;
   }
 
+  public boolean isReadAheadEnabled() {
+    return this.enabledReadAhead;
+  }
+
   void validateStorageAccountKeys() throws InvalidConfigurationValueException {
     Base64StringConfigurationBasicValidator validator = new Base64StringConfigurationBasicValidator(
         FS_AZURE_ACCOUNT_KEY_PROPERTY_NAME, "", true);
@@ -700,5 +708,4 @@ public class AbfsConfiguration{
     }
     return authority;
   }
-
 }

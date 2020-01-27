@@ -70,5 +70,7 @@ public final class FileSystemConfigurations {
   public static final boolean DEFAULT_ENABLE_CHECK_ACCESS = false;
   public static final boolean DEFAULT_ABFS_LATENCY_TRACK = false;
 
+  public static final boolean DEFAULT_ENABLE_READAHEAD = true;
+
   private FileSystemConfigurations() {}
 }
