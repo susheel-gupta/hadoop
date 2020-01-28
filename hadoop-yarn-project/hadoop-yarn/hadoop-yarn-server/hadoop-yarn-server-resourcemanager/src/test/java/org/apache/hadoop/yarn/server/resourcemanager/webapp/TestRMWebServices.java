@@ -27,15 +27,21 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -44,6 +50,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.http.JettyUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authorize.AuthorizationException;
 import org.apache.hadoop.service.Service.STATE;
 import org.apache.hadoop.util.VersionInfo;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
@@ -58,6 +65,9 @@ import org.apache.hadoop.yarn.server.resourcemanager.nodelabels.RMNodeLabelsMana
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.QueueMetrics;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfigGeneratorForTest;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.TestCapacitySchedulerConfigValidator;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.conf.MutableCSConfigurationProvider;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fifo.FifoScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.AppsInfo;
@@ -71,9 +81,10 @@ import org.apache.hadoop.yarn.webapp.GenericExceptionHandler;
 import org.apache.hadoop.yarn.webapp.GuiceServletConfig;
 import org.apache.hadoop.yarn.webapp.JerseyTestBase;
 import org.apache.hadoop.yarn.webapp.WebServicesTestUtils;
+import org.apache.hadoop.yarn.webapp.dao.QueueConfigInfo;
+import org.apache.hadoop.yarn.webapp.dao.SchedConfUpdateInfo;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.eclipse.jetty.server.Response;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -867,4 +878,114 @@ public class TestRMWebServices extends JerseyTestBase {
     assertEquals("requestedUser doesn't match: ",
             requestedUser, userInfo.getRequestedUser());
   }
+
+  @Test
+  public void testValidateAndGetSchedulerConfigurationInvalidScheduler()
+          throws AuthorizationException {
+    ResourceScheduler scheduler = new CapacityScheduler();
+    RMWebServices webService = prepareWebServiceForValidation(scheduler);
+    SchedConfUpdateInfo mutationInfo = new SchedConfUpdateInfo();
+    HttpServletRequest mockHsr = prepareServletRequestForValidation();
+    Response response = webService
+            .validateAndGetSchedulerConfiguration(mutationInfo, mockHsr);
+    Assert.assertEquals(Status.BAD_REQUEST
+            .getStatusCode(), response.getStatus());
+    Assert.assertTrue(response.getEntity().toString()
+            .contains("Configuration change validation only supported by"
+                    +" MutableConfScheduler."));
+  }
+
+  @Test
+  public void testValidateAndGetSchedulerConfigurationInvalidConfig()
+          throws IOException {
+    Configuration config = CapacitySchedulerConfigGeneratorForTest
+            .createBasicCSConfiguration();
+
+    SchedConfUpdateInfo mutationInfo = new SchedConfUpdateInfo();
+    ArrayList<String> queuesToRemove = new ArrayList();
+    queuesToRemove.add("root.test1");
+    mutationInfo.setRemoveQueueInfo(queuesToRemove);
+
+    ResourceScheduler scheduler = prepareCSForValidation(config, mutationInfo);
+
+    RMWebServices webService = prepareWebServiceForValidation(scheduler);
+    HttpServletRequest mockHsr = prepareServletRequestForValidation();
+
+    Response response = webService
+            .validateAndGetSchedulerConfiguration(mutationInfo, mockHsr);
+    Assert.assertEquals(Status.BAD_REQUEST
+            .getStatusCode(), response.getStatus());
+    Assert.assertTrue(response.getEntity().toString()
+            .contains("Illegal capacity of 0.5 for children of queue"));
+  }
+
+  @Test
+  public void testValidateAndGetSchedulerConfigurationValidScheduler()
+          throws IOException {
+    Configuration config = CapacitySchedulerConfigGeneratorForTest
+            .createBasicCSConfiguration();
+    config.set("yarn.scheduler.capacity.root.test1.state", "STOPPED");
+    config.set("yarn.scheduler.capacity.queue-mappings",
+            "u:test2:test2");
+
+    SchedConfUpdateInfo mutationInfo = new SchedConfUpdateInfo();
+    ArrayList<String> queuesToRemove = new ArrayList();
+    queuesToRemove.add("root.test1");
+    mutationInfo.setRemoveQueueInfo(queuesToRemove);
+    ArrayList<QueueConfigInfo> updateQueueInfo = new ArrayList<>();
+    String queueToUpdate = "root.test2";
+    Map<String, String> propertiesToUpdate = new HashMap<>();
+    propertiesToUpdate.put("capacity", "100");
+    updateQueueInfo.add(new QueueConfigInfo(queueToUpdate, propertiesToUpdate));
+    mutationInfo.setUpdateQueueInfo(updateQueueInfo);
+
+    ResourceScheduler scheduler = prepareCSForValidation(config, mutationInfo);
+
+    RMWebServices webService = prepareWebServiceForValidation(scheduler);
+    HttpServletRequest mockHsr = prepareServletRequestForValidation();
+
+    Response response = webService
+            .validateAndGetSchedulerConfiguration(mutationInfo, mockHsr);
+    Assert.assertEquals(Status.OK
+            .getStatusCode(), response.getStatus());
+  }
+
+  private CapacityScheduler prepareCSForValidation(Configuration config,
+      SchedConfUpdateInfo mutationInfo) throws IOException {
+    CapacityScheduler scheduler = mock(CapacityScheduler.class);
+    when(scheduler.isConfigurationMutable())
+            .thenReturn(true);
+    MutableCSConfigurationProvider configurationProvider =
+            mock(MutableCSConfigurationProvider.class);
+    when(scheduler.getMutableConfProvider())
+            .thenReturn(configurationProvider);
+
+    when(configurationProvider.getConfiguration()).thenReturn(config);
+    when(scheduler.getConf()).thenReturn(config);
+    when(configurationProvider
+            .applyChanges(config, mutationInfo)).thenCallRealMethod();
+    return scheduler;
+  }
+
+  private HttpServletRequest prepareServletRequestForValidation() {
+    HttpServletRequest mockHsr = mock(HttpServletRequest.class);
+    when(mockHsr.getUserPrincipal()).thenReturn(() -> "yarn");
+    return mockHsr;
+  }
+
+  private RMWebServices prepareWebServiceForValidation(
+          ResourceScheduler scheduler) {
+    ResourceManager mockRM = mock(ResourceManager.class);
+    ApplicationACLsManager acLsManager = mock(ApplicationACLsManager.class);
+    RMWebServices webService = new RMWebServices(mockRM, new Configuration(),
+            mock(HttpServletResponse.class));
+    when(mockRM.getResourceScheduler()).thenReturn(scheduler);
+    when(acLsManager.areACLsEnabled()).thenReturn(false);
+    when(mockRM.getApplicationACLsManager()).thenReturn(acLsManager);
+    RMContext context = TestCapacitySchedulerConfigValidator.prepareRMContext();
+    when(mockRM.getRMContext()).thenReturn(context);
+
+    return  webService;
+  }
+
 }
