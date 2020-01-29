@@ -143,6 +143,14 @@ public class GpuDiscoverer {
     }
   }
 
+  boolean isAutoDiscoveryEnabled() {
+    String allowedDevicesStr = conf.get(
+        YarnConfiguration.NM_GPU_ALLOWED_DEVICES,
+        YarnConfiguration.AUTOMATICALLY_DISCOVER_GPU_DEVICES);
+    return allowedDevicesStr.equals(
+        YarnConfiguration.AUTOMATICALLY_DISCOVER_GPU_DEVICES);
+  }
+
   /**
    * Get list of GPU devices usable by YARN.
    *

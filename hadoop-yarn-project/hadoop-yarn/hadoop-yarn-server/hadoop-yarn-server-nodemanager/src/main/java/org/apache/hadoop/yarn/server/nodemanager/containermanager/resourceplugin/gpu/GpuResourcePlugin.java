@@ -82,14 +82,20 @@ public class GpuResourcePlugin implements ResourcePlugin {
 
   @Override
   public synchronized NMResourceInfo getNMResourceInfo() throws YarnException {
-    GpuDeviceInformation gpuDeviceInformation =
-        gpuDiscoverer.getGpuDeviceInformation();
+    final GpuDeviceInformation gpuDeviceInformation;
+
+    if (gpuDiscoverer.isAutoDiscoveryEnabled()) {
+      gpuDeviceInformation = gpuDiscoverer.getGpuDeviceInformation();
+    } else {
+      gpuDeviceInformation = null;
+    }
+
     GpuResourceAllocator gpuResourceAllocator =
         gpuResourceHandler.getGpuAllocator();
     List<GpuDevice> totalGpus = gpuResourceAllocator.getAllowedGpusCopy();
     List<AssignedGpuDevice> assignedGpuDevices =
         gpuResourceAllocator.getAssignedGpusCopy();
-
+    
     return new NMGpuResourceInfo(gpuDeviceInformation, totalGpus,
         assignedGpuDevices);
   }
