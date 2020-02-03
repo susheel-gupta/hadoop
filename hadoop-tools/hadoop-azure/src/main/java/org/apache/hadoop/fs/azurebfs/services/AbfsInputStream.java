@@ -23,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import org.apache.hadoop.fs.FSExceptionMessages;
@@ -45,7 +44,6 @@ public class AbfsInputStream extends FSInputStream {
   private final String eTag;                  // eTag of the path when InputStream are created
   private final boolean tolerateOobAppends; // whether tolerate Oob Appends
   private final boolean readAheadEnabled; // whether enable readAhead;
-  private final int readAheadSize;
 
   private byte[] buffer = null;            // will be initialized on first use
 
@@ -56,8 +54,6 @@ public class AbfsInputStream extends FSInputStream {
   //                                                      of valid bytes in buffer)
   private boolean closed = false;
 
-  private long targetPos;
-
   public AbfsInputStream(
       final AbfsClient client,
       final Statistics statistics,
@@ -66,7 +62,6 @@ public class AbfsInputStream extends FSInputStream {
       final int bufferSize,
       final int readAheadQueueDepth,
       final boolean tolerateOobAppends,
-      final int readAheadSize,
       final String eTag) {
     this.client = client;
     this.statistics = statistics;
@@ -77,17 +72,6 @@ public class AbfsInputStream extends FSInputStream {
     this.tolerateOobAppends = tolerateOobAppends;
     this.eTag = eTag;
     this.readAheadEnabled = true;
-    this.readAheadSize = readAheadSize;
-  }
-
-  @VisibleForTesting
-  int getCursorWithinBuffer() {
-    return bCursor;
-  }
-
-  @VisibleForTesting
-  int getBufferSize() {
-    return bufferSize;
   }
 
   public String getPath() {
@@ -112,16 +96,6 @@ public class AbfsInputStream extends FSInputStream {
     int lastReadBytes;
     int totalReadBytes = 0;
     do {
-      // Adjust pointers
-      if (targetPos >= (fCursor - limit) && targetPos <= fCursor) {
-        // can read from buffer
-        bCursor = (int) (targetPos - (fCursor - limit));
-      } else {
-        // reset buffer
-        fCursor = targetPos;
-        limit = 0;
-        bCursor = 0;
-      }
       lastReadBytes = readOneBlock(b, currentOff, currentLen);
       if (lastReadBytes > 0) {
         currentOff += lastReadBytes;
@@ -173,8 +147,7 @@ public class AbfsInputStream extends FSInputStream {
       if (-1 == fCursorAfterLastRead || fCursorAfterLastRead == fCursor || b.length >= bufferSize) {
         bytesRead = readInternal(fCursor, buffer, 0, bufferSize, false);
       } else {
-        int withReadAhead = Math.min((readAheadSize + b.length), buffer.length);
-        bytesRead = readInternal(fCursor, buffer, 0, withReadAhead, true);
+        bytesRead = readInternal(fCursor, buffer, 0, b.length, true);
       }
 
       if (bytesRead == -1) {
@@ -195,18 +168,12 @@ public class AbfsInputStream extends FSInputStream {
     if (statistics != null) {
       statistics.incrementBytesRead(bytesToRead);
     }
-    targetPos += bytesToRead;
     return bytesToRead;
   }
 
-  private int readInternal(final long position, final byte[] b, final int offset, final int length,
-      final boolean bypassReadAhead) throws IOException {
-    return readInternal(position, b, offset, length, bypassReadAhead,
-        this.readAheadQueueDepth);
-  }
 
   private int readInternal(final long position, final byte[] b, final int offset, final int length,
-      final boolean bypassReadAhead, final int readAheadCount) throws IOException {
+                           final boolean bypassReadAhead) throws IOException {
     if (readAheadEnabled && !bypassReadAhead) {
       // try reading from read-ahead
       if (offset != 0) {
@@ -215,7 +182,7 @@ public class AbfsInputStream extends FSInputStream {
       int receivedBytes;
 
       // queue read-aheads
-      int numReadAheads = readAheadCount;
+      int numReadAheads = this.readAheadQueueDepth;
       long nextSize;
       long nextOffset = position;
       while (numReadAheads > 0 && nextOffset < contentLength) {
@@ -295,7 +262,17 @@ public class AbfsInputStream extends FSInputStream {
       throw new EOFException(FSExceptionMessages.CANNOT_SEEK_PAST_EOF);
     }
 
-    targetPos = n;
+    if (n>=fCursor-limit && n<=fCursor) { // within buffer
+      bCursor = (int) (n-(fCursor-limit));
+      return;
+    }
+
+    // next read will read from here
+    fCursor = n;
+
+    //invalidate buffer
+    limit = 0;
+    bCursor = 0;
   }
 
   @Override
@@ -366,8 +343,7 @@ public class AbfsInputStream extends FSInputStream {
     if (closed) {
       throw new IOException(FSExceptionMessages.STREAM_IS_CLOSED);
     }
-
-    return (targetPos < 0) ? 0 : targetPos;
+    return fCursor - limit + bCursor;
   }
 
   /**

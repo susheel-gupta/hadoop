@@ -89,12 +89,6 @@ public class AbfsConfiguration{
       DefaultValue = DEFAULT_READ_BUFFER_SIZE)
   private int readBufferSize;
 
-  @IntegerConfigurationValidatorAnnotation(ConfigurationKey = AZURE_READAHEAD_RANGE,
-      MinValue = MIN_BUFFER_SIZE,
-      MaxValue = MAX_BUFFER_SIZE,
-      DefaultValue = DEFAULT_READ_AHEAD_SIZE)
-  private int readAheadSize;
-
   @IntegerConfigurationValidatorAnnotation(ConfigurationKey = AZURE_MIN_BACKOFF_INTERVAL,
       DefaultValue = DEFAULT_MIN_BACKOFF_INTERVAL)
   private int minBackoffInterval;
@@ -383,10 +377,6 @@ public class AbfsConfiguration{
 
   public int getReadBufferSize() {
     return this.readBufferSize;
-  }
-
-  public int getReadAheadSize() {
-    return this.readAheadSize;
   }
 
   public int getMinBackoffIntervalMilliseconds() {
