@@ -24,8 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogConfigurationException;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Appender;
-import org.eclipse.jetty.server.AsyncRequestLogWriter;
-import org.eclipse.jetty.server.CustomRequestLog;
+import org.eclipse.jetty.server.NCSARequestLog;
 import org.eclipse.jetty.server.RequestLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,11 +85,10 @@ public class HttpRequestLog {
       if (appender instanceof HttpRequestLogAppender) {
         HttpRequestLogAppender requestLogAppender
           = (HttpRequestLogAppender)appender;
-        AsyncRequestLogWriter logWriter = new AsyncRequestLogWriter();
-        logWriter.setFilename(requestLogAppender.getFilename());
-        logWriter.setRetainDays(requestLogAppender.getRetainDays());
-        return new CustomRequestLog(logWriter,
-            CustomRequestLog.EXTENDED_NCSA_FORMAT);
+        NCSARequestLog requestLog = new NCSARequestLog();
+        requestLog.setFilename(requestLogAppender.getFilename());
+        requestLog.setRetainDays(requestLogAppender.getRetainDays());
+        return requestLog;
       } else {
         LOG.warn("Jetty request log for {} was of the wrong class", loggerName);
         return null;
