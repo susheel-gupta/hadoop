@@ -32,6 +32,7 @@ import org.apache.hadoop.yarn.api.records.Priority;
 import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.api.records.ResourceInformation;
 import org.apache.hadoop.yarn.api.records.ResourceRequest;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.event.Dispatcher;
 import org.apache.hadoop.yarn.event.Event;
 import org.apache.hadoop.yarn.event.EventHandler;
@@ -485,5 +486,14 @@ public class TestUtils {
       }
     }
     return res;
+  }
+
+  /**
+   * Sets capacity scheduler as as default resource handler
+   * @param conf configuration properties
+   */
+  public static void setCapacitySchedulerAsResourceScheduler(Configuration conf) {
+    conf.setClass(YarnConfiguration.RM_SCHEDULER,
+            CapacityScheduler.class, ResourceScheduler.class);
   }
 }

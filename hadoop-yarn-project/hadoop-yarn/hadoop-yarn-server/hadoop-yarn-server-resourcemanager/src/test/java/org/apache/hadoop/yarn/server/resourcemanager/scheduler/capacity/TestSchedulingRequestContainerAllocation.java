@@ -90,6 +90,7 @@ public class TestSchedulingRequestContainerAllocation {
         new Configuration());
     csConf.set(YarnConfiguration.RM_PLACEMENT_CONSTRAINTS_HANDLER,
         YarnConfiguration.SCHEDULER_RM_PLACEMENT_CONSTRAINTS_HANDLER);
+    TestUtils.setCapacitySchedulerAsResourceScheduler(csConf);
 
     // inject node label manager
     MockRM rm1 = new MockRM(csConf) {
@@ -173,6 +174,7 @@ public class TestSchedulingRequestContainerAllocation {
         new Configuration());
     csConf.set(YarnConfiguration.RM_PLACEMENT_CONSTRAINTS_HANDLER,
         YarnConfiguration.SCHEDULER_RM_PLACEMENT_CONSTRAINTS_HANDLER);
+    TestUtils.setCapacitySchedulerAsResourceScheduler(csConf);
 
     // inject node label manager
     MockRM rm1 = new MockRM(csConf) {
@@ -266,6 +268,7 @@ public class TestSchedulingRequestContainerAllocation {
         new Configuration());
     csConf.set(YarnConfiguration.RM_PLACEMENT_CONSTRAINTS_HANDLER,
         YarnConfiguration.SCHEDULER_RM_PLACEMENT_CONSTRAINTS_HANDLER);
+    TestUtils.setCapacitySchedulerAsResourceScheduler(csConf);
 
     // inject node label manager
     MockRM rm1 = new MockRM(csConf) {
@@ -384,6 +387,7 @@ public class TestSchedulingRequestContainerAllocation {
   public void testSchedulingRequestDisabledByDefault() throws Exception {
     Configuration csConf = TestUtils.getConfigurationWithMultipleQueues(
         new Configuration());
+    TestUtils.setCapacitySchedulerAsResourceScheduler(csConf);
 
     // inject node label manager
     MockRM rm1 = new MockRM(csConf) {
@@ -429,6 +433,7 @@ public class TestSchedulingRequestContainerAllocation {
         new Configuration());
     csConf.set(YarnConfiguration.RM_PLACEMENT_CONSTRAINTS_HANDLER,
         YarnConfiguration.SCHEDULER_RM_PLACEMENT_CONSTRAINTS_HANDLER);
+    TestUtils.setCapacitySchedulerAsResourceScheduler(csConf);
 
     // inject node label manager
     MockRM rm1 = new MockRM(csConf) {
