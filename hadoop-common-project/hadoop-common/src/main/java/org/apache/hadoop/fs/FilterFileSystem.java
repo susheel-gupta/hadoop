@@ -25,12 +25,12 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.impl.OpenFileParameters;
 import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
@@ -705,15 +705,20 @@ public class FilterFileSystem extends FileSystem {
   @Override
   protected CompletableFuture<FSDataInputStream> openFileWithOptions(
       final Path path,
-      final OpenFileParameters parameters) throws IOException {
-    return fs.openFileWithOptions(path, parameters);
+      final Set<String> mandatoryKeys,
+      final Configuration options,
+      final int bufferSize) throws IOException {
+    return fs.openFileWithOptions(path, mandatoryKeys, options, bufferSize);
   }
 
   @Override
   protected CompletableFuture<FSDataInputStream> openFileWithOptions(
       final PathHandle pathHandle,
-      final OpenFileParameters parameters) throws IOException {
-    return fs.openFileWithOptions(pathHandle, parameters);
+      final Set<String> mandatoryKeys,
+      final Configuration options,
+      final int bufferSize) throws IOException {
+    return fs.openFileWithOptions(pathHandle, mandatoryKeys, options,
+        bufferSize);
   }
 
   @Override

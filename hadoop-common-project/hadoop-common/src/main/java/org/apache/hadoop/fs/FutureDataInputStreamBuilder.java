@@ -47,15 +47,4 @@ public interface FutureDataInputStreamBuilder
   CompletableFuture<FSDataInputStream> build()
       throws IllegalArgumentException, UnsupportedOperationException,
       IOException;
-
-  /**
-   * A FileStatus may be provided to the open request.
-   * It is up to the implementation whether to use this or not.
-   * @param status status.
-   * @return the builder.
-   */
-  default FutureDataInputStreamBuilder withFileStatus(FileStatus status) {
-    return this;
-  }
-
 }

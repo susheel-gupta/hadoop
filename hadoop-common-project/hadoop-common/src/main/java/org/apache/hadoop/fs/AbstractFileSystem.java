@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,7 +45,6 @@ import org.apache.hadoop.fs.Options.ChecksumOpt;
 import org.apache.hadoop.fs.Options.CreateOpts;
 import org.apache.hadoop.fs.Options.Rename;
 import org.apache.hadoop.fs.impl.AbstractFSBuilderImpl;
-import org.apache.hadoop.fs.impl.OpenFileParameters;
 import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
@@ -1329,20 +1329,22 @@ public abstract class AbstractFileSystem implements PathCapabilities {
    * setting up the expectation that the {@code get()} call
    * is needed to evaluate the result.
    * @param path path to the file
-   * @param parameters open file parameters from the builder.
+   * @param mandatoryKeys set of options declared as mandatory.
+   * @param options options set during the build sequence.
+   * @param bufferSize buffer size
    * @return a future which will evaluate to the opened file.
    * @throws IOException failure to resolve the link.
    * @throws IllegalArgumentException unknown mandatory key
    */
   public CompletableFuture<FSDataInputStream> openFileWithOptions(Path path,
-      final OpenFileParameters parameters) throws IOException {
-    AbstractFSBuilderImpl.rejectUnknownMandatoryKeys(
-        parameters.getMandatoryKeys(),
+      Set<String> mandatoryKeys,
+      Configuration options,
+      int bufferSize) throws IOException {
+    AbstractFSBuilderImpl.rejectUnknownMandatoryKeys(mandatoryKeys,
         Collections.emptySet(),
         "for " + path);
     return LambdaUtils.eval(
-        new CompletableFuture<>(), () ->
-            open(path, parameters.getBufferSize()));
+        new CompletableFuture<>(), () -> open(path, bufferSize));
   }
 
   public boolean hasPathCapability(final Path path,
