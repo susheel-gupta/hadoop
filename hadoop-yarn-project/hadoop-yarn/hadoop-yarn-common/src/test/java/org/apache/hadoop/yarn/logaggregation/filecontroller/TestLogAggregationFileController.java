@@ -35,6 +35,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doNothing;
 
 /**
  * Test for the abstract {@link LogAggregationFileController} class,
@@ -53,6 +54,7 @@ public class TestLogAggregationFileController {
     LogAggregationFileController controller = mock(
             LogAggregationFileController.class, Mockito.CALLS_REAL_METHODS);
     doReturn(fs).when(controller).getFileSystem(any(Configuration.class));
+    doNothing().when(controller).initInternal(conf);
 
     UserGroupInformation ugi = UserGroupInformation.createUserForTesting(
         "yarn_user", new String[] {"yarn_group", "other_group"});
@@ -78,6 +80,7 @@ public class TestLogAggregationFileController {
     LogAggregationFileController controller = mock(
         LogAggregationFileController.class, Mockito.CALLS_REAL_METHODS);
     doReturn(fs).when(controller).getFileSystem(any(Configuration.class));
+    doNothing().when(controller).initInternal(conf);
 
     UserGroupInformation ugi = UserGroupInformation.createUserForTesting(
         "yarn_user", new String[] {"yarn_group", "other_group"});
