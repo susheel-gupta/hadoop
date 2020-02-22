@@ -64,7 +64,6 @@ public class TestSchedulingRequestContainerAllocationAsync {
         + ".scheduling-interval-ms", 0);
     csConf.set(YarnConfiguration.RM_PLACEMENT_CONSTRAINTS_HANDLER,
         YarnConfiguration.SCHEDULER_RM_PLACEMENT_CONSTRAINTS_HANDLER);
-    TestUtils.setCapacitySchedulerAsResourceScheduler(csConf);
 
     // inject node label manager
     MockRM rm1 = new MockRM(csConf) {

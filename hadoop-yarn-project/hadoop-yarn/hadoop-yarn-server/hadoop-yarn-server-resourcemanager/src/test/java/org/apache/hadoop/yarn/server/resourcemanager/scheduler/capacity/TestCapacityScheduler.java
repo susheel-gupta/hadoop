@@ -3271,7 +3271,6 @@ public class TestCapacityScheduler extends CapacitySchedulerTestBase {
     YarnConfiguration conf =
         new YarnConfiguration(new CapacitySchedulerConfiguration());
     conf.setBoolean(CapacitySchedulerConfiguration.ENABLE_USER_METRICS, true);
-    TestUtils.setCapacitySchedulerAsResourceScheduler(conf);
 
     MockRM rm = new MockRM(conf);
     rm.start();
@@ -3435,7 +3434,6 @@ public class TestCapacityScheduler extends CapacitySchedulerTestBase {
         new YarnConfiguration(
             setupQueueConfiguration(new CapacitySchedulerConfiguration()));
     conf.setBoolean(CapacitySchedulerConfiguration.ENABLE_USER_METRICS, true);
-    TestUtils.setCapacitySchedulerAsResourceScheduler(conf);
     MockRM rm1 = new MockRM(conf);
     rm1.start();
     MockNM nm1 =
@@ -3515,7 +3513,6 @@ public class TestCapacityScheduler extends CapacitySchedulerTestBase {
 
     YarnConfiguration conf = new YarnConfiguration(csConf);
     conf.setBoolean(CapacitySchedulerConfiguration.ENABLE_USER_METRICS, true);
-    TestUtils.setCapacitySchedulerAsResourceScheduler(conf);
 
     MockRM rm1 = new MockRM(conf);
     rm1.start();
@@ -3550,7 +3547,6 @@ public class TestCapacityScheduler extends CapacitySchedulerTestBase {
     Configuration conf =
         TestUtils.getConfigurationWithQueueLabels(new Configuration(false));
     conf.setBoolean(YarnConfiguration.NODE_LABELS_ENABLED, true);
-    TestUtils.setCapacitySchedulerAsResourceScheduler(conf);
 
     final RMNodeLabelsManager mgr = new NullRMNodeLabelsManager();
     mgr.init(conf);
@@ -3944,7 +3940,6 @@ public class TestCapacityScheduler extends CapacitySchedulerTestBase {
     Configuration conf =
         TestUtils.getConfigurationWithQueueLabels(new Configuration(false));
     conf.setBoolean(YarnConfiguration.NODE_LABELS_ENABLED, true);
-    TestUtils.setCapacitySchedulerAsResourceScheduler(conf);
 
     final RMNodeLabelsManager mgr = new NullRMNodeLabelsManager();
     mgr.init(conf);
@@ -4510,7 +4505,6 @@ public class TestCapacityScheduler extends CapacitySchedulerTestBase {
     Configuration conf =
         TestUtils.getConfigurationWithMultipleQueues(new Configuration(false));
     conf.setBoolean(YarnConfiguration.NODE_LABELS_ENABLED, true);
-    TestUtils.setCapacitySchedulerAsResourceScheduler(conf);
 
     final RMNodeLabelsManager mgr = new NullRMNodeLabelsManager();
     mgr.init(conf);
@@ -4974,9 +4968,7 @@ public class TestCapacityScheduler extends CapacitySchedulerTestBase {
   public void testClearRequestsBeforeApplyTheProposal()
       throws Exception {
     // init RM & NMs & Nodes
-    CapacitySchedulerConfiguration conf = new CapacitySchedulerConfiguration();
-    TestUtils.setCapacitySchedulerAsResourceScheduler(conf);
-    final MockRM rm = new MockRM(conf);
+    final MockRM rm = new MockRM(new CapacitySchedulerConfiguration());
     rm.start();
     final MockNM nm = rm.registerNode("h1:1234", 200 * GB);
 
@@ -5037,9 +5029,7 @@ public class TestCapacityScheduler extends CapacitySchedulerTestBase {
         ContainerAllocation.QUEUE_SKIPPED.getAllocationState());
 
     // init RM & NMs & Nodes
-    CapacitySchedulerConfiguration conf = new CapacitySchedulerConfiguration();
-    TestUtils.setCapacitySchedulerAsResourceScheduler(conf);
-    final MockRM rm = new MockRM(conf);
+    final MockRM rm = new MockRM(new CapacitySchedulerConfiguration());
     CapacityScheduler cs = (CapacityScheduler) rm.getResourceScheduler();
     rm.start();
     final MockNM nm1 = rm.registerNode("h1:1234", 4 * GB);
