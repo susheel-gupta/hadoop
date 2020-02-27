@@ -637,7 +637,8 @@ public class DatanodeDescriptor extends DatanodeInfo {
     pendingReplicationWithoutTargets++;
   }
 
-  void decrementPendingReplicationWithoutTargets() {
+  @VisibleForTesting
+  public void decrementPendingReplicationWithoutTargets() {
     pendingReplicationWithoutTargets--;
   }
 
