@@ -312,14 +312,15 @@ public class FSConfigToCSConfigConverter {
     PlacementManager placementManager =
         fs.getRMContext().getQueuePlacementManager();
 
-    if (placementManager.getPlacementRules().size() > 0) {
-      QueuePlacementConverter placementConverter =
-          new QueuePlacementConverter();
-      Map<String, String> properties =
-          placementConverter.convertPlacementPolicy(placementManager,
-              ruleHandler, userAsDefaultQueue);
-      properties.forEach((k, v) -> capacitySchedulerConfig.set(k, v));
-    }
+    LOG.info("COMPX-1927: ignoring placement rules conversion temporarily");
+//    if (placementManager.getPlacementRules().size() > 0) {
+//      QueuePlacementConverter placementConverter =
+//          new QueuePlacementConverter();
+//      Map<String, String> properties =
+//          placementConverter.convertPlacementPolicy(placementManager,
+//              ruleHandler, userAsDefaultQueue);
+//      properties.forEach((k, v) -> capacitySchedulerConfig.set(k, v));
+//    }
   }
 
   private void emitDefaultMaxApplications() {
