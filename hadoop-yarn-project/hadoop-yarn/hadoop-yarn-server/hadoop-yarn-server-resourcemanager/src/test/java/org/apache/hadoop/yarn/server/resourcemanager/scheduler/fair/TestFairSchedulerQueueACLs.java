@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.test.GenericTestUtils;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.QueueACLsTestBase;
 
@@ -31,8 +32,8 @@ public class TestFairSchedulerQueueACLs extends QueueACLsTestBase {
   protected Configuration createConfiguration() throws IOException {
     FairSchedulerConfiguration fsConf = new FairSchedulerConfiguration();
     
-    final String TEST_DIR = new File(System.getProperty("test.build.data",
-        "/tmp")).getAbsolutePath();
+    final String TEST_DIR = new File(System.getProperty(
+        GenericTestUtils.SYSPROP_TEST_DATA_DIR, "/tmp")).getAbsolutePath();
     final String ALLOC_FILE = new File(TEST_DIR, "test-queues.xml")
         .getAbsolutePath();
     PrintWriter out = new PrintWriter(new FileWriter(ALLOC_FILE));
@@ -58,5 +59,69 @@ public class TestFairSchedulerQueueACLs extends QueueACLsTestBase {
     fsConf.set(YarnConfiguration.RM_SCHEDULER, FairScheduler.class.getName());
 
     return fsConf;
+  }
+
+  @Override
+  public String getQueueD() {
+    return "root." + QUEUED;
+  }
+
+  @Override
+  public String getQueueD1() {
+    return "root."+ QUEUED + "." + QUEUED1;
+  }
+
+  /**
+   * Creates the following queue hierarchy:
+   * root
+   *    |
+   *    D
+   *    |
+   *    D1.
+   * @param rootAcl administer queue and submit application ACL for root queue
+   * @param queueDAcl administer queue and submit application ACL for D queue
+   * @param queueD1Acl administer queue and submit application ACL for D1 queue
+   * @throws IOException
+   */
+  @Override
+  public void updateConfigWithDAndD1Queues(String rootAcl, String queueDAcl,
+              String queueD1Acl) throws IOException {
+    FairSchedulerConfiguration fsConf = (FairSchedulerConfiguration) getConf();
+    fsConf.clear();
+    final String TEST_DIR = new File(System.getProperty(
+        GenericTestUtils.SYSPROP_TEST_DATA_DIR, "/tmp")).getAbsolutePath();
+    final String ALLOC_FILE = new File(TEST_DIR, "test-queues.xml")
+                                  .getAbsolutePath();
+    PrintWriter out = new PrintWriter(new FileWriter(ALLOC_FILE));
+    out.println("<?xml version=\"1.0\"?>");
+    out.println("<allocations>");
+    out.println("<queue name=\"root\">");
+    if (rootAcl != null) {
+      out.println(String.format("  <aclSubmitApps>%s</aclSubmitApps>", rootAcl));
+      out.println(String.format("  <aclAdministerApps>%s</aclAdministerApps>", rootAcl));
+    }
+    out.println(String.format("  <queue name=\"%s\">",  QUEUED));
+    if (queueDAcl != null) {
+      out.println(String.format("    <aclSubmitApps>%s</aclSubmitApps>", queueDAcl));
+      out.println(String.format("    <aclAdministerApps>%s</aclAdministerApps>", queueDAcl));
+    }
+    out.println(String.format("  <queue name=\"%s\">", QUEUED1));
+    if (queueD1Acl != null) {
+      out.println(String.format("    <aclSubmitApps>%s</aclSubmitApps>", queueD1Acl));
+      out.println(String.format("    <aclAdministerApps>%s</aclAdministerApps>", queueD1Acl));
+    }
+    out.println("    </queue>");
+    out.println("  </queue>");
+    out.println("</queue>");
+    out.println("</allocations>");
+    out.close();
+
+    fsConf.set(FairSchedulerConfiguration.ALLOCATION_FILE, ALLOC_FILE);
+
+    fsConf.setBoolean(YarnConfiguration.YARN_ACL_ENABLE, true);
+    fsConf.set(YarnConfiguration.RM_SCHEDULER, FairScheduler.class.getName());
+    resourceManager.getResourceScheduler()
+        .reinitialize(fsConf, resourceManager.getRMContext());
+
   }
 }
