@@ -189,11 +189,10 @@ public class ParentQueue extends AbstractCSQueue {
       }
 
       float delta = Math.abs(1.0f - childCapacities);  // crude way to check
-      // allow capacities being set to 0, and enforce child 0 if parent is 0
+      // allow capacities being set to 0
       if ((minResDefaultLabel.equals(Resources.none())
-          && (queueCapacities.getCapacity() > 0) && (delta > PRECISION))
-          || ((queueCapacities.getCapacity() == 0) && (childCapacities > 0))) {
-        throw new IllegalArgumentException("Illegal" + " capacity of "
+          && (queueCapacities.getCapacity() > 0) && (delta > PRECISION))) {
+        throw new IllegalArgumentException("Illegal capacity of "
             + childCapacities + " for children of queue " + queueName);
       }
       // check label capacities
@@ -224,10 +223,9 @@ public class ParentQueue extends AbstractCSQueue {
               .getConfiguredMinResource(nodeLabel));
         }
         if ((minResDefaultLabel.equals(Resources.none()) && capacityByLabel > 0
-            && Math.abs(1.0f - sum) > PRECISION)
-            || (capacityByLabel == 0) && (sum > 0)) {
+            && Math.abs(1.0f - sum) > PRECISION)) {
           throw new IllegalArgumentException(
-              "Illegal" + " capacity of " + sum + " for children of queue "
+              "Illegal capacity of " + sum + " for children of queue "
                   + queueName + " for label=" + nodeLabel);
         }
 

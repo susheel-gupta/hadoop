@@ -668,7 +668,7 @@ public class TestParentQueue {
         TestUtils.spyHook);
   }
   
-  @Test (expected=IllegalArgumentException.class)
+  @Test
   public void testQueueCapacitySettingParentZero() throws Exception {
     // Setup queue configs
     setupMultiLevelQueues(csConf);
@@ -679,10 +679,15 @@ public class TestParentQueue {
     final String Q_A = CapacitySchedulerConfiguration.ROOT + "." + A;
     csConf.setCapacity(Q_A, 60);
 
-    Map<String, CSQueue> queues = new HashMap<String, CSQueue>(); 
-    CapacitySchedulerQueueManager.parseQueue(csContext, csConf, null,
-        CapacitySchedulerConfiguration.ROOT, queues, queues,
-        TestUtils.spyHook);
+    Map<String, CSQueue> queues = new HashMap<String, CSQueue>();
+    try {
+      CapacitySchedulerQueueManager.parseQueue(csContext, csConf, null,
+          CapacitySchedulerConfiguration.ROOT, queues, queues,
+          TestUtils.spyHook);
+      } catch (IllegalArgumentException e) {
+        fail("Failed to set Parent Queue Capacity to 0: " + e);
+      }
+    assertTrue("Failed to set Parent Queue Capacity to 0", true);
   }
   
   @Test
