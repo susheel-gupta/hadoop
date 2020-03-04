@@ -98,6 +98,8 @@ public abstract class ContainerExecutor implements Configurable {
   private final ReadLock readLock = lock.readLock();
   private final WriteLock writeLock = lock.writeLock();
   private String[] whitelistVars;
+  private int exitCodeFileTimeout =
+      YarnConfiguration.DEFAULT_NM_CONTAINER_EXECUTOR_EXIT_FILE_TIMEOUT;
 
   @Override
   public void setConf(Configuration conf) {
@@ -105,6 +107,9 @@ public abstract class ContainerExecutor implements Configurable {
     if (conf != null) {
       whitelistVars = conf.get(YarnConfiguration.NM_ENV_WHITELIST,
           YarnConfiguration.DEFAULT_NM_ENV_WHITELIST).split(",");
+      exitCodeFileTimeout = conf.getInt(
+          YarnConfiguration.NM_CONTAINER_EXECUTOR_EXIT_FILE_TIMEOUT,
+          YarnConfiguration.DEFAULT_NM_CONTAINER_EXECUTOR_EXIT_FILE_TIMEOUT);
     }
   }
 
@@ -289,7 +294,7 @@ public abstract class ContainerExecutor implements Configurable {
 
     // wait for exit code file to appear
     final int sleepMsec = 100;
-    int msecLeft = 2000;
+    int msecLeft = this.exitCodeFileTimeout;
     String exitCodeFile = ContainerLaunch.getExitCodeFile(pidPath.toString());
     File file = new File(exitCodeFile);
 
