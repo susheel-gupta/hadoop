@@ -65,7 +65,6 @@
 
     <!-- jackson versions -->
     <jackson.version>1.9.13</jackson.version>
-    <jackson-mapper-asl.version>1.9.13-cloudera.1</jackson-mapper-asl.version>
     <jackson2.version>2.9.10</jackson2.version>
     <jackson2.databind.version>2.9.10</jackson2.databind.version>
 
@@ -1016,7 +1015,7 @@
       <dependency>
         <groupId>org.codehaus.jackson</groupId>
         <artifactId>jackson-mapper-asl</artifactId>
-        <version>${jackson-mapper-asl.version}</version>
+        <version>${jackson.version}</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.jackson</groupId>
