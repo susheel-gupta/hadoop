@@ -31,6 +31,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.ACL;
 
+import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -254,6 +255,13 @@ public class ZKConfigurationStore extends YarnConfigurationStore {
     try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
         ObjectInputStream ois = new ObjectInputStream(bais);) {
       return ois.readObject();
+    }
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (zkManager  != null) {
+      zkManager.close();
     }
   }
 }
