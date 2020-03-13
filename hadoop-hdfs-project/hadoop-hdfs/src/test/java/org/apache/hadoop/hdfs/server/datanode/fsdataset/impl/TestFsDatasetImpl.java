@@ -1184,4 +1184,38 @@ public class TestFsDatasetImpl {
             new StorageDirectory(StorageLocation.parse(dataDir.getPath())))
         .build();
   }
+
+  @Test
+  public void testGetMetadataLengthOfFinalizedReplica() throws IOException {
+    FsVolumeImpl fsv1 = Mockito.mock(FsVolumeImpl.class);
+    File blockDir = new File(BASE_DIR,"testFinalizedReplica/block");
+    if (!blockDir.exists()) {
+      assertTrue(blockDir.mkdirs());
+    }
+    long blockID = 1;
+    long genStamp = 2;
+    File metaFile = new File(blockDir,Block.BLOCK_FILE_PREFIX +
+        blockID + "_" + genStamp + Block.METADATA_EXTENSION);
+
+    // create meta file on disk
+    OutputStream os = new FileOutputStream(metaFile);
+    os.write("TEST_META_SIZE".getBytes());
+    os.close();
+    long fileLength = metaFile.length();
+
+    ReplicaInfo replica = new FinalizedReplica(
+        blockID, 2, genStamp, fsv1, blockDir);
+
+    long metaLength = replica.getMetadataLength();
+    assertEquals(fileLength, metaLength);
+
+    // Delete the meta file on disks, make sure we still can get the length
+    // from cached meta size.
+    metaFile.delete();
+    metaLength = replica.getMetadataLength();
+    assertEquals(fileLength, metaLength);
+    if (!blockDir.exists()) {
+      assertTrue(blockDir.delete());
+    }
+  }
 }
