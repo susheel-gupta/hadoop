@@ -125,6 +125,11 @@ public class DataNodeFaultInjector {
   public void delayWhenOfferServiceHoldLock() {}
 
   /**
+   * Used as a hook to inject intercept when re-register.
+   */
+  public void blockUtilSendFullBlockReport() {}
+
+  /**
    * Just delay a while.
    */
   public void delay() {}
