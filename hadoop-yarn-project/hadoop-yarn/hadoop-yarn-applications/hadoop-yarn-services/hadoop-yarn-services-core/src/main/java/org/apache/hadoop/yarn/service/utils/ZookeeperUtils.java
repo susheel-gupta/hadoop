@@ -87,7 +87,7 @@ public class ZookeeperUtils {
   public static String buildHostsOnlyList(List<HostAndPort> hostAndPorts) {
     StringBuilder sb = new StringBuilder();
     for (HostAndPort hostAndPort : hostAndPorts) {
-      sb.append(hostAndPort.getHost()).append(",");
+      sb.append(hostAndPort.getHostText()).append(",");
     }
     if (sb.length() > 0) {
       sb.delete(sb.length() - 1, sb.length());
