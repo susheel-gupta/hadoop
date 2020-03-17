@@ -503,6 +503,54 @@ public class TestRMWebServicesNodesScaling extends JerseyTestBase {
     rm.stop();
   }
 
+  @Test
+  public void testClusterScalingMetrics() throws JSONException, Exception {
+    rm.start();
+    ResourceScheduler scheduler = rm.getRMContext().getScheduler();
+    MockNM[] nms = new MockNM[1];
+    MockNM nm1 = rm.registerNode("127.0.0.1:1234", 4 * GB, 4);
+    nms[0] = nm1;
+    waitforNMRegistered(scheduler, 1, 5);
+
+    RMApp app1 = rm.submitApp(2 * GB, "app-1",
+        "user1", null, "default");
+    MockAM am1 = MockRM.launchAndRegisterAM(app1, rm, nms);
+
+    Resource cResource = Resources.createResource(2 * GB, 2);
+    am1.allocate("*", cResource, 4,
+        new ArrayList<ContainerId>(), null);
+
+    heartbeat(rm, nm1);
+
+    WebResource r = resource();
+    ClientResponse response = r.path("ws").path("v1").path("cluster")
+        .path("scaling-metrics")
+        .header(RMWSConsts.SCALING_CUSTOM_HEADER_KEY,
+            RMWSConsts.SCALING_CUSTOM_HEADER_VERSION_V1)
+        .accept("application/json").get(ClientResponse.class);
+
+    assertEquals(MediaType.APPLICATION_JSON_TYPE + "; " + JettyUtils.UTF_8,
+        response.getType().toString());
+
+    JSONObject json = response.getEntity(JSONObject.class);
+    assertEquals("incorrect number of elements", 1, json.length());
+    JSONObject resourceRequests = json.getJSONObject("resourceRequests");
+    assertEquals(1, resourceRequests.length());
+    JSONObject resourceRequest = resourceRequests.
+        getJSONObject("resourceRequest");
+    assertEquals(2, resourceRequest.length());
+    JSONObject resource = resourceRequest.
+        getJSONObject("resource");
+    assertEquals(2, resource.length());
+    assertEquals("Incorrect resource memory", "2048",
+        resource.getString("memMB"));
+    assertEquals("Incorrect resource vCores", "2",
+        resource.getString("vcore"));
+    assertEquals("Incorrect resource count", "3",
+        resourceRequest.getString("count"));
+    rm.stop();
+  }
+
   private List<NodeInstanceType> fakeInstanceTypes(int count) {
     List<NodeInstanceType> types = new ArrayList<>();
     Resource r1 = Resource.newInstance(16 * GB, 4);

@@ -44,6 +44,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.AppsInfo;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.ClusterScalingInfo;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.ClusterInfo;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.ClusterMetricsInfo;
+import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.ClusterScalingMetrics;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.ClusterUserInfo;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.DelegationToken;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.LabelsToNodesInfo;
@@ -100,6 +101,11 @@ public class MockRESTRequestInterceptor extends AbstractRESTRequestInterceptor {
       String upscalingFactorInNodeResourceTypes,
       String downscalingFactorInNodeCount,
       NodeInstanceTypeList instanceTypeList) {
+    return null;
+  }
+
+  @Override
+  public ClusterScalingMetrics getClusterScalingMetrics(String apiVersion) {
     return null;
   }
 
