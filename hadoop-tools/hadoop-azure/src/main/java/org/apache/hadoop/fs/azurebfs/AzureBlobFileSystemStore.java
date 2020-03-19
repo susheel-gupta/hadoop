@@ -466,7 +466,8 @@ public class AzureBlobFileSystemStore implements Closeable {
           AbfsHttpConstants.FORWARD_SLASH + getRelativePath(path), contentLength,
           abfsConfiguration.getReadBufferSize(), abfsConfiguration.getReadAheadQueueDepth(),
           abfsConfiguration.getTolerateOobAppends(), eTag,
-          abfsConfiguration.isReadAheadEnabled());
+          abfsConfiguration.isReadAheadEnabled(),
+          abfsConfiguration.getReadAheadRange());
     }
   }
 
