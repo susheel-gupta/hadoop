@@ -815,7 +815,6 @@ public class RegularContainerAllocator extends AbstractContainerAllocator {
     // Do checks before determining which node to allocate
     // Directly return if this check fails.
     ContainerAllocation result;
-    ContainerAllocation lastReservation = null;
     AppPlacementAllocator<FiCaSchedulerNode> schedulingPS =
         application.getAppSchedulingInfo().getAppPlacementAllocator(
             schedulerKey);
@@ -852,23 +851,10 @@ public class RegularContainerAllocator extends AbstractContainerAllocator {
       result = tryAllocateOnNode(clusterResource, node, schedulingMode,
           resourceLimits, schedulerKey, reservedContainer);
 
-      if (AllocationState.ALLOCATED == result.getAllocationState()) {
+      if (AllocationState.ALLOCATED == result.getAllocationState()
+          || AllocationState.RESERVED == result.getAllocationState()) {
         result = doAllocation(result, node, schedulerKey, reservedContainer);
         break;
-      }
-
-      if (AllocationState.RESERVED == result.getAllocationState()) {
-        // Look at the other nodes to see if this reservation is needed
-        // If there's headroom in other room. It shouldn't return a reservation
-        if (iter.hasNext()) {
-          // Keep the last reservation attemp
-          lastReservation = result;
-          continue;
-        } else {
-          if (lastReservation != null) {
-            result = doAllocation(lastReservation, node, schedulerKey, reservedContainer);
-          }
-        }
       }
     }
 
