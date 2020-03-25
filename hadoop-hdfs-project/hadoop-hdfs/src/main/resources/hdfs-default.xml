@@ -2949,6 +2949,15 @@
   </description>
 </property>
 
+  <property>
+    <name>dfs.datanode.processcommands.threshold</name>
+    <value>2s</value>
+    <description>The threshold in milliseconds at which we will log a slow
+      command processing in BPServiceActor. By default, this parameter is set
+      to 2 seconds.
+    </description>
+  </property>
+
 <property>
   <name>dfs.namenode.lease-recheck-interval-ms</name>
   <value>2000</value>
