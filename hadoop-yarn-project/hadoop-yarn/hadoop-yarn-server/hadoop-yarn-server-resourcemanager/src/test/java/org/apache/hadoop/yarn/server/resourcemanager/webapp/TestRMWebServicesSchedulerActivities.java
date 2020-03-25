@@ -100,7 +100,8 @@ public class TestRMWebServicesSchedulerActivities
       verifyNumberOfAllocations(json, 1);
       verifyStateOfAllocations(json.getJSONObject("allocations"),
           "finalAllocationState", "ALLOCATED");
-      verifyQueueOrder(json.getJSONObject("allocations"), "root-a-b-b2-b3-b1");
+      verifyQueueOrder(json.getJSONObject("allocations"),
+          "root-root.a-root.b-root.b.b2-root.b.b3-root.b.b1");
     }
     finally {
       rm.stop();
@@ -286,7 +287,8 @@ public class TestRMWebServicesSchedulerActivities
 
       verifyNumberOfAllocations(json, 1);
 
-      verifyQueueOrder(json.getJSONObject("allocations"), "root-a-b-b3-b1");
+      verifyQueueOrder(json.getJSONObject("allocations"),
+          "root-root.a-root.b-root.b.b3-root.b.b1");
 
       JSONObject allocations = json.getJSONObject("allocations");
       verifyStateOfAllocations(allocations, "finalAllocationState", "RESERVED");
@@ -314,7 +316,7 @@ public class TestRMWebServicesSchedulerActivities
 
       verifyNumberOfAllocations(json, 1);
 
-      verifyQueueOrder(json.getJSONObject("allocations"), "b1");
+      verifyQueueOrder(json.getJSONObject("allocations"), "root.b.b1");
 
       allocations = json.getJSONObject("allocations");
       verifyStateOfAllocations(allocations, "finalAllocationState", "SKIPPED");
@@ -350,7 +352,7 @@ public class TestRMWebServicesSchedulerActivities
 
       verifyNumberOfAllocations(json, 1);
 
-      verifyQueueOrder(json.getJSONObject("allocations"), "b1");
+      verifyQueueOrder(json.getJSONObject("allocations"), "root.b.b1");
 
       allocations = json.getJSONObject("allocations");
       verifyStateOfAllocations(allocations, "finalAllocationState",
@@ -403,7 +405,8 @@ public class TestRMWebServicesSchedulerActivities
 
       verifyNumberOfNodes(allocations, 5);
 
-      verifyQueueOrder(json.getJSONObject("allocations"), "root-b-b1");
+      verifyQueueOrder(json.getJSONObject("allocations"),
+          "root-root.b-root.b.b1");
     }
     finally {
       rm.stop();

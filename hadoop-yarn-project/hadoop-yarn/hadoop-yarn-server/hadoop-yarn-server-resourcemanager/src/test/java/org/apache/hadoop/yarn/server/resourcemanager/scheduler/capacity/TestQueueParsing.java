@@ -1145,7 +1145,7 @@ public class TestQueueParsing {
   private void checkEqualsToQueueSet(List<CSQueue> queues, String[] queueNames) {
     Set<String> existedQueues = new HashSet<>();
     for (CSQueue q : queues) {
-      existedQueues.add(q.getQueueName());
+      existedQueues.add(q.getQueueShortName());
     }
     for (String q : queueNames) {
       Assert.assertTrue(existedQueues.remove(q));

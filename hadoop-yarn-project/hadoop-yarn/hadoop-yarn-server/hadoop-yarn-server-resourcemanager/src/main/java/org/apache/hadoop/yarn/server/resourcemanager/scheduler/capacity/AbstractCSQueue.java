@@ -80,7 +80,7 @@ import static org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.C
 
 public abstract class AbstractCSQueue implements CSQueue {
 
-  private static final Log LOG = LogFactory.getLog(AbstractCSQueue.class);  
+  private static final Log LOG = LogFactory.getLog(AbstractCSQueue.class);
   volatile CSQueue parent;
   final String queueName;
   private final String queuePath;
@@ -109,7 +109,9 @@ public abstract class AbstractCSQueue implements CSQueue {
 
   // Track resource usage-by-label like used-resource/pending-resource, etc.
   volatile ResourceUsage queueUsage;
-  
+
+  private final boolean fullPathQueueNamingPolicy = false;
+
   // Track capacities like used-capcity/abs-used-capacity/capacity/abs-capacity,
   // etc.
   QueueCapacities queueCapacities;
@@ -202,7 +204,7 @@ public abstract class AbstractCSQueue implements CSQueue {
   public String getQueuePath() {
     return queuePath;
   }
-  
+
   @Override
   public float getCapacity() {
     return queueCapacities.getCapacity();
@@ -253,7 +255,15 @@ public abstract class AbstractCSQueue implements CSQueue {
   }
   
   @Override
+  public String getQueueShortName() {
+    return queueName;
+  }
+
+  @Override
   public String getQueueName() {
+    if (fullPathQueueNamingPolicy) {
+      return queuePath;
+    }
     return queueName;
   }
 
@@ -291,11 +301,11 @@ public abstract class AbstractCSQueue implements CSQueue {
     try {
       writeLock.lock();
       // Sanity check
-      CSQueueUtils.checkMaxCapacity(getQueueName(),
+      CSQueueUtils.checkMaxCapacity(getQueuePath(),
           queueCapacities.getCapacity(), maximumCapacity);
       float absMaxCapacity = CSQueueUtils.computeAbsoluteMaximumCapacity(
           maximumCapacity, parent);
-      CSQueueUtils.checkAbsoluteCapacity(getQueueName(),
+      CSQueueUtils.checkAbsoluteCapacity(getQueuePath(),
           queueCapacities.getAbsoluteCapacity(), absMaxCapacity);
 
       queueCapacities.setMaximumCapacity(maximumCapacity);
@@ -313,11 +323,11 @@ public abstract class AbstractCSQueue implements CSQueue {
     try {
       writeLock.lock();
       // Sanity check
-      CSQueueUtils.checkMaxCapacity(getQueueName(),
+      CSQueueUtils.checkMaxCapacity(getQueuePath(),
           queueCapacities.getCapacity(nodeLabel), maximumCapacity);
       float absMaxCapacity = CSQueueUtils.computeAbsoluteMaximumCapacity(
           maximumCapacity, parent);
-      CSQueueUtils.checkAbsoluteCapacity(getQueueName(),
+      CSQueueUtils.checkAbsoluteCapacity(getQueuePath(),
           queueCapacities.getAbsoluteCapacity(nodeLabel), absMaxCapacity);
 
       queueCapacities.setMaximumCapacity(maximumCapacity);
@@ -453,24 +463,24 @@ public abstract class AbstractCSQueue implements CSQueue {
   }
 
   private void setupMaximumAllocation(CapacitySchedulerConfiguration csConf) {
-    String queue = getQueuePath();
+    String myQueuePath = getQueuePath();
     Resource clusterMax = ResourceUtils
             .fetchMaximumAllocationFromConfig(csConf);
-    Resource queueMax = csConf.getQueueMaximumAllocation(queue);
+    Resource queueMax = csConf.getQueueMaximumAllocation(myQueuePath);
 
     maximumAllocation = Resources.clone(
             parent == null ? clusterMax : parent.getMaximumAllocation());
 
     String errMsg =
             "Queue maximum allocation cannot be larger than the cluster setting"
-            + " for queue " + queue
+            + " for queue " + myQueuePath
             + " max allocation per queue: %s"
             + " cluster setting: " + clusterMax;
 
     if (queueMax == Resources.none()) {
       // Handle backward compatibility
-      long queueMemory = csConf.getQueueMaximumAllocationMb(queue);
-      int queueVcores = csConf.getQueueMaximumAllocationVcores(queue);
+      long queueMemory = csConf.getQueueMaximumAllocationMb(myQueuePath);
+      int queueVcores = csConf.getQueueMaximumAllocationVcores(myQueuePath);
       if (queueMemory != UNDEFINED) {
         maximumAllocation.setMemorySize(queueMemory);
       }
@@ -526,7 +536,7 @@ public abstract class AbstractCSQueue implements CSQueue {
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("capacityConfigType is '" + capacityConfigType
-            + "' for queue '" + getQueueName());
+            + "' for queue '" + getQueuePath());
       }
       if (this.capacityConfigType.equals(CapacityConfigType.NONE)) {
         this.capacityConfigType = (!minResource.equals(Resources.none())
@@ -535,7 +545,7 @@ public abstract class AbstractCSQueue implements CSQueue {
                 : CapacityConfigType.PERCENTAGE;
         if (LOG.isDebugEnabled()) {
           LOG.debug("capacityConfigType is updated as '" + capacityConfigType
-              + "' for queue '" + getQueueName());
+              + "' for queue '" + getQueuePath());
         }
       }
 
@@ -547,7 +557,7 @@ public abstract class AbstractCSQueue implements CSQueue {
           resourceCalculator, clusterResource, minResource, maxResource)) {
         throw new IllegalArgumentException("Min resource configuration "
             + minResource + " is greater than its max value:" + maxResource
-            + " in queue:" + getQueueName());
+            + " in queue:" + getQueuePath());
       }
 
       // If parent's max resource is lesser to a specific child's max
@@ -561,7 +571,7 @@ public abstract class AbstractCSQueue implements CSQueue {
               maxResource, parentMaxRes)) {
             throw new IllegalArgumentException("Max resource configuration "
                 + maxResource + " is greater than parents max value:"
-                + parentMaxRes + " in queue:" + getQueueName());
+                + parentMaxRes + " in queue:" + getQueuePath());
           }
 
           // If child's max resource is not set, but its parent max resource is
@@ -575,7 +585,7 @@ public abstract class AbstractCSQueue implements CSQueue {
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("Updating absolute resource configuration for queue:"
-            + getQueueName() + " as minResource=" + minResource
+            + getQueuePath() + " as minResource=" + minResource
             + " and maxResource=" + maxResource);
       }
 
@@ -591,9 +601,9 @@ public abstract class AbstractCSQueue implements CSQueue {
       localType = CapacityConfigType.ABSOLUTE_RESOURCE;
     }
 
-    if (!queueName.equals("root")
+    if (!queuePath.equals("root")
         && !this.capacityConfigType.equals(localType)) {
-      throw new IllegalArgumentException("Queue '" + getQueueName()
+      throw new IllegalArgumentException("Queue '" + getQueuePath()
           + "' should use either percentage based capacity"
           + " configuration or absolute resource.");
     }
@@ -655,8 +665,8 @@ public abstract class AbstractCSQueue implements CSQueue {
         } else if (configuredState == QueueState.RUNNING
             && parentState != QueueState.RUNNING) {
           throw new IllegalArgumentException(
-              "The parent queue:" + parent.getQueueName()
-              + " cannot be STOPPED as the child queue:" + queueName
+              "The parent queue:" + parent.getQueuePath()
+              + " cannot be STOPPED as the child queue:" + queuePath
               + " is in RUNNING state.");
         } else {
           updateQueueState(configuredState);
@@ -1071,7 +1081,7 @@ public abstract class AbstractCSQueue implements CSQueue {
           if (Resources.lessThan(resourceCalculator, clusterResource,
               newTotalWithoutReservedResource, currentLimitResource)) {
             if (LOG.isDebugEnabled()) {
-              LOG.debug("try to use reserved: " + getQueueName()
+              LOG.debug("try to use reserved: " + getQueuePath()
                   + " usedResources: " + queueUsage.getUsed()
                   + ", clusterResources: " + clusterResource
                   + ", reservedResources: " + resourceCouldBeUnreserved
@@ -1085,7 +1095,7 @@ public abstract class AbstractCSQueue implements CSQueue {
 
         // Can not assign to this queue
         if (LOG.isDebugEnabled()) {
-          LOG.debug("Failed to assign to queue: " + getQueueName()
+          LOG.debug("Failed to assign to queue: " + getQueuePath()
               + " nodePatrition: " + nodePartition
               + ", usedResources: " + queueUsage.getUsed(nodePartition)
               + ", clusterResources: " + clusterResource
@@ -1096,7 +1106,7 @@ public abstract class AbstractCSQueue implements CSQueue {
         return false;
       }
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Check assign to queue: " + getQueueName()
+        LOG.debug("Check assign to queue: " + getQueuePath()
             + " nodePartition: " + nodePartition
             + ", usedResources: " + queueUsage.getUsed(nodePartition)
             + ", clusterResources: " + clusterResource
@@ -1252,12 +1262,13 @@ public abstract class AbstractCSQueue implements CSQueue {
   }
 
   public Resource getTotalKillableResource(String partition) {
-    return csContext.getPreemptionManager().getKillableResource(queueName,
+    return csContext.getPreemptionManager().getKillableResource(getQueuePath(),
         partition);
   }
 
   public Iterator<RMContainer> getKillableContainers(String partition) {
-    return csContext.getPreemptionManager().getKillableContainers(queueName,
+    return csContext.getPreemptionManager().getKillableContainers(
+        getQueuePath(),
         partition);
   }
 
@@ -1341,18 +1352,18 @@ public abstract class AbstractCSQueue implements CSQueue {
     try {
       this.writeLock.lock();
       if (getState() == QueueState.RUNNING) {
-        LOG.info("The specified queue:" + queueName
+        LOG.info("The specified queue:" + getQueuePath()
             + " is already in the RUNNING state.");
       } else if (getState() == QueueState.DRAINING) {
         throw new YarnException(
-            "The queue:" + queueName + " is in the Stopping process. "
+            "The queue:" + getQueuePath() + " is in the Stopping process. "
             + "Please wait for the queue getting fully STOPPED.");
       } else {
         CSQueue parent = getParent();
         if (parent == null || parent.getState() == QueueState.RUNNING) {
           updateQueueState(QueueState.RUNNING);
         } else {
-          throw new YarnException("The parent Queue:" + parent.getQueueName()
+          throw new YarnException("The parent Queue:" + parent.getQueuePath()
               + " is not running. Please activate the parent queue first");
         }
       }

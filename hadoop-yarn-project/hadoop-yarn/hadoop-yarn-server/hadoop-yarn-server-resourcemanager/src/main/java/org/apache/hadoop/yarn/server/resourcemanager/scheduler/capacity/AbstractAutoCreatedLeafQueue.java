@@ -94,7 +94,7 @@ public class AbstractAutoCreatedLeafQueue extends LeafQueue {
       setMaxCapacity(nodeLabel, entitlement.getMaxCapacity());
       if (LOG.isDebugEnabled()) {
         LOG.debug("successfully changed to " + capacity + " for queue " + this
-            .getQueueName());
+            .getQueuePath());
       }
 
       //update queue used capacity etc

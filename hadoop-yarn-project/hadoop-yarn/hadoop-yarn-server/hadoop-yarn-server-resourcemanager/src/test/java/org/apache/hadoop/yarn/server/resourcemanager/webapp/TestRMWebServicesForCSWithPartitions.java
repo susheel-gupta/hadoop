@@ -77,6 +77,7 @@ public class TestRMWebServicesForCSWithPartitions extends JerseyTestBase {
   private static final String LABEL_LX = "Lx";
   private static final ImmutableSet<String> CLUSTER_LABELS =
       ImmutableSet.of(LABEL_LX, LABEL_LY, DEFAULT_PARTITION);
+  private static final String DOT = ".";
   private static MockRM rm;
   static private CapacitySchedulerConfiguration csConf;
   static private YarnConfiguration conf;

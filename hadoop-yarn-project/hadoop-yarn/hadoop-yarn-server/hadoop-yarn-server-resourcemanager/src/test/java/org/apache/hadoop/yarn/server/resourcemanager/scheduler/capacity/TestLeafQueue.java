@@ -127,7 +127,7 @@ public class TestLeafQueue {
   CapacitySchedulerContext csContext;
   
   CSQueue root;
-  Map<String, CSQueue> queues;
+  private CSQueueStore queues;
   
   final static int GB = 1024;
   final static String DEFAULT_RACK = "/default";
@@ -149,7 +149,7 @@ public class TestLeafQueue {
 
   private void setUpInternal(ResourceCalculator rC) throws Exception {
     CapacityScheduler spyCs = new CapacityScheduler();
-    queues = new HashMap<String, CSQueue>();
+    queues = new CSQueueStore();
     cs = spy(spyCs);
     rmContext = TestUtils.getMockRMContext();
     spyRMContext = spy(rmContext);
@@ -443,7 +443,7 @@ public class TestLeafQueue {
 
     AppAddedSchedulerEvent addAppEvent =
         new AppAddedSchedulerEvent(appAttemptId_0.getApplicationId(),
-          a.getQueueName(), user_0);
+          a.getQueuePath(), user_0);
     cs.handle(addAppEvent);
     AppAttemptAddedSchedulerEvent addAttemptEvent = 
         new AppAttemptAddedSchedulerEvent(appAttemptId_0, false);
@@ -2284,7 +2284,7 @@ public class TestLeafQueue {
     csConf.setInt(CapacitySchedulerConfiguration.NODE_LOCALITY_DELAY, 2);
     csConf.setInt(
         CapacitySchedulerConfiguration.RACK_LOCALITY_ADDITIONAL_DELAY, 1);
-    Map<String, CSQueue> newQueues = new HashMap<String, CSQueue>();
+    CSQueueStore newQueues = new CSQueueStore();
     CSQueue newRoot = CapacitySchedulerQueueManager.parseQueue(csContext,
         csConf, null, ROOT, newQueues, queues,
         TestUtils.spyHook);
@@ -2720,7 +2720,7 @@ public class TestLeafQueue {
         CapacitySchedulerConfiguration.MAXIMUM_APPLICATION_MASTERS_RESOURCE_PERCENT,
         CapacitySchedulerConfiguration.DEFAULT_MAXIMUM_APPLICATIONMASTERS_RESOURCE_PERCENT
             * 2);
-    Map<String, CSQueue> newQueues = new HashMap<String, CSQueue>();
+    CSQueueStore newQueues = new CSQueueStore();
     CSQueue newRoot =
         CapacitySchedulerQueueManager.parseQueue(csContext, csConf, null,
             ROOT,
@@ -2747,7 +2747,7 @@ public class TestLeafQueue {
     csConf.setInt(CapacitySchedulerConfiguration.NODE_LOCALITY_DELAY, 60);
     csConf.setInt(
         CapacitySchedulerConfiguration.RACK_LOCALITY_ADDITIONAL_DELAY, 600);
-    Map<String, CSQueue> newQueues = new HashMap<String, CSQueue>();
+    CSQueueStore newQueues = new CSQueueStore();
     CSQueue newRoot =
         CapacitySchedulerQueueManager.parseQueue(csContext, csConf, null,
             ROOT,
@@ -3094,7 +3094,7 @@ public class TestLeafQueue {
   @Test
   public void testMaxAMResourcePerQueuePercentAfterQueueRefresh()
       throws Exception {
-    Map<String, CSQueue> queues = new HashMap<String, CSQueue>();
+    queues = new CSQueueStore();
     CapacitySchedulerConfiguration csConf = new CapacitySchedulerConfiguration();
     final String newRootName = "root" + System.currentTimeMillis();
     setupQueueConfiguration(csConf, newRootName);
@@ -3123,7 +3123,7 @@ public class TestLeafQueue {
         CapacitySchedulerConfiguration.MAXIMUM_APPLICATION_MASTERS_RESOURCE_PERCENT,
         0.2f);
     clusterResource = Resources.createResource(100 * 20 * GB, 100 * 32);
-    Map<String, CSQueue> newQueues = new HashMap<String, CSQueue>();
+    CSQueueStore newQueues = new CSQueueStore();
     CSQueue newRoot = CapacitySchedulerQueueManager.parseQueue(csContext,
         csConf, null, CapacitySchedulerConfiguration.ROOT, newQueues, queues,
         TestUtils.spyHook);
@@ -4078,9 +4078,9 @@ public class TestLeafQueue {
       assertEquals(2, leafQueue.getMaxApplicationsPerUser());
 
       //check queue configs
-      conf.setMaximumAMResourcePercentPerPartition(leafQueue.getQueueName(),
+      conf.setMaximumAMResourcePercentPerPartition(leafQueue.getQueuePath(),
           NO_LABEL, 10);
-      conf.setMaximumCapacity(leafQueue.getQueueName(), 10);
+      conf.setMaximumCapacity(leafQueue.getQueuePath(), 10);
 
       assertEquals(0.1, leafQueue.getMaxAMResourcePerQueuePercent(),
           EPSILON);

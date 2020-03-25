@@ -38,6 +38,8 @@ import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CSQueue;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceStability.Stable;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
@@ -584,7 +586,13 @@ public class SchedulerApplicationAttempt implements SchedulableEntity {
       if (rmContainer.getState() == RMContainerState.NEW) {
         attemptResourceUsage.incReserved(node.getPartition(),
             container.getResource());
-        ((RMContainerImpl) rmContainer).setQueueName(this.getQueueName());
+
+        ResourceScheduler scheduler = this.rmContext.getScheduler();
+        String qn = this.getQueueName();
+        if (scheduler instanceof CapacityScheduler) {
+          qn = ((CapacityScheduler)scheduler).normalizeQueueName(qn);
+        }
+        ((RMContainerImpl) rmContainer).setQueueName(qn);
 
         // Reset the re-reservation count
         resetReReservations(schedulerKey);
@@ -1177,7 +1185,8 @@ public class SchedulerApplicationAttempt implements SchedulableEntity {
       writeLock.lock();
       QueueMetrics oldMetrics = queue.getMetrics();
       QueueMetrics newMetrics = newQueue.getMetrics();
-      String newQueueName = newQueue.getQueueName();
+      String newQueueName = newQueue instanceof CSQueue ?
+              ((CSQueue) newQueue).getQueuePath() : newQueue.getQueueName();
       String user = getUser();
 
       for (RMContainer liveContainer : liveContainers.values()) {

@@ -570,7 +570,7 @@ public class ProportionalCapacityPreemptionPolicy
       // Acquire a read lock from Parent/LeafQueue.
       readLock.lock();
 
-      String queueName = curQueue.getQueueName();
+      String queuePath = curQueue.getQueuePath();
       QueueCapacities qc = curQueue.getQueueCapacities();
       float absCap = qc.getAbsoluteCapacity(partitionToLookAt);
       float absMaxCap = qc.getAbsoluteMaximumCapacity(partitionToLookAt);
@@ -589,8 +589,8 @@ public class ProportionalCapacityPreemptionPolicy
 
       Resource reserved = Resources.clone(
           curQueue.getQueueResourceUsage().getReserved(partitionToLookAt));
-      if (null != preemptableQueues.get(queueName)) {
-        killable = Resources.clone(preemptableQueues.get(queueName)
+      if (null != preemptableQueues.get(queuePath)) {
+        killable = Resources.clone(preemptableQueues.get(queuePath)
             .getKillableResource(partitionToLookAt));
       }
 
@@ -606,7 +606,7 @@ public class ProportionalCapacityPreemptionPolicy
         // just ignore the error, this will be corrected when doing next check.
       }
 
-      ret = new TempQueuePerPartition(queueName, current, preemptionDisabled,
+      ret = new TempQueuePerPartition(queuePath, current, preemptionDisabled,
           partitionToLookAt, killable, absCap, absMaxCap, partitionResource,
           reserved, curQueue, effMinRes, effMaxRes);
 

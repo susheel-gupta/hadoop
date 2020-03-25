@@ -23,6 +23,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.yarn.server.resourcemanager.placement.QueuePlacementRuleUtils;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.authorize.AccessControlList;
@@ -76,7 +77,7 @@ import java.util.Set;
 
 public class CapacitySchedulerConfiguration extends ReservationSchedulerConfiguration {
 
-  private static final Log LOG = 
+  private static final Log LOG =
     LogFactory.getLog(CapacitySchedulerConfiguration.class);
 
   private static final String CS_CONFIGURATION_FILE = "capacity-scheduler.xml";
@@ -489,7 +490,7 @@ public class CapacitySchedulerConfiguration extends ReservationSchedulerConfigur
           "Cannot set capacity, root queue has a fixed capacity of 100.0f");
     }
     setFloat(getQueuePrefix(queue) + CAPACITY, capacity);
-    LOG.debug("CSConf - setCapacity: queuePrefix=" + getQueuePrefix(queue) + 
+    LOG.debug("CSConf - setCapacity: queuePrefix=" + getQueuePrefix(queue) +
         ", capacity=" + capacity);
   }
 
@@ -531,7 +532,7 @@ public class CapacitySchedulerConfiguration extends ReservationSchedulerConfigur
           "maximum-capacity of " + maxCapacity + " for queue " + queue);
     }
     setFloat(getQueuePrefix(queue) + MAXIMUM_CAPACITY, maxCapacity);
-    LOG.debug("CSConf - setMaxCapacity: queuePrefix=" + getQueuePrefix(queue) + 
+    LOG.debug("CSConf - setMaxCapacity: queuePrefix=" + getQueuePrefix(queue) +
         ", maxCapacity=" + maxCapacity);
   }
   
@@ -598,7 +599,7 @@ public class CapacitySchedulerConfiguration extends ReservationSchedulerConfigur
 
   public void setUserLimit(String queue, int userLimit) {
     setInt(getQueuePrefix(queue) + USER_LIMIT, userLimit);
-    LOG.debug("here setUserLimit: queuePrefix=" + getQueuePrefix(queue) + 
+    LOG.debug("here setUserLimit: queuePrefix=" + getQueuePrefix(queue) +
         ", userLimit=" + getUserLimit(queue));
   }
   
@@ -874,15 +875,15 @@ public class CapacitySchedulerConfiguration extends ReservationSchedulerConfigur
       }
       queues = trimmedQueueNames.toArray(new String[0]);
     }
- 
-    LOG.debug("CSConf - getQueues: queuePrefix=" + getQueuePrefix(queue) + 
+
+    LOG.debug("CSConf - getQueues: queuePrefix=" + getQueuePrefix(queue) +
         ", queues=" + ((queues == null) ? "" : StringUtils.arrayToString(queues)));
     return queues;
   }
   
   public void setQueues(String queue, String[] subQueues) {
     set(getQueuePrefix(queue) + QUEUES, StringUtils.arrayToString(subQueues));
-    LOG.debug("CSConf - setQueues: qPrefix=" + getQueuePrefix(queue) + 
+    LOG.debug("CSConf - setQueues: qPrefix=" + getQueuePrefix(queue) +
         ", queues=" + StringUtils.arrayToString(subQueues));
   }
   
@@ -1035,7 +1036,11 @@ public class CapacitySchedulerConfiguration extends ReservationSchedulerConfigur
             "Illegal queue mapping " + mappingValue);
       }
 
-      QueueMappingEntity m = new QueueMappingEntity(mapping[0], mapping[1]);
+      //Mappings should be consistent, and have the parent path parsed
+      // from the beginning
+      QueueMappingEntity m = new QueueMappingEntity(
+          mapping[0],
+          QueuePlacementRuleUtils.extractQueuePath(mapping[1]));
 
       mappings.add(m);
     }
@@ -1106,10 +1111,12 @@ public class CapacitySchedulerConfiguration extends ReservationSchedulerConfigur
           throw new IllegalArgumentException(
               "unknown mapping prefix " + mapping[0]);
         }
+        //forcing the queue path to be split to parent and leafQueue, to make
+        //queue mapping parentPath and queueName consistent
         m = QueueMappingBuilder.create()
                 .type(mappingType)
                 .source(mapping[1])
-                .queue(mapping[2])
+                .queuePath(QueuePlacementRuleUtils.extractQueuePath(mapping[2]))
                 .build();
       } catch (Throwable t) {
         throw new IllegalArgumentException(

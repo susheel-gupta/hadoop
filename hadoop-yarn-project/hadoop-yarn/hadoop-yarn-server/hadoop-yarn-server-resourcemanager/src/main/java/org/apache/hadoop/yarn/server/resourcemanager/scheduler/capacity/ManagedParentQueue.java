@@ -125,7 +125,7 @@ public class ManagedParentQueue extends AbstractManagedParentQueue {
       LOG.info(queueInfo.toString());
     } catch (YarnException ye) {
       LOG.error("Exception while computing policy changes for leaf queue : "
-          + getQueueName(), ye);
+          + getQueuePath(), ye);
       throw new IOException(ye);
     } finally {
       writeLock.unlock();
@@ -200,13 +200,13 @@ public class ManagedParentQueue extends AbstractManagedParentQueue {
       ManagedParentQueue parentQueue =
           (ManagedParentQueue) childQueue.getParent();
 
-      String leafQueueName = childQueue.getQueueName();
+      String leafQueuePath = childQueue.getQueuePath();
       int maxQueues = conf.getAutoCreatedQueuesMaxChildQueuesLimit(
           parentQueue.getQueuePath());
 
       if (parentQueue.getChildQueues().size() >= maxQueues) {
         throw new SchedulerDynamicEditException(
-            "Cannot auto create leaf queue " + leafQueueName + ".Max Child "
+            "Cannot auto create leaf queue " + leafQueuePath + ".Max Child "
                 + "Queue limit exceeded which is configured as : " + maxQueues
                 + " and number of child queues is : " + parentQueue
                 .getChildQueues().size());
@@ -217,7 +217,7 @@ public class ManagedParentQueue extends AbstractManagedParentQueue {
             + parentQueue.sumOfChildAbsCapacities() > parentQueue
             .getAbsoluteCapacity()) {
           throw new SchedulerDynamicEditException(
-              "Cannot auto create leaf queue " + leafQueueName + ". Child "
+              "Cannot auto create leaf queue " + leafQueuePath + ". Child "
                   + "queues capacities have reached parent queue : "
                   + parentQueue.getQueuePath() + "'s guaranteed capacity");
         }
@@ -324,11 +324,11 @@ public class ManagedParentQueue extends AbstractManagedParentQueue {
 
       if (!(AbstractManagedParentQueue.class.
           isAssignableFrom(childQueue.getParent().getClass()))) {
-        LOG.error("Queue " + getQueueName()
+        LOG.error("Queue " + getQueuePath()
             + " is not an instance of PlanQueue or ManagedParentQueue." + " "
             + "Ignoring update " + queueManagementChanges);
         throw new SchedulerDynamicEditException(
-            "Queue " + getQueueName() + " is not a AutoEnabledParentQueue."
+            "Queue " + getQueuePath() + " is not a AutoEnabledParentQueue."
                 + " Ignoring update " + queueManagementChanges);
       }
 

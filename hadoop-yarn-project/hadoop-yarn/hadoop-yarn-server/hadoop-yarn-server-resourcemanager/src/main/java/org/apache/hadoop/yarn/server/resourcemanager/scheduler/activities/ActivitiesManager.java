@@ -29,6 +29,8 @@ import org.apache.hadoop.yarn.api.records.ContainerId;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerApplicationAttempt;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerNode;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.ActivitiesInfo;
 import org.apache.hadoop.yarn.server.resourcemanager.webapp.dao.AppActivitiesInfo;
 import org.apache.hadoop.yarn.util.SystemClock;
@@ -211,6 +213,15 @@ public class ActivitiesManager extends AbstractService {
       String type) {
     if (shouldRecordThisNode(nodeId)) {
       NodeAllocation nodeAllocation = getCurrentNodeAllocation(nodeId);
+
+      ResourceScheduler scheduler = this.rmContext.getScheduler();
+      //Sorry about this :( Making sure CS short queue references are normalized
+      if (scheduler instanceof CapacityScheduler) {
+        CapacityScheduler cs = (CapacityScheduler)this.rmContext.getScheduler();
+        parentName = cs.normalizeQueueName(parentName);
+        childName  = cs.normalizeQueueName(childName);
+      }
+
       nodeAllocation.addAllocationActivity(parentName, childName, priority,
           state, diagnostic, type);
     }
