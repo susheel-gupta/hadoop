@@ -756,8 +756,10 @@ public class FSImage implements Closeable {
     prog.endPhase(Phase.LOADING_FSIMAGE);
     
     if (!rollingRollback) {
+      prog.beginPhase(Phase.LOADING_EDITS);
       long txnsAdvanced = loadEdits(editStreams, target, Long.MAX_VALUE,
           startOpt, recovery);
+      prog.endPhase(Phase.LOADING_EDITS);
       needToSave |= needsResaveBasedOnStaleCheckpoint(imageFile.getFile(),
           txnsAdvanced);
     } else {
@@ -889,8 +891,6 @@ public class FSImage implements Closeable {
       StartupOption startOpt, MetaRecoveryContext recovery)
       throws IOException {
     LOG.debug("About to load edits:\n  " + Joiner.on("\n  ").join(editStreams));
-    StartupProgress prog = NameNode.getStartupProgress();
-    prog.beginPhase(Phase.LOADING_EDITS);
     
     long prevLastAppliedTxId = lastAppliedTxId;  
     try {    
@@ -925,7 +925,6 @@ public class FSImage implements Closeable {
     } finally {
       FSEditLog.closeAllStreams(editStreams);
     }
-    prog.endPhase(Phase.LOADING_EDITS);
     return lastAppliedTxId - prevLastAppliedTxId;
   }
 
