@@ -80,7 +80,7 @@ class PendingReconstructionBlocks {
    * @param block The corresponding block
    * @param targets The DataNodes where replicas of the block should be placed
    */
-  void increment(BlockInfo block, DatanodeDescriptor... targets) {
+  void increment(BlockInfo block, DatanodeStorageInfo... targets) {
     synchronized (pendingReconstructions) {
       PendingBlockInfo found = pendingReconstructions.get(block);
       if (found == null) {
@@ -100,7 +100,7 @@ class PendingReconstructionBlocks {
    * @param dn The DataNode that finishes the reconstruction
    * @return true if the block is decremented to 0 and got removed.
    */
-  boolean decrement(BlockInfo block, DatanodeDescriptor dn) {
+  boolean decrement(BlockInfo block, DatanodeStorageInfo dn) {
     boolean removed = false;
     synchronized (pendingReconstructions) {
       PendingBlockInfo found = pendingReconstructions.get(block);
@@ -123,9 +123,9 @@ class PendingReconstructionBlocks {
    *          The given block whose pending reconstruction requests need to be
    *          removed
    */
-  void remove(BlockInfo block) {
+  PendingBlockInfo remove(BlockInfo block) {
     synchronized (pendingReconstructions) {
-      pendingReconstructions.remove(block);
+      return pendingReconstructions.remove(block);
     }
   }
 
@@ -199,11 +199,11 @@ class PendingReconstructionBlocks {
    */
   static class PendingBlockInfo {
     private long timeStamp;
-    private final List<DatanodeDescriptor> targets;
+    private final List<DatanodeStorageInfo> targets;
 
-    PendingBlockInfo(DatanodeDescriptor[] targets) {
+    PendingBlockInfo(DatanodeStorageInfo[] targets) {
       this.timeStamp = monotonicNow();
-      this.targets = targets == null ? new ArrayList<DatanodeDescriptor>()
+      this.targets = targets == null ? new ArrayList<DatanodeStorageInfo>()
           : new ArrayList<>(Arrays.asList(targets));
     }
 
@@ -215,9 +215,9 @@ class PendingReconstructionBlocks {
       timeStamp = monotonicNow();
     }
 
-    void incrementReplicas(DatanodeDescriptor... newTargets) {
+    void incrementReplicas(DatanodeStorageInfo... newTargets) {
       if (newTargets != null) {
-        for (DatanodeDescriptor newTarget : newTargets) {
+        for (DatanodeStorageInfo newTarget : newTargets) {
           if (!targets.contains(newTarget)) {
             targets.add(newTarget);
           }
@@ -225,12 +225,22 @@ class PendingReconstructionBlocks {
       }
     }
 
-    void decrementReplicas(DatanodeDescriptor dn) {
-      targets.remove(dn);
+    void decrementReplicas(DatanodeStorageInfo dn) {
+      Iterator<DatanodeStorageInfo> iterator = targets.iterator();
+      while (iterator.hasNext()) {
+        DatanodeStorageInfo next = iterator.next();
+        if (next.getDatanodeDescriptor() == dn.getDatanodeDescriptor()) {
+          iterator.remove();
+        }
+      }
     }
 
     int getNumReplicas() {
       return targets.size();
+    }
+
+    List<DatanodeStorageInfo> getTargets() {
+      return targets;
     }
   }
 
@@ -309,5 +319,15 @@ class PendingReconstructionBlocks {
             pendingBlock.getNumReplicas());
       }
     }
+  }
+
+  List<DatanodeStorageInfo> getTargets(BlockInfo block) {
+    synchronized (pendingReconstructions) {
+      PendingBlockInfo found = pendingReconstructions.get(block);
+      if (found != null) {
+        return found.targets;
+      }
+    }
+    return null;
   }
 }
