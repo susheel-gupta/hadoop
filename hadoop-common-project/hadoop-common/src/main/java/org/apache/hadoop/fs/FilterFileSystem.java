@@ -334,10 +334,6 @@ public class FilterFileSystem extends FileSystem {
     return fs.mkdirs(f, permission);
   }
 
-  @Override
-  public boolean mkdirs(Path f) throws IOException {
-    return fs.mkdirs(f);
-  }
 
   /**
    * The src file is on the local disk.  Add it to FS at

@@ -464,18 +464,11 @@ public class ViewFileSystem extends FileSystem {
   }
 
   @Override
-  public boolean mkdirs(Path dir) throws IOException {
-    InodeTree.ResolveResult<FileSystem> res =
-        fsState.resolve(getUriPath(dir), false);
-    return res.targetFileSystem.mkdirs(res.remainingPath);
-  }
-
-  @Override
   public boolean mkdirs(final Path dir, final FsPermission permission)
       throws IOException {
     InodeTree.ResolveResult<FileSystem> res = 
-        fsState.resolve(getUriPath(dir), false);
-    return res.targetFileSystem.mkdirs(res.remainingPath, permission);
+      fsState.resolve(getUriPath(dir), false);
+   return  res.targetFileSystem.mkdirs(res.remainingPath, permission);
   }
 
   @Override
@@ -1113,12 +1106,6 @@ public class ViewFileSystem extends FileSystem {
         return true; // this is the stupid semantics of FileSystem
       }
       throw readOnlyMountTable("mkdirs",  dir);
-    }
-
-    @Override
-    public boolean mkdirs(Path dir)
-        throws AccessControlException, FileAlreadyExistsException {
-      return mkdirs(dir, null);
     }
 
     @Override
