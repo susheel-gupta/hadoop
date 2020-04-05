@@ -63,7 +63,7 @@ public class ITestAbfsInputStream extends AbstractAbfsIntegrationTest {
         stream.write(b);
       }
 
-      testAbfsInputStreamReadAheadConfigDisable();
+      testAbfsInputStreamReadAheadConfigDisable(b);
       testAbfsInputStreamReadAheadConfigEnable();
 
     } finally {
@@ -71,7 +71,8 @@ public class ITestAbfsInputStream extends AbstractAbfsIntegrationTest {
     }
   }
 
-  private void testAbfsInputStreamReadAheadConfigDisable() throws Exception {
+  private void testAbfsInputStreamReadAheadConfigDisable(byte[] b)
+          throws Exception {
     final Configuration config = new Configuration(getRawConfiguration());
     config.set(FS_AZURE_ENABLE_READAHEAD,
         String.valueOf(Boolean.FALSE));
@@ -80,20 +81,58 @@ public class ITestAbfsInputStream extends AbstractAbfsIntegrationTest {
         (AzureBlobFileSystem) FileSystem.newInstance(config);
     final AzureBlobFileSystemStore abfsStore = testAbfs.getAbfsStore();
     final FileSystem.Statistics statistics = testAbfs.getFsStatistics();
-    final AbfsInputStream abfsInputStream = abfsStore.openFileForRead(
-        TEST_PATH, statistics);
-    assertFalse("ReadAhead should be disabled if it's disabled in " +
-        "the configuration.", abfsInputStream.isReadAheadEnabled());
+    try (AbfsInputStream abfsInputStream = abfsStore.openFileForRead(
+        TEST_PATH, statistics)) {
+      assertFalse("ReadAhead should be disabled if it's disabled in " +
+          "the configuration.", abfsInputStream.isReadAheadEnabled());
 
-    final byte[] readBuffer = new byte[2 * DEFAULT_READ_BUFFER_SIZE];
-    abfsInputStream.read(readBuffer, 0, DEFAULT_READ_BUFFER_SIZE);
-    abfsInputStream.read(readBuffer, DEFAULT_READ_BUFFER_SIZE, DEFAULT_READ_BUFFER_SIZE);
-    assertEquals(
-        "If the buffer is disabled there should be no read from the buffer.",
-        0, abfsInputStream.getStreamStatistics().bytesReadFromBuffer);
+      final byte[] readBuffer = new byte[2 * DEFAULT_READ_BUFFER_SIZE];
+
+      // Read first half of the file.
+      int dataRead = abfsInputStream.read(readBuffer, 0,
+          DEFAULT_READ_BUFFER_SIZE);
+      assertEquals("Unexpected number of bytes read from stream",
+          DEFAULT_READ_BUFFER_SIZE, dataRead);
+      assertEquals("Incorrect stream position after read.",
+          DEFAULT_READ_BUFFER_SIZE, abfsInputStream.getPos());
+      assertBufferStatsAreZero(abfsInputStream);
+
+      // Read second half of the file.
+      dataRead = abfsInputStream.read(readBuffer, DEFAULT_READ_BUFFER_SIZE,
+          DEFAULT_READ_BUFFER_SIZE);
+      assertEquals("Unexpected number of bytes read from stream",
+          DEFAULT_READ_BUFFER_SIZE, dataRead);
+      assertEquals("Incorrect stream position after read.",
+         2 * DEFAULT_READ_BUFFER_SIZE, abfsInputStream.getPos());
+      assertBufferStatsAreZero(abfsInputStream);
+
+      // Seek to the beginning of the file and re-read the first quarter of the
+      // file.
+      abfsInputStream.seek(0);
+      assertEquals(
+         "Seeking to the beginning of the file should cause the position to "
+          + "be 0.", 0, abfsInputStream.getPos());
+      dataRead = abfsInputStream.read(readBuffer, 0,
+         DEFAULT_READ_BUFFER_SIZE / 2);
+      assertEquals("Unexpected number of bytes read from stream",
+         DEFAULT_READ_BUFFER_SIZE / 2, dataRead);
+      assertEquals("Incorrect stream position after read.",
+         DEFAULT_READ_BUFFER_SIZE / 2, abfsInputStream.getPos());
+      assertBufferStatsAreZero(abfsInputStream);
+
+      // Validate the final state of the stream.
+      assertTrue(
+         "If readaheads are disabled, the readahead buffer should be null.",
+          abfsInputStream.isBufferNull());
+      assertArrayEquals("Disabling readaheads caused data corruption. The "
+          + "data read did not match the data written for file " + TEST_PATH,
+          b, readBuffer);
+      assertBufferStatsAreZero(abfsInputStream);
+    }
   }
 
-  private void testAbfsInputStreamReadAheadConfigEnable() throws Exception {
+  private void testAbfsInputStreamReadAheadConfigEnable()
+          throws Exception {
     final Configuration config = new Configuration(getRawConfiguration());
     config.set(FS_AZURE_ENABLE_READAHEAD,
         String.valueOf(Boolean.TRUE));
@@ -102,17 +141,25 @@ public class ITestAbfsInputStream extends AbstractAbfsIntegrationTest {
         (AzureBlobFileSystem) FileSystem.newInstance(config);
     final AzureBlobFileSystemStore abfsStore = testAbfs.getAbfsStore();
     final FileSystem.Statistics statistics = testAbfs.getFsStatistics();
-    final AbfsInputStream abfsInputStream = abfsStore.openFileForRead(
-        TEST_PATH, statistics);
-    assertTrue("ReadAhead should be enabled if it's enabled in " +
-        "the configuration.", abfsInputStream.isReadAheadEnabled());
+    try (AbfsInputStream abfsInputStream = abfsStore.openFileForRead(
+        TEST_PATH, statistics)) {
+      assertTrue("ReadAhead should be enabled if it's enabled in " +
+          "the configuration.", abfsInputStream.isReadAheadEnabled());
 
-    final byte[] readBuffer = new byte[2 * DEFAULT_READ_BUFFER_SIZE];
-    abfsInputStream.read(readBuffer, 0, (DEFAULT_READ_BUFFER_SIZE));
-    abfsInputStream.read(readBuffer, DEFAULT_READ_BUFFER_SIZE, DEFAULT_READ_BUFFER_SIZE);
-    assertTrue(
-        "If the buffer is enabled there should be read from the buffer.",
-        0 < abfsInputStream.getStreamStatistics().bytesReadFromBuffer);
+      final byte[] readBuffer = new byte[2 * DEFAULT_READ_BUFFER_SIZE];
+      abfsInputStream.read(readBuffer, 0, (DEFAULT_READ_BUFFER_SIZE));
+      abfsInputStream.read(readBuffer, DEFAULT_READ_BUFFER_SIZE,
+          DEFAULT_READ_BUFFER_SIZE);
+      assertTrue(
+          "If the buffer is enabled there should be read from the buffer.",
+          0 < abfsInputStream.getStreamStatistics().bytesReadFromBuffer);
+    }
   }
 
+  private void assertBufferStatsAreZero(AbfsInputStream abfsInputStream) {
+    assertEquals("Unexpected seekInBuffer stats count", 0,
+              abfsInputStream.getStreamStatistics().seekInBuffer);
+    assertEquals("Unexpected bytesReadFromBuffer stats count", 0,
+              abfsInputStream.getStreamStatistics().bytesReadFromBuffer);
+  }
 }
