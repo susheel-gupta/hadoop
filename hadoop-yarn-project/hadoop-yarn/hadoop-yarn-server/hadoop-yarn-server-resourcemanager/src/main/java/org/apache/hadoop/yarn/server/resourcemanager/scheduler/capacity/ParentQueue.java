@@ -936,7 +936,6 @@ public class ParentQueue extends AbstractCSQueue {
 
   private void calculateEffectiveResourcesAndCapacity(String label,
       Resource clusterResource) {
-
     // For root queue, ensure that max/min resource is updated to latest
     // cluster resource.
     Resource resourceByLabel = labelManager.getResourceByLabel(label,
@@ -1137,7 +1136,9 @@ public class ParentQueue extends AbstractCSQueue {
       LOG.info("LeafQueue:" + leafQueue.getQueuePath() + ", maxApplications="
           + maxApplications + ", maxApplicationsPerUser="
           + maxApplicationsPerUser + ", Abs Cap:"
-          + childQueue.getQueueCapacities().getAbsoluteCapacity(label));
+          + childQueue.getQueueCapacities().getAbsoluteCapacity(label) + ", Cap: "
+          + childQueue.getQueueCapacities().getCapacity(label) + ", MaxCap : "
+          + childQueue.getQueueCapacities().getMaximumCapacity(label));
     }
   }
 
