@@ -76,28 +76,22 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
   private long nextReadPos;
 
   public AbfsInputStream(
-      final AbfsClient client,
-      final Statistics statistics,
-      final String path,
-      final long contentLength,
-      final int bufferSize,
-      final int readAheadQueueDepth,
-      final boolean tolerateOobAppends,
-      final String eTag,
-      final boolean isReadAheadEnabled,
-      final int readAheadRange) {
+          final AbfsClient client,
+          final Statistics statistics,
+          final String path,
+          final long contentLength,
+          final AbfsInputStreamContext abfsInputStreamContext,
+          final String eTag) {
     this.client = client;
     this.statistics = statistics;
     this.path = path;
     this.contentLength = contentLength;
-    this.bufferSize = bufferSize;
-    this.readAheadQueueDepth = (readAheadQueueDepth >= 0) ? readAheadQueueDepth : Runtime.getRuntime().availableProcessors();
-    this.tolerateOobAppends = tolerateOobAppends;
+    this.bufferSize = abfsInputStreamContext.getReadBufferSize();
+    this.readAheadQueueDepth = abfsInputStreamContext.getReadAheadQueueDepth();
+    this.tolerateOobAppends = abfsInputStreamContext.isTolerateOobAppends();
     this.eTag = eTag;
-    this.readAheadEnabled = isReadAheadEnabled;
-    Preconditions.checkArgument(readAheadRange > 0,
-            "Read ahead range should be greater than 0");
-    this.readAheadRange = readAheadRange;
+    this.readAheadEnabled = abfsInputStreamContext.isReadAheadEnabled();
+    this.readAheadRange = abfsInputStreamContext.getReadAheadRange();
     this.streamStatistics = new AbfsInputStreamStatisticsImpl();
   }
 
