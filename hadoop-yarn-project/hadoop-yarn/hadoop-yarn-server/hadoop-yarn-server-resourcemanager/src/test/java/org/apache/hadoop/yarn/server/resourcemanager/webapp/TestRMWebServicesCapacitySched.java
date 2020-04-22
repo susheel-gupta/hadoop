@@ -21,6 +21,7 @@ package org.apache.hadoop.yarn.server.resourcemanager.webapp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -87,6 +88,7 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
     int numApplications;
     String queueName;
     String state;
+    boolean isAbsoluteResource;
     boolean autoCreateChildQueueEnabled;
   }
 
@@ -137,6 +139,9 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
 
     final String B = CapacitySchedulerConfiguration.ROOT + ".b";
     config.setCapacity(B, 89.5f);
+
+    final String C = CapacitySchedulerConfiguration.ROOT + ".c";
+    config.setCapacity(C, "[memory=1024]");
 
     // Define 2nd-level queues
     final String A1 = A + ".a1";
@@ -303,6 +308,8 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
         WebServicesTestUtils.getXmlInt(qElem, "numApplications");
     qi.queueName = WebServicesTestUtils.getXmlString(qElem, "queueName");
     qi.state = WebServicesTestUtils.getXmlString(qElem, "state");
+    qi.isAbsoluteResource = WebServicesTestUtils.getXmlBoolean(qElem,
+        "isAbsoluteResource");
     qi.autoCreateChildQueueEnabled = WebServicesTestUtils.getXmlBoolean(qElem,
         "autoCreateChildQueueEnabled");
     verifySubQueueGeneric(q, qi, parentAbsCapacity, parentAbsMaxCapacity);
@@ -407,10 +414,10 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
   private void verifySubQueue(JSONObject info, String q,
       float parentAbsCapacity, float parentAbsMaxCapacity)
       throws JSONException, Exception {
-    int numExpectedElements = 26;
+    int numExpectedElements = 27;
     boolean isParentQueue = true;
     if (!info.has("queues")) {
-      numExpectedElements = 44;
+      numExpectedElements = 45;
       isParentQueue = false;
     }
     assertEquals("incorrect number of elements", numExpectedElements, info.length());
@@ -498,7 +505,14 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
         + " expected: " + q, qshortName.matches(info.queueName));
     assertTrue("state doesn't match",
         (csConf.getState(q).toString()).matches(info.state));
-
+    if (q.equals("c")) {
+      assertTrue("c queue is not configured in Absolute resource",
+          info.isAbsoluteResource);
+    } else {
+      assertFalse(info.queueName
+          + " queue is not configured in Absolute resource",
+          info.isAbsoluteResource);
+    }
   }
 
   private void verifyLeafQueueGeneric(String q, LeafQueueInfo info)

@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -42,6 +43,11 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.ParentQu
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.PlanQueue;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.QueueCapacities;
 
+import static org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.
+    CapacitySchedulerConfiguration.PATTERN_FOR_ABSOLUTE_RESOURCE;
+import static org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.
+    CapacitySchedulerConfiguration.CAPACITY;
+
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlSeeAlso({CapacitySchedulerLeafQueueInfo.class})
@@ -61,6 +67,7 @@ public class CapacitySchedulerQueueInfo {
   protected float absoluteUsedCapacity;
   protected int numApplications;
   protected String queueName;
+  protected boolean isAbsoluteResource;
   protected QueueState state;
   protected CapacitySchedulerQueueInfoList queues;
   protected ResourceInfo resourcesUsed;
@@ -157,6 +164,12 @@ public class CapacitySchedulerQueueInfo {
     autoCreateChildQueueEnabled = conf.
         isAutoCreateChildQueueEnabled(queuePath);
     leafQueueTemplate = new LeafQueueTemplateInfo(conf, queuePath);
+
+    Pattern resourcePattern = Pattern.compile(PATTERN_FOR_ABSOLUTE_RESOURCE);
+    String configuredCapacity = conf.get(
+        CapacitySchedulerConfiguration.getQueuePrefix(queuePath) + CAPACITY);
+    isAbsoluteResource = (configuredCapacity != null)
+        && resourcePattern.matcher(configuredCapacity).find();
   }
 
   protected void populateQueueResourceUsage(ResourceUsage queueResourceUsage) {
@@ -211,6 +224,10 @@ public class CapacitySchedulerQueueInfo {
 
   public String getQueueName() {
     return this.queueName;
+  }
+
+  public boolean isAbsoluteResource() {
+    return isAbsoluteResource;
   }
 
   public String getQueueState() {
