@@ -433,10 +433,12 @@ public class HsWebServices extends WebServices {
       @QueryParam(YarnWebServiceParams.CONTAINER_ID) String containerIdStr,
       @QueryParam(YarnWebServiceParams.NM_ID) String nmId,
       @QueryParam(YarnWebServiceParams.REDIRECTED_FROM_NODE)
-      @DefaultValue("false") boolean redirectedFromNode) {
+      @DefaultValue("false") boolean redirectedFromNode,
+      @QueryParam(YarnWebServiceParams.MANUAL_REDIRECTION)
+      @DefaultValue("false") boolean manualRedirection) {
     init();
     return logServlet.getLogsInfo(hsr, appIdStr, appAttemptIdStr,
-        containerIdStr, nmId, redirectedFromNode);
+        containerIdStr, nmId, redirectedFromNode, manualRedirection);
   }
 
   @GET
@@ -448,14 +450,16 @@ public class HsWebServices extends WebServices {
       @PathParam(YarnWebServiceParams.CONTAINER_ID) String containerIdStr,
       @QueryParam(YarnWebServiceParams.NM_ID) String nmId,
       @QueryParam(YarnWebServiceParams.REDIRECTED_FROM_NODE)
-      @DefaultValue("false") boolean redirectedFromNode) {
+      @DefaultValue("false") boolean redirectedFromNode,
+      @QueryParam(YarnWebServiceParams.MANUAL_REDIRECTION)
+      @DefaultValue("false") boolean manualRedirection) {
     init();
 
     WrappedLogMetaRequest.Builder logMetaRequestBuilder =
         LogServlet.createRequestFromContainerId(containerIdStr);
 
     return logServlet.getContainerLogsInfo(hsr, logMetaRequestBuilder, nmId,
-        redirectedFromNode, null);
+        redirectedFromNode, null, manualRedirection);
   }
 
   @GET
@@ -473,10 +477,12 @@ public class HsWebServices extends WebServices {
           String size,
       @QueryParam(YarnWebServiceParams.NM_ID) String nmId,
       @QueryParam(YarnWebServiceParams.REDIRECTED_FROM_NODE)
-      @DefaultValue("false") boolean redirectedFromNode) {
+      @DefaultValue("false") boolean redirectedFromNode,
+      @QueryParam(YarnWebServiceParams.MANUAL_REDIRECTION)
+      @DefaultValue("false") boolean manualRedirection) {
     init();
     return logServlet.getLogFile(req, containerIdStr, filename, format, size,
-        nmId, redirectedFromNode, null);
+        nmId, redirectedFromNode, null, manualRedirection);
   }
 
   @VisibleForTesting
