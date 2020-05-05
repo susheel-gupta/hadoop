@@ -72,6 +72,7 @@ import javax.annotation.Nullable;
 import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -231,8 +232,18 @@ public class FSDirectory implements Closeable {
     Class[] cArg = new Class[1];
     cArg[0] = INodeAttributeProvider.AuthorizationContext.class;
 
+    INodeAttributeProvider.AccessControlEnforcer enforcer =
+        attributeProvider.getExternalAccessControlEnforcer(null);
+
+    // If external enforcer is null, we use the default enforcer, which
+    // supports the new API.
+    if (enforcer == null) {
+      useAuthorizationWithContextAPI = true;
+      return;
+    }
+
     try {
-      Class<?> clazz = attributeProvider.getClass();
+      Class<?> clazz = enforcer.getClass();
       clazz.getDeclaredMethod("checkPermissionWithContext", cArg);
       useAuthorizationWithContextAPI = true;
       LOG.info("Use the new authorization provider API");
