@@ -35,7 +35,8 @@ public class AbfsInputStreamContext extends AbfsStreamContext {
 
   private int readAheadRange;
 
-  public AbfsInputStreamContext() {
+  public AbfsInputStreamContext(final long sasTokenRenewPeriodForStreamsInSeconds) {
+    super(sasTokenRenewPeriodForStreamsInSeconds);
   }
 
   public AbfsInputStreamContext withReadBufferSize(final int readBufferSize) {

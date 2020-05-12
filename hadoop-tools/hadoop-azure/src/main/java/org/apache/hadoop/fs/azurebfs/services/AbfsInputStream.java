@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileSystem.Statistics;
 import org.apache.hadoop.fs.StreamCapabilities;
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.AbfsRestOperationException;
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.AzureBlobFileSystemException;
+import org.apache.hadoop.fs.azurebfs.utils.CachedSASToken;
 
 import static org.apache.hadoop.util.StringUtils.toLowerCase;
 
@@ -60,6 +61,8 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
   // User configured size of read ahead.
   private final int readAheadRange;
 
+  // SAS tokens can be re-used until they expire
+  private CachedSASToken cachedSasToken;
   private byte[] buffer = null;            // will be initialized on first use
 
   private long fCursor = 0;  // cursor of buffer within file - offset of next byte to read from remote server
@@ -93,6 +96,8 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
     this.readAheadEnabled = abfsInputStreamContext.isReadAheadEnabled();
     this.readAheadRange = abfsInputStreamContext.getReadAheadRange();
     this.streamStatistics = new AbfsInputStreamStatisticsImpl();
+    this.cachedSasToken = new CachedSASToken(
+        abfsInputStreamContext.getSasTokenRenewPeriodForStreamsInSeconds());
   }
 
   public String getPath() {
@@ -295,7 +300,8 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
       LOG.debug(
           "issuing HTTP GET request params position = {} b.length = {} offset = {} length = {}",
           position, b.length, offset, length);
-      op = client.read(path, position, b, offset, length, tolerateOobAppends ? "*" : eTag);
+      op = client.read(path, position, b, offset, length, tolerateOobAppends ? "*" : eTag, cachedSasToken.get());
+      cachedSasToken.update(op.getSasToken());
       perfInfo.registerResult(op.getResult()).registerSuccess(true);
       incrementReadOps();
     } catch (AzureBlobFileSystemException ex) {
