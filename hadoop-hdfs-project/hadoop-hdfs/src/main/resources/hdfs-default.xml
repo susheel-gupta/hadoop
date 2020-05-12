@@ -5226,4 +5226,12 @@
       octal or symbolic.
     </description>
   </property>
+
+  <property>
+    <name>dfs.protected.subdirectories.enable</name>
+    <value>false</value>
+    <description>whether to protect the subdirectories of directories which
+      set on fs.protected.directories.
+    </description>
+  </property>
 </configuration>
