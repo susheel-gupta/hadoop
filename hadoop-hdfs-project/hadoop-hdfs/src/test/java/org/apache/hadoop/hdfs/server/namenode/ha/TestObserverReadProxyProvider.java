@@ -68,6 +68,7 @@ public class TestObserverReadProxyProvider {
     nnURI = URI.create("hdfs://" + ns);
     conf = new Configuration();
     conf.set(HdfsClientConfigKeys.DFS_NAMESERVICES, ns);
+    conf.setBoolean(HdfsClientConfigKeys.Failover.RANDOM_ORDER, false);
   }
 
   private void setupProxyProvider(int namenodeCount) throws Exception {
