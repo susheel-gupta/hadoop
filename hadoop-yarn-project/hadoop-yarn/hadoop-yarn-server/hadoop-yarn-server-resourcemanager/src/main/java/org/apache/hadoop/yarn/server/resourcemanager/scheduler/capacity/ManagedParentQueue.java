@@ -188,8 +188,61 @@ public class ManagedParentQueue extends AbstractManagedParentQueue {
             .getAutoCreatedQueueTemplateConfPrefix(getQueuePath()),
         csContext.getConfiguration(), queueCapacities, getQueueCapacities());
 
+    /**
+     * Populate leaf queue template (of Parent resources configured in
+     * ABSOLUTE_RESOURCE) capacities with actual values for which configured has
+     * been defined in ABSOLUTE_RESOURCE format.
+     *
+     */
+    if (this.capacityConfigType.equals(CapacityConfigType.ABSOLUTE_RESOURCE)) {
+      updateQueueCapacities(queueCapacities);
+    }
+
     builder.capacities(queueCapacities);
     return builder;
+  }
+
+  private void updateQueueCapacities(QueueCapacities queueCapacities) {
+    for (String label : queueCapacities.getExistingNodeLabels()) {
+      queueCapacities.setCapacity(label,
+          this.csContext.getResourceCalculator().divide(
+              this.csContext.getClusterResource(),
+              this.csContext.getConfiguration().getMinimumResourceRequirement(
+                  label,
+                  this.csContext.getConfiguration()
+                      .getAutoCreatedQueueTemplateConfPrefix(getQueuePath()),
+                  resourceTypes),
+              getQueueResourceQuotas().getConfiguredMinResource(label)));
+
+      Resource childMaxResource = this.csContext.getConfiguration()
+          .getMaximumResourceRequirement(label,
+              this.csContext.getConfiguration()
+                  .getAutoCreatedQueueTemplateConfPrefix(getQueuePath()),
+              resourceTypes);
+      Resource parentMaxRes = getQueueResourceQuotas()
+          .getConfiguredMaxResource(label);
+
+      Resource effMaxResource = Resources.min(
+          this.csContext.getResourceCalculator(),
+          this.csContext.getClusterResource(),
+          childMaxResource.equals(Resources.none()) ? parentMaxRes
+              : childMaxResource,
+          parentMaxRes);
+
+      queueCapacities.setMaximumCapacity(
+          label, this.csContext.getResourceCalculator().divide(
+              this.csContext.getClusterResource(),
+              effMaxResource,
+              getQueueResourceQuotas().getConfiguredMaxResource(label)));
+
+      queueCapacities.setAbsoluteCapacity(
+          label, queueCapacities.getCapacity(label)
+              * getQueueCapacities().getAbsoluteCapacity(label));
+
+      queueCapacities.setAbsoluteMaximumCapacity(label,
+          queueCapacities.getMaximumCapacity(label)
+              * getQueueCapacities().getAbsoluteMaximumCapacity(label));
+    }
   }
 
   protected void validate(final CSQueue newlyParsedQueue) throws IOException {
@@ -242,51 +295,16 @@ public class ManagedParentQueue extends AbstractManagedParentQueue {
 
       AutoCreatedLeafQueue leafQueue = (AutoCreatedLeafQueue) childQueue;
       super.addChildQueue(leafQueue);
+
+      if (this.capacityConfigType.equals(
+          CapacityConfigType.ABSOLUTE_RESOURCE)) {
+        QueueCapacities queueCapacities =
+            getLeafQueueTemplate().getQueueCapacities();
+        updateQueueCapacities(queueCapacities);
+      }
+
       final AutoCreatedLeafQueueConfig initialLeafQueueTemplate =
           queueManagementPolicy.getInitialLeafQueueConfiguration(leafQueue);
-
-      if (this.capacityConfigType.equals(CapacityConfigType.ABSOLUTE_RESOURCE)) {
-        for (String label : initialLeafQueueTemplate.getQueueCapacities().getExistingNodeLabels()) {
-          initialLeafQueueTemplate.getQueueCapacities().setCapacity(label,
-                  this.csContext.getResourceCalculator().divide(
-                          this.csContext.getClusterResource(),
-                          this.csContext.getConfiguration().getMinimumResourceRequirement(
-                                  label,
-                                  this.csContext.getConfiguration()
-                                          .getAutoCreatedQueueTemplateConfPrefix(getQueuePath()),
-                                  resourceTypes),
-                          getQueueResourceQuotas().getConfiguredMinResource(label)));
-
-
-          Resource childMaxResource = this.csContext.getConfiguration().getMaximumResourceRequirement(
-                  label,
-                  this.csContext.getConfiguration()
-                          .getAutoCreatedQueueTemplateConfPrefix(getQueuePath()),
-                  resourceTypes);
-
-          Resource parentMaxRes = getQueueResourceQuotas().getConfiguredMaxResource(label);
-
-          Resource effMaxResource = Resources.min(this.csContext.getResourceCalculator(),
-                  this.csContext.getClusterResource(), childMaxResource.equals(Resources.none())
-                          ? parentMaxRes
-                          : childMaxResource,
-                  parentMaxRes);
-
-          initialLeafQueueTemplate.getQueueCapacities().setMaximumCapacity(label,
-                  this.csContext.getResourceCalculator().divide(
-                          this.csContext.getClusterResource(),
-                          effMaxResource,
-                          getQueueResourceQuotas().getConfiguredMaxResource(label)));
-
-          initialLeafQueueTemplate.getQueueCapacities().setAbsoluteCapacity(label,
-                  initialLeafQueueTemplate.getQueueCapacities().getCapacity(label)
-                          * getQueueCapacities().getAbsoluteCapacity(label));
-
-          initialLeafQueueTemplate.getQueueCapacities().setAbsoluteMaximumCapacity(label,
-                  initialLeafQueueTemplate.getQueueCapacities().getMaximumCapacity(label)
-                          * getQueueCapacities().getAbsoluteMaximumCapacity(label));
-        }
-      }
 
       leafQueue.reinitializeFromTemplate(initialLeafQueueTemplate);
     } finally {
