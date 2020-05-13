@@ -67,7 +67,9 @@ import org.mockito.internal.util.reflection.Whitebox;
 
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_LEASE_HARDLIMIT_KEY;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_LEASE_RECHECK_INTERVAL_MS_KEY;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.mockito.Matchers.any;
 
 /**
  * Test race between delete and other operations.  For now only addBlock()
@@ -490,6 +492,50 @@ public class TestDeleteRace {
     } finally {
       if (dfsCluster != null) {
         dfsCluster.shutdown();
+      }
+    }
+  }
+
+  /**
+   * Test get snapshot diff on a directory which delete got failed.
+   */
+  @Test
+  public void testDeleteOnSnapshottableDir() throws Exception {
+    conf.setBoolean(
+        DFSConfigKeys.DFS_NAMENODE_SNAPSHOT_DIFF_ALLOW_SNAP_ROOT_DESCENDANT,
+        true);
+    try {
+      cluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).build();
+      cluster.waitActive();
+      DistributedFileSystem hdfs = cluster.getFileSystem();
+      FSNamesystem fsn = cluster.getNamesystem();
+      FSDirectory fsdir = fsn.getFSDirectory();
+      Path dir = new Path("/dir");
+      hdfs.mkdirs(dir);
+      hdfs.allowSnapshot(dir);
+      Path file1 = new Path(dir, "file1");
+      Path file2 = new Path(dir, "file2");
+
+      // directory should not get deleted
+      FSDirectory fsdir2 = Mockito.spy(fsdir);
+      cluster.getNamesystem().setFSDirectory(fsdir2);
+      Mockito.doReturn(-1L).when(fsdir2).removeLastINode(any());
+      hdfs.delete(dir, true);
+
+      // create files and create snapshots
+      DFSTestUtil.createFile(hdfs, file1, BLOCK_SIZE, (short) 1, 0);
+      hdfs.createSnapshot(dir, "s1");
+      DFSTestUtil.createFile(hdfs, file2, BLOCK_SIZE, (short) 1, 0);
+      hdfs.createSnapshot(dir, "s2");
+
+      // should able to get snapshot diff on ancestor dir
+      Path dirDir1 = new Path(dir, "dir1");
+      hdfs.mkdirs(dirDir1);
+      hdfs.getSnapshotDiffReport(dirDir1, "s2", "s1");
+      assertEquals(1, fsn.getSnapshotManager().getNumSnapshottableDirs());
+    } finally {
+      if (cluster != null) {
+        cluster.shutdown();
       }
     }
   }
