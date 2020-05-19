@@ -86,7 +86,7 @@ public class AbfsHttpOperation implements AbfsPerfLoggable {
   private long recvResponseTimeMs;
   private final boolean isObjectMapperThreadLocalEnabled;
   //ThreadLocal for ObjectMapper to reuse the ObjectMapper instance.
-  private static ThreadLocal<ObjectMapper> objMapperThreadLocal =
+  private static final ThreadLocal<ObjectMapper> objMapperThreadLocal =
       new ThreadLocal<ObjectMapper>() {
         @Override
         protected ObjectMapper initialValue() {
@@ -95,6 +95,20 @@ public class AbfsHttpOperation implements AbfsPerfLoggable {
       };
   //Static singleton instance of ObjectMapper for shared use.
   private static final ObjectMapper sharedObjectMapper = new ObjectMapper();
+
+  public static AbfsHttpOperation getAbfsHttpOperationWithFixedResult(final URL url,
+      final String method, final int httpStatus) {
+       return new AbfsHttpOperation(url, method, httpStatus);
+  }
+
+  private AbfsHttpOperation(final URL url, final String method,
+      final int httpStatus) {
+    this.isTraceEnabled = LOG.isTraceEnabled();
+    this.url = url;
+    this.method = method;
+    this.statusCode = httpStatus;
+    this.isObjectMapperThreadLocalEnabled = false;
+  }
 
   protected  HttpURLConnection getConnection() {
     return connection;
