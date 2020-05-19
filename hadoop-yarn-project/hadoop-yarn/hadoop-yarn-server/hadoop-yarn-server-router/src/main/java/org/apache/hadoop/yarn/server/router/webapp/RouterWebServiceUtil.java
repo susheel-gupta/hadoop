@@ -49,6 +49,7 @@ import org.apache.hadoop.yarn.server.uam.UnmanagedApplicationManager;
 import org.apache.hadoop.yarn.webapp.BadRequestException;
 import org.apache.hadoop.yarn.webapp.ForbiddenException;
 import org.apache.hadoop.yarn.webapp.NotFoundException;
+import org.apache.hadoop.yarn.webapp.util.WebServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
