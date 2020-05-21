@@ -165,40 +165,16 @@ public class TestCapacitySchedulerAutoQueueCreation
       throws Exception {
 
     try {
-      // submit an app
-      submitApp(mockRM, cs.getQueue(PARENT_QUEUE), USER0, USER0, 1, 1);
-
-      // check preconditions
-      List<ApplicationAttemptId> appsInC = cs.getAppsInQueue(PARENT_QUEUE);
-      assertEquals(1, appsInC.size());
-      assertNotNull(cs.getQueue(USER0));
-
-      AutoCreatedLeafQueue autoCreatedLeafQueue =
-          (AutoCreatedLeafQueue) cs.getQueue(USER0);
-      ManagedParentQueue parentQueue = (ManagedParentQueue) cs.getQueue(
-          PARENT_QUEUE);
-      assertEquals(parentQueue, autoCreatedLeafQueue.getParent());
-
-      Map<String, Float> expectedChildQueueAbsCapacity =
-          populateExpectedAbsCapacityByLabelForParentQueue(1);
-      validateInitialQueueEntitlement(parentQueue, USER0,
-          expectedChildQueueAbsCapacity, accessibleNodeLabelsOnC);
-
-      validateUserAndAppLimits(autoCreatedLeafQueue, 1000, 1000);
-
-      assertTrue(autoCreatedLeafQueue
-          .getOrderingPolicy() instanceof FairOrderingPolicy);
-
       setupGroupQueueMappings("root.d", cs.getConfiguration(), "%user");
       cs.reinitialize(cs.getConfiguration(), mockRM.getRMContext());
 
       submitApp(mockRM, cs.getQueue("d"), TEST_GROUPUSER, TEST_GROUPUSER, 1, 1);
-      autoCreatedLeafQueue =
+      AutoCreatedLeafQueue autoCreatedLeafQueue =
           (AutoCreatedLeafQueue) cs.getQueue(TEST_GROUPUSER);
-      parentQueue = (ManagedParentQueue) cs.getQueue("d");
+      ManagedParentQueue parentQueue = (ManagedParentQueue) cs.getQueue("d");
       assertEquals(parentQueue, autoCreatedLeafQueue.getParent());
 
-      expectedChildQueueAbsCapacity =
+      Map<String, Float> expectedChildQueueAbsCapacity =
           new HashMap<String, Float>() {{
             put(NO_LABEL, 0.02f);
           }};
