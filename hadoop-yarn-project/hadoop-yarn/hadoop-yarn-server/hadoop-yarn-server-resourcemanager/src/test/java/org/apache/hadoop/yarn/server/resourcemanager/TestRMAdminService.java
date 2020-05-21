@@ -1616,9 +1616,10 @@ public class TestRMAdminService {
     try {
       rm.adminService.mapAttributesToNodes(request);
       fail("host5 is not a valid node, It should have failed");
-    } catch (Exception ex) {
+    } catch (YarnException ex) {
       Assert.assertEquals("Exception Message is not as desired",
-          " Following nodes does not exist : [host5]", ex.getMessage());
+          " Following nodes does not exist : [host5]",
+          ex.getCause().getMessage());
     }
 
     request =
@@ -1638,10 +1639,10 @@ public class TestRMAdminService {
       // against hostname hence the message as : nodes does not exist.
       rm.adminService.mapAttributesToNodes(request);
       fail("host with the port should fail as only hostnames are validated");
-    } catch (Exception ex) {
+    } catch (YarnException ex) {
       Assert.assertEquals("Exception Message is not as desired",
           " Following nodes does not exist : [host4:8889, host2:8889]",
-          ex.getMessage());
+          ex.getCause().getMessage());
     }
 
     request =
@@ -1674,11 +1675,10 @@ public class TestRMAdminService {
     try {
       rm.adminService.mapAttributesToNodes(request);
       fail("This operation should fail as prefix should be \"nm.yarn.io\".");
-    } catch (Exception ex) {
+    } catch (YarnException ex) {
       Assert.assertEquals("Exception Message is not as desired",
           "Invalid Attribute Mapping for the node host5. Prefix should be "
-              + "rm.yarn.io",
-          ex.getMessage());
+              + "rm.yarn.io", ex.getCause().getMessage());
     }
 
     rm.close();
