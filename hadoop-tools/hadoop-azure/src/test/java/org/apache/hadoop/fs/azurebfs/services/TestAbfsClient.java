@@ -247,25 +247,34 @@ public final class TestAbfsClient {
       AbfsClient baseAbfsClientInstance,
       AbfsConfiguration abfsConfig)
       throws AzureBlobFileSystemException {
-      AbfsPerfTracker tracker = new AbfsPerfTracker("test",
-          abfsConfig.getAccountName(),
-          abfsConfig);
-    AbfsClientContext abfsClientContext
-        = new AbfsClientContextBuilder()
-        .withAbfsPerfTracker(tracker)
-        .withExponentialRetryPolicy(
-            new ExponentialRetryPolicy(abfsConfig.getMaxIoRetries()))
-        .build();
-    // Create test AbfsClient
-      AbfsClient testClient = new AbfsClient(
-          baseAbfsClientInstance.getBaseUrl(),
-          new SharedKeyCredentials(abfsConfig.getAccountName().substring(0,
-              abfsConfig.getAccountName().indexOf(DOT)),
-              abfsConfig.getStorageAccountKey()),
-          abfsConfig,
-          abfsConfig.getTokenProvider(),
-          abfsClientContext);
+    AuthType currentAuthType = abfsConfig.getAuthType(
+        abfsConfig.getAccountName());
 
-      return testClient;
-    }
+    AbfsPerfTracker tracker = new AbfsPerfTracker("test",
+        abfsConfig.getAccountName(),
+        abfsConfig);
+
+    AbfsClientContext abfsClientContext =
+        new AbfsClientContextBuilder().withAbfsPerfTracker(tracker)
+                                .withExponentialRetryPolicy(
+                                    new ExponentialRetryPolicy(abfsConfig.getMaxIoRetries()))
+                                .build();
+
+    // Create test AbfsClient
+    AbfsClient testClient = new AbfsClient(
+        baseAbfsClientInstance.getBaseUrl(),
+        (currentAuthType == AuthType.SharedKey
+            ? new SharedKeyCredentials(
+            abfsConfig.getAccountName().substring(0,
+                abfsConfig.getAccountName().indexOf(DOT)),
+            abfsConfig.getStorageAccountKey())
+            : null),
+        abfsConfig,
+        (currentAuthType == AuthType.OAuth
+            ? abfsConfig.getTokenProvider()
+            : null),
+        abfsClientContext);
+
+    return testClient;
+  }
 }
