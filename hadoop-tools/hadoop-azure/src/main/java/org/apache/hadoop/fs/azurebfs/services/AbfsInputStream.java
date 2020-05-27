@@ -25,6 +25,8 @@ import java.net.HttpURLConnection;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.annotations.VisibleForTesting;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -600,4 +602,10 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
   byte[] getBuffer() {
     return buffer;
   }
+
+  @VisibleForTesting
+  protected void setCachedSasToken(final CachedSASToken cachedSasToken) {
+    this.cachedSasToken = cachedSasToken;
+  }
+
 }
