@@ -141,5 +141,12 @@ public final class ConfigurationKeys {
   /** Key for SAS token provider **/
   public static final String FS_AZURE_SAS_TOKEN_PROVIDER_TYPE = "fs.azure.sas.token.provider.type";
 
+  /** Key to enable custom identity transformation. */
+  public static final String FS_AZURE_IDENTITY_TRANSFORM_CLASS = "fs.azure.identity.transformer.class";
+  /** Key for Local User to Service Principal file location. */
+  public static final String FS_AZURE_LOCAL_USER_SP_MAPPING_FILE_PATH = "fs.azure.identity.transformer.local.service.principal.mapping.file.path";
+  /** Key for Local Group to Service Group file location. */
+  public static final String FS_AZURE_LOCAL_GROUP_SG_MAPPING_FILE_PATH = "fs.azure.identity.transformer.local.service.group.mapping.file.path";
+
   private ConfigurationKeys() {}
 }
