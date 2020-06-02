@@ -191,7 +191,7 @@ public class TestUserGroupMappingPlacementRule {
 
   @Test
   public void testMapping() throws YarnException {
-    //if a mapping rule definies no parent, we cannot expect auto creation,
+    //if a mapping rule defines no parent, we cannot expect auto creation,
     // so we must provide already existing queues
     verifyQueueMapping(
         QueueMappingTestDataBuilder.create()

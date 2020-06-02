@@ -105,35 +105,76 @@ public class UserGroupMappingPlacementRule extends PlacementRule {
           if (mapping.getParentQueue() != null
               && mapping.getParentQueue().equals(PRIMARY_GROUP_MAPPING)
               && mapping.getQueue().equals(CURRENT_USER_MAPPING)) {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Creating placement context for user " + user +
+                  " using primary group current user mapping");
+            }
             return getContextForGroupParent(user, mapping,
                 getPrimaryGroup(user));
           } else if (mapping.getParentQueue() != null
               && mapping.getParentQueue().equals(SECONDARY_GROUP_MAPPING)
               && mapping.getQueue().equals(CURRENT_USER_MAPPING)) {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Creating placement context for user " + user +
+                  " using secondary group current user mapping");
+            }
             return getContextForGroupParent(user, mapping,
                 getSecondaryGroup(user));
           } else if (mapping.getQueue().equals(CURRENT_USER_MAPPING)) {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Creating placement context for user " + user +
+                  " using current user mapping");
+            }
             return getPlacementContext(mapping, user);
           } else if (mapping.getQueue().equals(PRIMARY_GROUP_MAPPING)) {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Creating placement context for user " + user +
+                  " using primary group mapping");
+            }
             return getPlacementContext(mapping, getPrimaryGroup(user));
           } else if (mapping.getQueue().equals(SECONDARY_GROUP_MAPPING)) {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Creating placement context for user " + user +
+                  " using secondary group mapping");
+            }
             return getPlacementContext(mapping, getSecondaryGroup(user));
           } else {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Creating placement context for user " + user +
+                  " using static user static mapping");
+            }
             return getPlacementContext(mapping);
           }
         }
 
         if (user.equals(mapping.getSource())) {
           if (mapping.getQueue().equals(PRIMARY_GROUP_MAPPING)) {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Creating placement context for user " + user +
+                  " using static user primary group mapping");
+            }
             return getPlacementContext(mapping, getPrimaryGroup(user));
           } else if (mapping.getQueue().equals(SECONDARY_GROUP_MAPPING)) {
             String secondaryGroup = getSecondaryGroup(user);
             if (secondaryGroup != null) {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("Creating placement context for user " + user +
+                    " using static user secondary group mapping");
+              }
               return getPlacementContext(mapping, secondaryGroup);
             } else {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("Wanted to create placement context for user " + user +
+                    " using static user secondary group mapping," +
+                    " but user has no secondary group!");
+              }
               return null;
             }
           } else {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Creating placement context for user " + user +
+                  " using static user static mapping");
+            }
             return getPlacementContext(mapping);
           }
         }
@@ -142,7 +183,15 @@ public class UserGroupMappingPlacementRule extends PlacementRule {
         for (String userGroups : groups.getGroups(user)) {
           if (userGroups.equals(mapping.getSource())) {
             if (mapping.getQueue().equals(CURRENT_USER_MAPPING)) {
+              if (LOG.isDebugEnabled()) {
+                LOG.debug("Creating placement context for user " + user +
+                    " using static group current user mapping");
+              }
               return getPlacementContext(mapping, user);
+            }
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Creating placement context for user " + user +
+                  "using static group static mapping");
             }
             return getPlacementContext(mapping);
           }
@@ -189,6 +238,13 @@ public class UserGroupMappingPlacementRule extends PlacementRule {
       validateQueueMapping(resolvedGroupMapping);
       return getPlacementContext(resolvedGroupMapping, user);
     } else {
+      if (queueManager.isAmbiguous(group)) {
+        LOG.info("Queue mapping rule expect group queue to exist with name " + group +
+            " but the reference is ambiguous!");
+      } else {
+        LOG.info("Queue mapping rule expect group queue to exist with name {}" + group +
+            " but it does not exist!");
+      }
       return null;
     }
   }
@@ -253,6 +309,13 @@ public class UserGroupMappingPlacementRule extends PlacementRule {
     //we don't find the specified parent, so the placement rule is invalid
     //for this case
     if (parent == null) {
+      if (queueManager.isAmbiguous(mapping.getParentQueue())) {
+        LOG.warn("Placement rule specified a parent queue " + mapping.getParentQueue() +
+            ", but it is ambiguous.");
+      } else {
+        LOG.warn("Placement rule specified a parent queue " + mapping.getParentQueue() +
+            ", but it does not exist.");
+      }
       return null;
     }
 
@@ -261,10 +324,13 @@ public class UserGroupMappingPlacementRule extends PlacementRule {
     //if we have a parent which is not a managed parent, we check if the leaf
     //queue exists under this parent
     if (!(parent instanceof ManagedParentQueue)) {
-      CSQueue queue = queueManager.getQueue(
-          parentPath + "." + leafQueueName);
+      CSQueue queue = queueManager.getQueue(parentPath + "." + leafQueueName);
       //if the queue doesn't exit we return null
       if (queue == null) {
+          LOG.warn("Placement rule specified a parent queue " +
+              mapping.getParentQueue() + ", but it is" +
+              " not a managed parent queue, and no queue exists with name " +
+              leafQueueName + " under it.");
         return null;
       }
     }
@@ -279,6 +345,11 @@ public class UserGroupMappingPlacementRule extends PlacementRule {
     //exist, otherwise the mapping will not be valid for this case
     CSQueue queue = queueManager.getQueue(leafQueueName);
     if (queue == null) {
+      if (queueManager.isAmbiguous(leafQueueName)) {
+        LOG.warn("Queue " + leafQueueName + " specified in placement rule is ambiguous");
+      } else {
+        LOG.warn("Queue " + leafQueueName + " specified in placement rule does not exist");
+      }
       return null;
     }
 
