@@ -20,6 +20,7 @@ package org.apache.hadoop.hdfs;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeys.FS_CLIENT_TOPOLOGY_RESOLUTION_ENABLED;
 import static org.apache.hadoop.hdfs.client.HdfsAdmin.TRASH_PERMISSION;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_FILE_CLOSE_NUM_COMMITTED_ALLOWED_KEY;
 import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.DFS_CLIENT_CONTEXT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -101,6 +102,7 @@ import org.apache.hadoop.hdfs.protocol.LocatedBlock;
 import org.apache.hadoop.hdfs.protocol.OpenFileEntry;
 import org.apache.hadoop.hdfs.protocol.OpenFilesIterator;
 import org.apache.hadoop.hdfs.server.datanode.DataNode;
+import org.apache.hadoop.hdfs.server.datanode.DataNodeTestUtils;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsDatasetSpi;
 import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsVolumeSpi;
 import org.apache.hadoop.hdfs.server.namenode.ErasureCodingPolicyManager;
@@ -2397,6 +2399,43 @@ public class TestDistributedFileSystem {
       if (cluster != null) {
         cluster.shutdown();
       }
+    }
+  }
+
+  @Test
+  public void testECCloseCommittedBlock() throws Exception {
+    HdfsConfiguration conf = new HdfsConfiguration();
+    conf.setInt(DFS_NAMENODE_FILE_CLOSE_NUM_COMMITTED_ALLOWED_KEY, 1);
+    try (MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf)
+        .numDataNodes(3).build()) {
+      cluster.waitActive();
+      final DistributedFileSystem dfs = cluster.getFileSystem();
+      Path dir = new Path("/dir");
+      dfs.mkdirs(dir);
+      dfs.enableErasureCodingPolicy("XOR-2-1-1024k");
+      dfs.setErasureCodingPolicy(dir, "XOR-2-1-1024k");
+
+      try (FSDataOutputStream str = dfs.create(new Path("/dir/file"));) {
+        for (int i = 0; i < 1024 * 1024 * 4; i++) {
+          str.write(i);
+        }
+        DataNodeTestUtils.pauseIBR(cluster.getDataNodes().get(0));
+        DataNodeTestUtils.pauseIBR(cluster.getDataNodes().get(1));
+      }
+      DataNodeTestUtils.resumeIBR(cluster.getDataNodes().get(0));
+      DataNodeTestUtils.resumeIBR(cluster.getDataNodes().get(1));
+
+      // Check if the blockgroup isn't complete then file close shouldn't be
+      // success with block in committed state.
+      cluster.getDataNodes().get(0).shutdown();
+      FSDataOutputStream str = dfs.create(new Path("/dir/file1"));
+
+      for (int i = 0; i < 1024 * 1024 * 4; i++) {
+        str.write(i);
+      }
+      DataNodeTestUtils.pauseIBR(cluster.getDataNodes().get(1));
+      DataNodeTestUtils.pauseIBR(cluster.getDataNodes().get(2));
+      LambdaTestUtils.intercept(IOException.class, "", () -> str.close());
     }
   }
 }
