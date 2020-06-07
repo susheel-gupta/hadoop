@@ -1188,6 +1188,9 @@ public class ViewFileSystem extends FileSystem {
           INodeLink<FileSystem> link = (INodeLink<FileSystem>) inode;
           try {
             String linkedPath = link.getTargetFileSystem().getUri().getPath();
+            if("".equals(linkedPath)) {
+              linkedPath = "/";
+            }
             FileStatus status =
                 ((ChRootedFileSystem)link.getTargetFileSystem())
                 .getMyFs().getFileStatus(new Path(linkedPath));
