@@ -236,8 +236,11 @@ public class CapacityScheduler extends
   private static final long DEFAULT_ASYNC_SCHEDULER_INTERVAL = 5;
   private long asyncMaxPendingBacklogs;
 
+  private CSMaxRunningAppsEnforcer maxRunningEnforcer;
+
   public CapacityScheduler() {
     super(CapacityScheduler.class.getName());
+    this.maxRunningEnforcer = new CSMaxRunningAppsEnforcer(this);
   }
 
   @Override
@@ -477,6 +480,7 @@ public class CapacityScheduler extends
 
         super.reinitialize(newConf, rmContext);
       }
+      maxRunningEnforcer.updateRunnabilityOnReload();
     } finally {
       writeLock.unlock();
     }
@@ -1074,6 +1078,9 @@ public class CapacityScheduler extends
       // SchedulerApplication#setCurrentAppAttempt.
       attempt.setPriority(application.getPriority());
 
+      maxRunningEnforcer.checkRunnabilityWithUpdate(attempt);
+      maxRunningEnforcer.trackApp(attempt);
+
       queue.submitApplicationAttempt(attempt, application.getUser());
       LOG.info("Added Application Attempt " + applicationAttemptId
           + " to scheduler from user " + application.getUser() + " in queue "
@@ -1169,8 +1176,13 @@ public class CapacityScheduler extends
         LOG.error(
             "Cannot finish application " + "from non-leaf queue: "
             + csQueue.getQueuePath());
-      } else{
+      } else {
         csQueue.finishApplicationAttempt(attempt, csQueue.getQueuePath());
+
+        maxRunningEnforcer.untrackApp(attempt);
+        if (attempt.isRunnable()) {
+          maxRunningEnforcer.updateRunnabilityOnAppRemoval(attempt);
+        }
       }
     } finally {
       writeLock.unlock();
@@ -3249,5 +3261,10 @@ public class CapacityScheduler extends
   @Override
   public void resetSchedulerMetrics() {
     CapacitySchedulerMetrics.destroy();
+  }
+
+  @VisibleForTesting
+  public void setMaxRunningAppsEnforcer(CSMaxRunningAppsEnforcer enforcer) {
+    this.maxRunningEnforcer = enforcer;
   }
 }

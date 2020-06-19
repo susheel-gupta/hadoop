@@ -180,6 +180,7 @@ public class TestApplicationLimits {
     doReturn(amResource).when(application).getAMResource(
         CommonNodeLabelsManager.NO_LABEL);
     when(application.compareInputOrderTo(any(FiCaSchedulerApp.class))).thenCallRealMethod();
+    when(application.isRunnable()).thenReturn(true);
     return application;
   }
   
