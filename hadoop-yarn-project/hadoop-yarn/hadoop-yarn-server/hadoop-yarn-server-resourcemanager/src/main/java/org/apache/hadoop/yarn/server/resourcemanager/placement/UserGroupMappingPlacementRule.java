@@ -22,9 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.security.Groups;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
@@ -43,12 +41,14 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.Capacity
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.LeafQueue;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.ManagedParentQueue;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.ParentQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
 public class UserGroupMappingPlacementRule extends PlacementRule {
-  private static final Log LOG = LogFactory
-      .getLog(UserGroupMappingPlacementRule.class);
+  private static final Logger LOG = LoggerFactory
+      .getLogger(UserGroupMappingPlacementRule.class);
 
   public static final String CURRENT_USER_MAPPING = "%user";
 
@@ -141,7 +141,7 @@ public class UserGroupMappingPlacementRule extends PlacementRule {
           } else {
             if (LOG.isDebugEnabled()) {
               LOG.debug("Creating placement context for user " + user +
-                  " using static user static mapping");
+                  " using current user static mapping");
             }
             return getPlacementContext(mapping);
           }
@@ -173,7 +173,7 @@ public class UserGroupMappingPlacementRule extends PlacementRule {
           } else {
             if (LOG.isDebugEnabled()) {
               LOG.debug("Creating placement context for user " + user +
-                  " using static user static mapping");
+                  " using current user static mapping");
             }
             return getPlacementContext(mapping);
           }
