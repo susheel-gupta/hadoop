@@ -55,6 +55,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -720,7 +721,7 @@ public class TestFSConfigToCSConfigConverter {
     verify(placementConverter).convertPlacementPolicy(
         any(PlacementManager.class),
         any(FSConfigToCSConfigRuleHandler.class),
-        any(Boolean.class));
+        Matchers.anyBoolean());
   }
 
   @Test
