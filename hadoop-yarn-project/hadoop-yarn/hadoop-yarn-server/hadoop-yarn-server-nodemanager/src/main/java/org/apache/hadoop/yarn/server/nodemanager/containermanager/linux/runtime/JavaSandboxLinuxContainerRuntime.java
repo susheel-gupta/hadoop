@@ -293,9 +293,9 @@ public class JavaSandboxLinuxContainerRuntime
   private static List<String> getGroupPolicyFiles(Configuration conf,
       String user) throws ContainerExecutionException {
     Groups groups = Groups.getUserToGroupsMappingService(conf);
-    List<String> userGroups;
+    Set<String> userGroups;
     try {
-      userGroups = groups.getGroups(user);
+      userGroups = groups.getGroupsSet(user);
     } catch (IOException e) {
       throw new ContainerExecutionException("Container user does not exist");
     }
@@ -320,11 +320,11 @@ public class JavaSandboxLinuxContainerRuntime
     String whitelistGroup = configuration.get(
         YarnConfiguration.YARN_CONTAINER_SANDBOX_WHITELIST_GROUP);
     Groups groups = Groups.getUserToGroupsMappingService(configuration);
-    List<String> userGroups;
+    Set<String> userGroups;
     boolean isWhitelisted = false;
 
     try {
-      userGroups = groups.getGroups(username);
+      userGroups = groups.getGroupsSet(username);
     } catch (IOException e) {
       throw new ContainerExecutionException("Container user does not exist");
     }
