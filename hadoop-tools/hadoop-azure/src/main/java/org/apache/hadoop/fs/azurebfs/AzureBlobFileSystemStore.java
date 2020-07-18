@@ -426,8 +426,8 @@ public class AzureBlobFileSystemStore implements Closeable {
               client.getFileSystem(),
               path,
               overwrite,
-              permission.toString(),
-              umask.toString(),
+              permission,
+              umask,
               isNamespaceEnabled);
 
       String relativePath = getRelativePath(path);
@@ -865,7 +865,7 @@ public class AzureBlobFileSystemStore implements Closeable {
       LOG.debug(
               "setOwner filesystem: {} path: {} owner: {} group: {}",
               client.getFileSystem(),
-              path.toString(),
+              path,
               owner,
               group);
 
@@ -892,8 +892,8 @@ public class AzureBlobFileSystemStore implements Closeable {
       LOG.debug(
               "setPermission filesystem: {} path: {} permission: {}",
               client.getFileSystem(),
-              path.toString(),
-              permission.toString());
+              path,
+              permission);
 
       final AbfsRestOperation op = client.setPermission(getRelativePath(path),
               String.format(AbfsHttpConstants.PERMISSION_FORMAT, permission.toOctal()));
@@ -914,7 +914,7 @@ public class AzureBlobFileSystemStore implements Closeable {
       LOG.debug(
               "modifyAclEntries filesystem: {} path: {} aclSpec: {}",
               client.getFileSystem(),
-              path.toString(),
+              path,
               AclEntry.aclSpecToString(aclSpec));
 
       identityTransformer.transformAclEntriesForSetRequest(aclSpec);
@@ -955,7 +955,7 @@ public class AzureBlobFileSystemStore implements Closeable {
       LOG.debug(
               "removeAclEntries filesystem: {} path: {} aclSpec: {}",
               client.getFileSystem(),
-              path.toString(),
+              path,
               AclEntry.aclSpecToString(aclSpec));
 
       identityTransformer.transformAclEntriesForSetRequest(aclSpec);
@@ -996,7 +996,7 @@ public class AzureBlobFileSystemStore implements Closeable {
       LOG.debug(
               "removeDefaultAcl filesystem: {} path: {}",
               client.getFileSystem(),
-              path.toString());
+              path);
 
       String relativePath = getRelativePath(path);
 
@@ -1038,7 +1038,7 @@ public class AzureBlobFileSystemStore implements Closeable {
       LOG.debug(
               "removeAcl filesystem: {} path: {}",
               client.getFileSystem(),
-              path.toString());
+              path);
 
       String relativePath = getRelativePath(path);
 
@@ -1077,7 +1077,7 @@ public class AzureBlobFileSystemStore implements Closeable {
       LOG.debug(
               "setAcl filesystem: {} path: {} aclspec: {}",
               client.getFileSystem(),
-              path.toString(),
+              path,
               AclEntry.aclSpecToString(aclSpec));
 
       identityTransformer.transformAclEntriesForSetRequest(aclSpec);
@@ -1118,7 +1118,7 @@ public class AzureBlobFileSystemStore implements Closeable {
       LOG.debug(
               "getAclStatus filesystem: {} path: {}",
               client.getFileSystem(),
-              path.toString());
+              path);
 
       AbfsRestOperation op = client.getAclStatus(getRelativePath(path));
       AbfsHttpOperation result = op.getResult();
