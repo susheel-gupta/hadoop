@@ -27,6 +27,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.util.Time;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
@@ -578,5 +579,12 @@ public class SchedulerUtils {
     appAttempt.addRMContainer(container.getId(), rmContainer);
     node.allocateContainer(rmContainer);
     return rmContainer;
+  }
+
+  public static boolean isNodeHeartbeated(SchedulerNode node,
+      long nmHeartbeatInterval) {
+    long timeElapsedFromLastHeartbeat =
+        Time.monotonicNow() - node.getLastHeartbeatMonotonicTime();
+    return timeElapsedFromLastHeartbeat <= nmHeartbeatInterval;
   }
 }

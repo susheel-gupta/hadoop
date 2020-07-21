@@ -21,12 +21,17 @@ package org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import com.google.common.collect.Iterators;
 
 import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNode;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.fica.FiCaSchedulerApp;
@@ -48,6 +53,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNode;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerNode;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerNodeReport;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerApplicationAttempt;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.NodeUpdateSchedulerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.placement.MultiNodeSorter;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.placement.MultiNodeSortingManager;
@@ -446,5 +452,44 @@ public class TestCapacitySchedulerMultiNodes extends CapacitySchedulerTestBase {
     assertNull(cs.getNode(rmNode2.getNodeID()).getReservedContainer());
 
     rm1.close();
+  }
+
+  @Test
+  public void testMultiNodeSorterAfterHeartbeatInterval() throws Exception {
+    MockRM rm = new MockRM(conf);
+    rm.start();
+    rm.registerNode("127.0.0.1:1234", 10 * GB);
+    rm.registerNode("127.0.0.2:1234", 10 * GB);
+    rm.registerNode("127.0.0.3:1234", 10 * GB);
+    rm.registerNode("127.0.0.4:1234", 10 * GB);
+
+    Set<SchedulerNode> nodes = new HashSet<>();
+    String partition = "";
+
+    ResourceScheduler scheduler = rm.getRMContext().getScheduler();
+    waitforNMRegistered(scheduler, 4, 5);
+    MultiNodeSortingManager<SchedulerNode> mns = rm.getRMContext()
+        .getMultiNodeSortingManager();
+    MultiNodeSorter<SchedulerNode> sorter = mns
+        .getMultiNodePolicy(POLICY_CLASS_NAME);
+    sorter.reSortClusterNodes();
+
+    SchedulerApplicationAttempt mockAppAttempt = mock(
+        SchedulerApplicationAttempt.class);
+    when(mockAppAttempt.isWaitingForAMContainer()).
+        thenReturn(true);
+
+    Iterator<SchedulerNode> nodeIterator = mns.getMultiNodeSortIterator(
+        nodes, partition, POLICY_CLASS_NAME);
+    Assert.assertEquals(4, Iterators.size(nodeIterator));
+
+    // Validate the count after missing 3 node heartbeats
+    Thread.sleep(YarnConfiguration.DEFAULT_RM_NM_HEARTBEAT_INTERVAL_MS * 3);
+
+    nodeIterator = mns.getMultiNodeSortIterator(
+        nodes, partition, POLICY_CLASS_NAME);
+    Assert.assertEquals(0, Iterators.size(nodeIterator));
+
+    rm.stop();
   }
 }

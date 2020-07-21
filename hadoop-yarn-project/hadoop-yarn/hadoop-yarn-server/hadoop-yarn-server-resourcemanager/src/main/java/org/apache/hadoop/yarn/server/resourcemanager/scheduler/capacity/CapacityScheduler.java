@@ -227,7 +227,7 @@ public class CapacityScheduler extends
 
   private CapacitySchedulerAutoQueueHandler autoQueueHandler;
 
-  private static boolean printedVerboseLoggingForAsyncScheduling = false;
+  private boolean printedVerboseLoggingForAsyncScheduling;
 
   /**
    * EXPERT
@@ -509,16 +509,31 @@ public class CapacityScheduler extends
       CapacityScheduler cs, boolean printVerboseLog) {
     // Skip node which missed 2 heartbeats since the node might be dead and
     // we should not continue allocate containers on that.
-    long timeElapsedFromLastHeartbeat =
-        Time.monotonicNow() - node.getLastHeartbeatMonotonicTime();
-    if (timeElapsedFromLastHeartbeat > cs.nmHeartbeatInterval * 2) {
+    if (!SchedulerUtils.isNodeHeartbeated(node, cs.nmHeartbeatInterval * 2)) {
       if (printVerboseLog && LOG.isDebugEnabled()) {
-        LOG.debug("Skip scheduling on node because it haven't heartbeated for "
+        long timeElapsedFromLastHeartbeat =
+            Time.monotonicNow() - node.getLastHeartbeatMonotonicTime();
+        LOG.debug("Skip scheduling on node " + node.getNodeID()
+            + " because it haven't heartbeated for "
             + timeElapsedFromLastHeartbeat / 1000.0f + " secs");
       }
       return true;
     }
     return false;
+  }
+
+  private static boolean isPrintSkippedNodeLogging(CapacityScheduler cs) {
+    // To avoid too verbose DEBUG logging, only print debug log once for
+    // every 10 secs.
+    boolean printSkipedNodeLogging = false;
+    if (LOG.isDebugEnabled()) {
+      if (Time.monotonicNow() / 1000 % 10 == 0) {
+        printSkipedNodeLogging = (!cs.printedVerboseLoggingForAsyncScheduling);
+      } else {
+        cs.printedVerboseLoggingForAsyncScheduling = false;
+      }
+    }
+    return printSkipedNodeLogging;
   }
 
   /**
@@ -537,20 +552,12 @@ public class CapacityScheduler extends
       return;
     }
     int start = random.nextInt(nodeSize);
-
-    // To avoid too verbose DEBUG logging, only print debug log once for
-    // every 10 secs.
-    boolean printSkipedNodeLogging = false;
-    if (Time.monotonicNow() / 1000 % 10 == 0) {
-      printSkipedNodeLogging = (!printedVerboseLoggingForAsyncScheduling);
-    } else {
-      printedVerboseLoggingForAsyncScheduling = false;
-    }
+    boolean printSkippedNodeLogging = isPrintSkippedNodeLogging(cs);
 
     // Allocate containers of node [start, end)
     for (FiCaSchedulerNode node : nodes) {
       if (current++ >= start) {
-        if (shouldSkipNodeSchedule(node, cs, printSkipedNodeLogging)) {
+        if (shouldSkipNodeSchedule(node, cs, printSkippedNodeLogging)) {
           continue;
         }
         cs.allocateContainersToNode(node.getNodeID(), false);
@@ -564,14 +571,14 @@ public class CapacityScheduler extends
       if (current++ > start) {
         break;
       }
-      if (shouldSkipNodeSchedule(node, cs, printSkipedNodeLogging)) {
+      if (shouldSkipNodeSchedule(node, cs, printSkippedNodeLogging)) {
         continue;
       }
       cs.allocateContainersToNode(node.getNodeID(), false);
     }
 
-    if (printSkipedNodeLogging) {
-      printedVerboseLoggingForAsyncScheduling = true;
+    if (printSkippedNodeLogging) {
+      cs.printedVerboseLoggingForAsyncScheduling = true;
     }
 
     Thread.sleep(cs.getAsyncScheduleInterval());
@@ -1505,16 +1512,35 @@ public class CapacityScheduler extends
             || assignedContainers < maxAssignPerHeartbeat);
   }
 
+  private Map<NodeId, FiCaSchedulerNode> getNodesHeartbeated(String partition) {
+    Map<NodeId, FiCaSchedulerNode> nodesByPartition = new HashMap<>();
+    boolean printSkippedNodeLogging = isPrintSkippedNodeLogging(this);
+
+    List<FiCaSchedulerNode> nodesPerPartition = nodeTracker
+        .getNodesPerPartition(partition);
+    if (nodesPerPartition == null) {
+      return nodesByPartition;
+    }
+
+    for (FiCaSchedulerNode node : nodesPerPartition) {
+      if (!shouldSkipNodeSchedule(node, this, printSkippedNodeLogging)) {
+        nodesByPartition.put(node.getNodeID(), node);
+      }
+    }
+    if (printSkippedNodeLogging) {
+      printedVerboseLoggingForAsyncScheduling = true;
+    }
+    return nodesByPartition;
+  }
+
   private CandidateNodeSet<FiCaSchedulerNode> getCandidateNodeSet(
       FiCaSchedulerNode node) {
     CandidateNodeSet<FiCaSchedulerNode> candidates = null;
     candidates = new SimpleCandidateNodeSet<>(node);
     if (multiNodePlacementEnabled) {
-      Map<NodeId, FiCaSchedulerNode> nodesByPartition = new HashMap<>();
-      List<FiCaSchedulerNode> nodes = nodeTracker
-          .getNodesPerPartition(node.getPartition());
-      if (nodes != null && !nodes.isEmpty()) {
-        nodes.forEach(n -> nodesByPartition.put(n.getNodeID(), n));
+      Map<NodeId, FiCaSchedulerNode> nodesByPartition =
+          getNodesHeartbeated(node.getPartition());
+      if (!nodesByPartition.isEmpty()) {
         candidates = new SimpleCandidateNodeSet<FiCaSchedulerNode>(
             nodesByPartition, node.getPartition());
       }
