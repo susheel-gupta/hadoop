@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.yarn.server.resourcemanager.scheduler.placement;
 
-import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.yarn.api.records.ResourceRequest;
@@ -33,14 +32,12 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerNode;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerApplicationAttempt;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.activities.DiagnosticsCollector;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.SchedulingMode;
-import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.ApplicationSchedulingConfig;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.ContainerRequest;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.PendingAsk;
 import org.apache.hadoop.yarn.server.scheduler.SchedulerRequestKey;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,8 +58,6 @@ public class LocalityAppPlacementAllocator <N extends SchedulerNode>
       new ConcurrentHashMap<>();
   private volatile String primaryRequestedPartition =
       RMNodeLabelsManager.NO_LABEL;
-  private MultiNodeSortingManager<N> multiNodeSortingManager = null;
-  private String multiNodeSortPolicyName;
 
   private final ReentrantReadWriteLock.ReadLock readLock;
   private final ReentrantReadWriteLock.WriteLock writeLock;
@@ -78,40 +73,6 @@ public class LocalityAppPlacementAllocator <N extends SchedulerNode>
   public void initialize(AppSchedulingInfo appSchedulingInfo,
       SchedulerRequestKey schedulerRequestKey, RMContext rmContext) {
     super.initialize(appSchedulingInfo, schedulerRequestKey, rmContext);
-    multiNodeSortPolicyName = appSchedulingInfo
-        .getApplicationSchedulingEnvs().get(
-            ApplicationSchedulingConfig.ENV_MULTI_NODE_SORTING_POLICY_CLASS);
-    multiNodeSortingManager = (MultiNodeSortingManager<N>) rmContext
-        .getMultiNodeSortingManager();
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(
-          "nodeLookupPolicy used for " + appSchedulingInfo
-              .getApplicationId()
-              + " is " + ((multiNodeSortPolicyName != null) ?
-              multiNodeSortPolicyName :
-              ""));
-    }
-  }
-
-  @Override
-  @SuppressWarnings("unchecked")
-  public Iterator<N> getPreferredNodeIterator(
-      CandidateNodeSet<N> candidateNodeSet) {
-    // Now only handle the case that single node in the candidateNodeSet
-    // TODO, Add support to multi-hosts inside candidateNodeSet which is passed
-    // in.
-
-    N singleNode = CandidateNodeSetUtils.getSingleNode(candidateNodeSet);
-    if (singleNode != null) {
-      return IteratorUtils.singletonIterator(singleNode);
-    }
-
-    // singleNode will be null if Multi-node placement lookup is enabled, and
-    // hence could consider sorting policies.
-    return multiNodeSortingManager.getMultiNodeSortIterator(
-        candidateNodeSet.getAllNodes().values(),
-        candidateNodeSet.getPartition(),
-        multiNodeSortPolicyName);
   }
 
   private boolean hasRequestLabelChanged(ResourceRequest requestOne,
@@ -231,8 +192,8 @@ public class LocalityAppPlacementAllocator <N extends SchedulerNode>
 
   @Override
   public PendingAsk getPendingAsk(String resourceName) {
-    readLock.lock();
     try {
+      readLock.lock();
       ResourceRequest request = getResourceRequest(resourceName);
       if (null == request) {
         return PendingAsk.ZERO;

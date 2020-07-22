@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.yarn.server.resourcemanager.scheduler.placement;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.collections.IteratorUtils;
 import org.apache.hadoop.yarn.api.records.ResourceRequest;
 import org.apache.hadoop.yarn.api.records.SchedulingRequest;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.activities.DiagnosticsCollector;
@@ -26,6 +29,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.AppSchedulingInfo
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.NodeType;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerNode;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.SchedulingMode;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.ApplicationSchedulingConfig;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.ContainerRequest;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.PendingAsk;
 import org.apache.hadoop.yarn.server.scheduler.SchedulerRequestKey;
@@ -57,14 +61,10 @@ public abstract class AppPlacementAllocator<N extends SchedulerNode> {
   protected AppSchedulingInfo appSchedulingInfo;
   protected SchedulerRequestKey schedulerRequestKey;
   protected RMContext rmContext;
+  private MultiNodeSortingManager<N> multiNodeSortingManager = null;
+  private String multiNodeSortPolicyName;
 
-  /**
-   * Get iterator of preferred node depends on requirement and/or availability.
-   * @param candidateNodeSet input CandidateNodeSet
-   * @return iterator of preferred node
-   */
-  public abstract Iterator<N> getPreferredNodeIterator(
-      CandidateNodeSet<N> candidateNodeSet);
+  private static final Log LOG = LogFactory.getLog(AppPlacementAllocator.class);
 
   /**
    * Replace existing pending asks by the new requests
@@ -187,6 +187,30 @@ public abstract class AppPlacementAllocator<N extends SchedulerNode> {
   public abstract void showRequests();
 
   /**
+   * Get iterator of preferred node depends on requirement and/or availability.
+   * @param candidateNodeSet input CandidateNodeSet
+   * @return iterator of preferred node
+   */
+  public Iterator<N> getPreferredNodeIterator(
+      CandidateNodeSet<N> candidateNodeSet) {
+    // Now only handle the case that single node in the candidateNodeSet
+    // TODO, Add support to multi-hosts inside candidateNodeSet which is passed
+    // in.
+
+    N singleNode = CandidateNodeSetUtils.getSingleNode(candidateNodeSet);
+    if (singleNode != null) {
+      return IteratorUtils.singletonIterator(singleNode);
+    }
+
+    // singleNode will be null if Multi-node placement lookup is enabled, and
+    // hence could consider sorting policies.
+    return multiNodeSortingManager.getMultiNodeSortIterator(
+        candidateNodeSet.getAllNodes().values(),
+        candidateNodeSet.getPartition(),
+        multiNodeSortPolicyName);
+  }
+
+  /**
    * Initialize this allocator, this will be called by Factory automatically.
    *
    * @param appSchedulingInfo appSchedulingInfo
@@ -198,5 +222,16 @@ public abstract class AppPlacementAllocator<N extends SchedulerNode> {
     this.appSchedulingInfo = appSchedulingInfo;
     this.rmContext = rmContext;
     this.schedulerRequestKey = schedulerRequestKey;
+    this.multiNodeSortPolicyName = appSchedulingInfo
+         .getApplicationSchedulingEnvs().get(
+         ApplicationSchedulingConfig.ENV_MULTI_NODE_SORTING_POLICY_CLASS);
+    this.multiNodeSortingManager = (MultiNodeSortingManager<N>) rmContext
+         .getMultiNodeSortingManager();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(
+          "nodeLookupPolicy used for " + appSchedulingInfo.getApplicationId()
+          + " is " + ((multiNodeSortPolicyName != null) ?
+          multiNodeSortPolicyName : ""));
+    }
   }
 }
