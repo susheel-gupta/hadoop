@@ -668,7 +668,7 @@ public class TestFSConfigToCSConfigConverter {
         any(PlacementManager.class),
         any(FSConfigToCSConfigRuleHandler.class),
         any(CapacitySchedulerConfiguration.class),
-        anyBoolean());
+        Matchers.anyBoolean());
     assertTrue(converter.getCapacitySchedulerConfig().getBoolean(
         CapacitySchedulerConfiguration.ENABLE_QUEUE_MAPPING_OVERRIDE, false));
   }
