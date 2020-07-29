@@ -69,6 +69,7 @@ import org.apache.hadoop.hdfs.protocol.RollingUpgradeInfo;
 import org.apache.hadoop.hdfs.protocol.SnapshotDiffReport;
 import org.apache.hadoop.hdfs.protocol.SnapshotDiffReportListing;
 import org.apache.hadoop.hdfs.protocol.SnapshottableDirectoryStatus;
+import org.apache.hadoop.hdfs.protocol.SnapshotStatus;
 import org.apache.hadoop.hdfs.protocol.ZoneReencryptionStatus;
 import org.apache.hadoop.hdfs.security.token.block.DataEncryptionKey;
 import org.apache.hadoop.hdfs.security.token.delegation.DelegationTokenIdentifier;
@@ -1105,6 +1106,13 @@ public class RouterClientProtocol implements ClientProtocol {
 
   @Override
   public SnapshottableDirectoryStatus[] getSnapshottableDirListing()
+      throws IOException {
+    rpcServer.checkOperation(NameNode.OperationCategory.READ, false);
+    return null;
+  }
+
+  @Override
+  public SnapshotStatus[] getSnapshotListing(String snapshotRoot)
       throws IOException {
     rpcServer.checkOperation(NameNode.OperationCategory.READ, false);
     return null;
