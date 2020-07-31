@@ -322,6 +322,11 @@ public class ResourceUtils {
         resourceTypesArray[1] = ResourceInformation
             .newInstance(resourceTypes.get(VCORES));
       } else {
+        if (resInfo.getTags() != null && resInfo.getTags()
+            .contains(EXTERNAL_VOLUME_RESOURCE_TAG)) {
+          nonCountableResources.add(resInfo);
+          continue;
+        }
         resourceTypesArray[index] = ResourceInformation.newInstance(resInfo);
         index++;
       }
