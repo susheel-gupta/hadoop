@@ -541,6 +541,12 @@ public abstract class AbstractCSQueue implements CSQueue {
     return maxResource;
   }
 
+  protected boolean checkConfigTypeIsAbsoluteResource(String queuePath,
+      String label) {
+    return csContext.getConfiguration().checkConfigTypeIsAbsoluteResource(label,
+        queuePath, resourceTypes);
+  }
+
   protected void updateConfigurableResourceRequirement(String queuePath,
       Resource clusterResource) {
     CapacitySchedulerConfiguration conf = csContext.getConfiguration();
@@ -554,18 +560,20 @@ public abstract class AbstractCSQueue implements CSQueue {
         LOG.debug("capacityConfigType is '" + capacityConfigType
             + "' for queue '" + getQueuePath());
       }
+
+      CapacityConfigType localType = checkConfigTypeIsAbsoluteResource(
+          queuePath, label) ? CapacityConfigType.ABSOLUTE_RESOURCE
+          : CapacityConfigType.PERCENTAGE;
+
       if (this.capacityConfigType.equals(CapacityConfigType.NONE)) {
-        this.capacityConfigType = (!minResource.equals(Resources.none())
-            && queueCapacities.getAbsoluteCapacity(label) == 0f)
-                ? CapacityConfigType.ABSOLUTE_RESOURCE
-                : CapacityConfigType.PERCENTAGE;
+        this.capacityConfigType = localType;
         if (LOG.isDebugEnabled()) {
           LOG.debug("capacityConfigType is updated as '" + capacityConfigType
               + "' for queue '" + getQueuePath());
         }
+      } else {
+        validateAbsoluteVsPercentageCapacityConfig(localType);
       }
-
-      validateAbsoluteVsPercentageCapacityConfig(minResource);
 
       // If min resource for a resource type is greater than its max resource,
       // throw exception to handle such error configs.
@@ -611,12 +619,7 @@ public abstract class AbstractCSQueue implements CSQueue {
   }
 
   private void validateAbsoluteVsPercentageCapacityConfig(
-      Resource minResource) {
-    CapacityConfigType localType = CapacityConfigType.PERCENTAGE;
-    if (!minResource.equals(Resources.none())) {
-      localType = CapacityConfigType.ABSOLUTE_RESOURCE;
-    }
-
+      CapacityConfigType localType) {
     if (!queuePath.equals("root")
         && !this.capacityConfigType.equals(localType)) {
       throw new IllegalArgumentException("Queue '" + getQueuePath()
