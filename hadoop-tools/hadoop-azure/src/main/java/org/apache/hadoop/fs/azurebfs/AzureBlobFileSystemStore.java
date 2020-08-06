@@ -1256,6 +1256,7 @@ public class AzureBlobFileSystemStore implements Closeable {
             new ExponentialRetryPolicy(abfsConfiguration.getMaxIoRetries()))
         .withAbfsCounters(abfsCounters)
         .withAbfsPerfTracker(abfsPerfTracker)
+        .withObjectMapperThreadLocal(abfsConfiguration.isObjectMapperThreadLocalEnabled())
         .build();
   }
 

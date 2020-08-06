@@ -162,5 +162,9 @@ public final class ConfigurationKeys {
   /** For performance, AbfsInputStream/AbfsOutputStream re-use SAS tokens until the expiry is within this number of seconds. **/
   public static final String FS_AZURE_SAS_TOKEN_RENEW_PERIOD_FOR_STREAMS = "fs.azure.sas.token.renew.period.for.streams";
 
+  /** For AbfsHttpOperation a choice to use ThreadLocal rather than a new
+   instance for ObjectMapper. **/
+  public static final String FS_AZURE_OBJECT_MAPPER_THREAD_LOCAL_ENABLED =
+      "fs.azure.objectmapper.threadlocal.enabled";
   private ConfigurationKeys() {}
 }

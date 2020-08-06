@@ -83,6 +83,7 @@ public final class FileSystemConfigurations {
   public static final boolean DEFAULT_ENABLE_READAHEAD = true;
   public static final String DEFAULT_FS_AZURE_USER_AGENT_PREFIX = EMPTY_STRING;
   public static final String DEFAULT_VALUE_UNKNOWN = "UNKNOWN";
+  public static final boolean DEFAULT_OBJECT_MAPPER_THREAD_LOCAL_ENABLED = true;
 
   private FileSystemConfigurations() {}
 }

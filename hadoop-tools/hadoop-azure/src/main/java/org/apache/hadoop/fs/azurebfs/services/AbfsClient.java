@@ -70,6 +70,7 @@ public class AbfsClient implements Closeable {
   private AccessTokenProvider tokenProvider;
   private SASTokenProvider sasTokenProvider;
   private final AbfsCounters abfsCounters;
+  private final AbfsClientContext abfsClientContext;
 
   private AbfsClient(final URL baseUrl, final SharedKeyCredentials sharedKeyCredentials,
                     final AbfsConfiguration abfsConfiguration,
@@ -101,6 +102,7 @@ public class AbfsClient implements Closeable {
     this.userAgent = initializeUserAgent(abfsConfiguration, sslProviderName);
     this.abfsPerfTracker = abfsClientContext.getAbfsPerfTracker();
     this.abfsCounters = abfsClientContext.getAbfsCounters();
+    this.abfsClientContext = abfsClientContext;
   }
 
   public AbfsClient(final URL baseUrl, final SharedKeyCredentials sharedKeyCredentials,
@@ -172,7 +174,8 @@ public class AbfsClient implements Closeable {
             this,
             HTTP_METHOD_PUT,
             url,
-            requestHeaders);
+            requestHeaders,
+            abfsClientContext);
     op.execute();
     return op;
   }
@@ -196,7 +199,8 @@ public class AbfsClient implements Closeable {
             this,
             HTTP_METHOD_PUT,
             url,
-            requestHeaders);
+            requestHeaders,
+            abfsClientContext);
     op.execute();
     return op;
   }
@@ -220,7 +224,8 @@ public class AbfsClient implements Closeable {
             this,
             HTTP_METHOD_GET,
             url,
-            requestHeaders);
+            requestHeaders,
+            abfsClientContext);
     op.execute();
     return op;
   }
@@ -237,7 +242,8 @@ public class AbfsClient implements Closeable {
             this,
             HTTP_METHOD_HEAD,
             url,
-            requestHeaders);
+            requestHeaders,
+            abfsClientContext);
     op.execute();
     return op;
   }
@@ -254,7 +260,8 @@ public class AbfsClient implements Closeable {
             this,
             HTTP_METHOD_DELETE,
             url,
-            requestHeaders);
+            requestHeaders,
+            abfsClientContext);
     op.execute();
     return op;
   }
@@ -288,7 +295,8 @@ public class AbfsClient implements Closeable {
             this,
             HTTP_METHOD_PUT,
             url,
-            requestHeaders);
+            requestHeaders,
+            abfsClientContext);
     op.execute();
     return op;
   }
@@ -318,7 +326,8 @@ public class AbfsClient implements Closeable {
             this,
             HTTP_METHOD_PUT,
             url,
-            requestHeaders);
+            requestHeaders,
+            abfsClientContext);
     op.execute();
     return op;
   }
@@ -344,7 +353,8 @@ public class AbfsClient implements Closeable {
             this,
             HTTP_METHOD_PUT,
             url,
-            requestHeaders, buffer, offset, length, sasTokenForReuse);
+            requestHeaders, buffer, offset, length, sasTokenForReuse,
+            abfsClientContext);
     op.execute();
     return op;
   }
@@ -373,7 +383,7 @@ public class AbfsClient implements Closeable {
             this,
             HTTP_METHOD_PUT,
             url,
-            requestHeaders, sasTokenForReuse);
+            requestHeaders, sasTokenForReuse, abfsClientContext);
     op.execute();
     return op;
   }
@@ -398,7 +408,8 @@ public class AbfsClient implements Closeable {
             this,
             HTTP_METHOD_PUT,
             url,
-            requestHeaders);
+            requestHeaders,
+            abfsClientContext);
     op.execute();
     return op;
   }
@@ -424,7 +435,8 @@ public class AbfsClient implements Closeable {
             this,
             HTTP_METHOD_HEAD,
             url,
-            requestHeaders);
+            requestHeaders,
+            abfsClientContext);
     op.execute();
     return op;
   }
@@ -451,7 +463,8 @@ public class AbfsClient implements Closeable {
             requestHeaders,
             buffer,
             bufferOffset,
-            bufferLength, sasTokenForReuse);
+            bufferLength, sasTokenForReuse,
+            abfsClientContext);
     op.execute();
 
     return op;
@@ -473,7 +486,8 @@ public class AbfsClient implements Closeable {
             this,
             HTTP_METHOD_DELETE,
             url,
-            requestHeaders);
+            requestHeaders,
+            abfsClientContext);
     op.execute();
     return op;
   }
@@ -503,7 +517,8 @@ public class AbfsClient implements Closeable {
         this,
         AbfsHttpConstants.HTTP_METHOD_PUT,
         url,
-        requestHeaders);
+        requestHeaders,
+        abfsClientContext);
     op.execute();
     return op;
   }
@@ -528,7 +543,8 @@ public class AbfsClient implements Closeable {
         this,
         AbfsHttpConstants.HTTP_METHOD_PUT,
         url,
-        requestHeaders);
+        requestHeaders,
+        abfsClientContext);
     op.execute();
     return op;
   }
@@ -561,7 +577,8 @@ public class AbfsClient implements Closeable {
         this,
         AbfsHttpConstants.HTTP_METHOD_PUT,
         url,
-        requestHeaders);
+        requestHeaders,
+        abfsClientContext);
     op.execute();
     return op;
   }
@@ -584,7 +601,8 @@ public class AbfsClient implements Closeable {
         this,
         AbfsHttpConstants.HTTP_METHOD_HEAD,
         url,
-        requestHeaders);
+        requestHeaders,
+        abfsClientContext);
     op.execute();
     return op;
   }
@@ -607,7 +625,7 @@ public class AbfsClient implements Closeable {
     URL url = createRequestUrl(path, abfsUriQueryBuilder.toString());
     AbfsRestOperation op = new AbfsRestOperation(
         AbfsRestOperationType.CheckAccess, this,
-        AbfsHttpConstants.HTTP_METHOD_HEAD, url, createDefaultHeaders());
+        AbfsHttpConstants.HTTP_METHOD_HEAD, url, createDefaultHeaders(), abfsClientContext);
     op.execute();
     return op;
   }

@@ -27,6 +27,7 @@ public class AbfsClientContextBuilder {
   private ExponentialRetryPolicy exponentialRetryPolicy;
   private AbfsPerfTracker abfsPerfTracker;
   private AbfsCounters abfsCounters;
+  private boolean objectMapperThreadLocalEnabled;
 
   public AbfsClientContextBuilder withExponentialRetryPolicy(
       final ExponentialRetryPolicy exponentialRetryPolicy) {
@@ -45,6 +46,11 @@ public class AbfsClientContextBuilder {
     return this;
   }
 
+  public AbfsClientContextBuilder withObjectMapperThreadLocal(final boolean objectMapperThreadLocalEnabled) {
+    this.objectMapperThreadLocalEnabled = objectMapperThreadLocalEnabled;
+    return this;
+  }
+
   /**
    * Build the context and get the instance with the properties selected.
    *
@@ -53,6 +59,6 @@ public class AbfsClientContextBuilder {
   public AbfsClientContext build() {
     //validate the values
     return new AbfsClientContext(exponentialRetryPolicy, abfsPerfTracker,
-        abfsCounters);
+        abfsCounters, objectMapperThreadLocalEnabled);
   }
 }

@@ -80,6 +80,17 @@ public class AbfsHttpOperation implements AbfsPerfLoggable {
   private long connectionTimeMs;
   private long sendRequestTimeMs;
   private long recvResponseTimeMs;
+  private final boolean isObjectMapperThreadLocalEnabled;
+  //ThreadLocal for ObjectMapper to reuse the ObjectMapper instance.
+  private static ThreadLocal<ObjectMapper> objMapperThreadLocal =
+      new ThreadLocal<ObjectMapper>() {
+        @Override
+        protected ObjectMapper initialValue() {
+          return new ObjectMapper();
+        }
+      };
+  //Static singleton instance of ObjectMapper for shared use.
+  private static final ObjectMapper sharedObjectMapper = new ObjectMapper();
 
   protected  HttpURLConnection getConnection() {
     return connection;
@@ -206,6 +217,21 @@ public class AbfsHttpOperation implements AbfsPerfLoggable {
   }
 
   /**
+   * Method to get ObjectMapper either by the ThreadLocal or by using a
+   * static instance of it which can be set via the Abfs configuration
+   * FS_AZURE_OBJECT_MAPPER_THREAD_LOCAL_ENABLED.
+   *
+   * @return ObjectMapper instance.
+   */
+  private ObjectMapper getObjectMapper() {
+    if (isObjectMapperThreadLocalEnabled) {
+      return objMapperThreadLocal.get();
+    } else {
+      return sharedObjectMapper;
+    }
+  }
+
+  /**
    * Initializes a new HTTP request and opens the connection.
    *
    * @param url The full URL including query string parameters.
@@ -214,7 +240,9 @@ public class AbfsHttpOperation implements AbfsPerfLoggable {
    *
    * @throws IOException if an error occurs.
    */
-  public AbfsHttpOperation(final URL url, final String method, final List<AbfsHttpHeader> requestHeaders)
+  public AbfsHttpOperation(final URL url, final String method,
+      final List<AbfsHttpHeader> requestHeaders,
+      final AbfsClientContext abfsClientContext)
       throws IOException {
     this.isTraceEnabled = LOG.isTraceEnabled();
     this.url = url;
@@ -240,6 +268,8 @@ public class AbfsHttpOperation implements AbfsPerfLoggable {
     }
 
     this.connection.setRequestProperty(HttpHeaderConfigurations.X_MS_CLIENT_REQUEST_ID, clientRequestId);
+    this.isObjectMapperThreadLocalEnabled =
+        abfsClientContext.isObjectMapperThreadLocalEnabled();
   }
 
    /**
@@ -474,8 +504,8 @@ public class AbfsHttpOperation implements AbfsPerfLoggable {
       return;
     }
 
+    final ObjectMapper objectMapper = getObjectMapper();
     try {
-      final ObjectMapper objectMapper = new ObjectMapper();
       this.listResultSchema = objectMapper.readValue(stream, ListResultSchema.class);
     } catch (IOException ex) {
       LOG.error("Unable to deserialize list results", ex);

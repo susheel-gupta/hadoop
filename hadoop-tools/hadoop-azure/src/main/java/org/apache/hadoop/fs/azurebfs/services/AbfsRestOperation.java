@@ -67,6 +67,7 @@ public class AbfsRestOperation {
 
   private AbfsHttpOperation result;
   private AbfsCounters abfsCounters;
+  private final AbfsClientContext abfsClientContext;
 
   public AbfsHttpOperation getResult() {
     return result;
@@ -88,8 +89,9 @@ public class AbfsRestOperation {
                     final AbfsClient client,
                     final String method,
                     final URL url,
-                    final List<AbfsHttpHeader> requestHeaders) {
-    this(operationType, client, method, url, requestHeaders, null);
+                    final List<AbfsHttpHeader> requestHeaders,
+                    final AbfsClientContext abfsClientContext) {
+    this(operationType, client, method, url, requestHeaders, null, abfsClientContext);
   }
 
   /**
@@ -106,7 +108,8 @@ public class AbfsRestOperation {
                     final String method,
                     final URL url,
                     final List<AbfsHttpHeader> requestHeaders,
-                    final String sasToken) {
+                    final String sasToken,
+                    final AbfsClientContext abfsClientContext) {
     this.operationType = operationType;
     this.client = client;
     this.method = method;
@@ -116,6 +119,7 @@ public class AbfsRestOperation {
             || AbfsHttpConstants.HTTP_METHOD_PATCH.equals(method));
     this.sasToken = sasToken;
     this.abfsCounters = client.getAbfsCounters();
+    this.abfsClientContext = abfsClientContext;
   }
 
   /**
@@ -140,8 +144,9 @@ public class AbfsRestOperation {
                     byte[] buffer,
                     int bufferOffset,
                     int bufferLength,
-                    String sasToken) {
-    this(operationType, client, method, url, requestHeaders, sasToken);
+                    String sasToken,
+                    AbfsClientContext abfsClientContext) {
+    this(operationType, client, method, url, requestHeaders, sasToken, abfsClientContext);
     this.buffer = buffer;
     this.bufferOffset = bufferOffset;
     this.bufferLength = bufferLength;
@@ -190,7 +195,8 @@ public class AbfsRestOperation {
     AbfsHttpOperation httpOperation = null;
     try {
       // initialize the HTTP request and open the connection
-      httpOperation = new AbfsHttpOperation(url, method, requestHeaders);
+      httpOperation = new AbfsHttpOperation(url, method, requestHeaders,
+          abfsClientContext);
       incrementCounter(AbfsStatistic.CONNECTIONS_MADE, 1);
 
       switch(client.getAuthType()) {
