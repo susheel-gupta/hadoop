@@ -2148,7 +2148,8 @@ public class PBHelperClient {
         fs.getTrashInterval(),
         convert(fs.getChecksumType()),
         fs.hasKeyProviderUri() ? fs.getKeyProviderUri() : null,
-        (byte) fs.getPolicyId());
+        (byte) fs.getPolicyId(),
+        fs.getSnapshotTrashRootEnabled());
   }
 
   public static List<CryptoProtocolVersionProto> convert(
@@ -2324,6 +2325,7 @@ public class PBHelperClient {
         .setChecksumType(convert(fs.getChecksumType()))
         .setKeyProviderUri(fs.getKeyProviderUri())
         .setPolicyId(fs.getDefaultStoragePolicyId())
+        .setSnapshotTrashRootEnabled(fs.getSnapshotTrashRootEnabled())
         .build();
   }
 
