@@ -1407,7 +1407,7 @@ public class ViewFileSystem extends FileSystem {
 
     @Override
     public boolean mkdirs(Path dir, FsPermission permission)
-        throws AccessControlException, FileAlreadyExistsException {
+        throws IOException {
       if (theInternalDir.isRoot() && dir == null) {
         throw new FileAlreadyExistsException("/ already exits");
       }
@@ -1437,11 +1437,16 @@ public class ViewFileSystem extends FileSystem {
                     .append(linkedFallbackFs.getUri());
             LOG.debug(msg.toString(), e);
           }
-          return false;
+          throw e;
         }
       }
 
       throw readOnlyMountTable("mkdirs",  dir);
+    }
+
+    @Override
+    public boolean mkdirs(Path dir) throws IOException {
+      return mkdirs(dir, null);
     }
 
     @Override
