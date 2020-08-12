@@ -6796,7 +6796,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
    */
   public SnapshotStatus[] getSnapshotListing(String snapshotRoot)
       throws IOException {
-    final String operationName = "listSnapshotDirectory";
+    final String operationName = "ListSnapshot";
     SnapshotStatus[] status;
     checkOperation(OperationCategory.READ);
     boolean success = false;
@@ -6813,10 +6813,10 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
         readUnlock(operationName);
       }
     } catch (AccessControlException ace) {
-      logAuditEvent(success, "listSnapshots", snapshotRoot);
+      logAuditEvent(success, operationName, snapshotRoot);
       throw ace;
     }
-    logAuditEvent(success, "listSnapshots", snapshotRoot);
+    logAuditEvent(success, operationName, snapshotRoot);
     return status;
   }
   /**
