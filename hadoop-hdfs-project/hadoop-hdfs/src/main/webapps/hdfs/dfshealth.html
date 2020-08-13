@@ -280,6 +280,7 @@
       <th>Snapshot ID</th>
       <th>Snapshot Directory</th>
       <th>Modification Time</th>
+      <th>Status</th>
     </tr>
   </thead>
   {#Snapshots}
@@ -287,6 +288,7 @@
     <td>{snapshotID}</td>
     <td>{snapshotDirectory}</td>
     <td>{modificationTime|date_tostring}</td>
+    <td>{status}</td>
   </tr>
   {/Snapshots}
 </table>
