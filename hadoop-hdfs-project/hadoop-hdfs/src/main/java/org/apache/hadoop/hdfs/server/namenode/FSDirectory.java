@@ -188,7 +188,6 @@ public class FSDirectory implements Closeable {
   private boolean posixAclInheritanceEnabled;
   private final boolean xattrsEnabled;
   private final int xattrMaxSize;
-  private final boolean snapshotDeletionOrdered;
 
   // precision of access times.
   private final long accessTimePrecision;
@@ -352,12 +351,6 @@ public class FSDirectory implements Closeable {
         "The maximum size of an xattr should be <= maximum size"
         + " hard limit " + DFSConfigKeys.DFS_NAMENODE_MAX_XATTR_SIZE_HARD_LIMIT
         + ": (%s).", DFSConfigKeys.DFS_NAMENODE_MAX_XATTR_SIZE_KEY);
-
-    this.snapshotDeletionOrdered =
-        conf.getBoolean(DFSConfigKeys.DFS_NAMENODE_SNAPSHOT_DELETION_ORDERED,
-            DFSConfigKeys.DFS_NAMENODE_SNAPSHOT_DELETION_ORDERED_DEFAULT);
-    LOG.info("{} = {}", DFSConfigKeys.DFS_NAMENODE_SNAPSHOT_DELETION_ORDERED,
-        snapshotDeletionOrdered);
 
     this.accessTimePrecision = conf.getLong(
         DFS_NAMENODE_ACCESSTIME_PRECISION_KEY,
@@ -616,10 +609,6 @@ public class FSDirectory implements Closeable {
 
   boolean isStoragePolicyEnabled() {
     return storagePolicyEnabled;
-  }
-
-  public boolean isSnapshotDeletionOrdered() {
-    return snapshotDeletionOrdered;
   }
 
   boolean isAccessTimeSupported() {

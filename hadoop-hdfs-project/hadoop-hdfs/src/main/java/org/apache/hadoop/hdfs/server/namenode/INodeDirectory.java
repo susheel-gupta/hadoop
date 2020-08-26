@@ -38,6 +38,7 @@ import org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFea
 import org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature;
 import org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature.DirectoryDiffList;
 import org.apache.hadoop.hdfs.server.namenode.snapshot.Snapshot;
+import org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager;
 import org.apache.hadoop.hdfs.util.ReadOnlyList;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -285,10 +286,11 @@ public class INodeDirectory extends INodeWithAdditionalFields
   }
 
   public Snapshot removeSnapshot(
-      ReclaimContext reclaimContext, String snapshotName)
+      ReclaimContext reclaimContext, String snapshotName,
+      SnapshotManager snapshotManager)
       throws SnapshotException {
     return getDirectorySnapshottableFeature().removeSnapshot(
-        reclaimContext, this, snapshotName);
+        reclaimContext, this, snapshotName, snapshotManager);
   }
 
   public void renameSnapshot(String path, String oldName, String newName)
