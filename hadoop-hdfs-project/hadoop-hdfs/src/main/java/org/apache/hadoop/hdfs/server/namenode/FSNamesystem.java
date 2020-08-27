@@ -1506,6 +1506,12 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
       // null in some unit tests
       haContext.checkOperation(op);
     }
+
+    boolean assertsEnabled = false;
+    assert assertsEnabled = true; // Intentional side effect!!!
+    if (assertsEnabled && op == OperationCategory.WRITE) {
+      getSnapshotManager().initThreadLocals();
+    }
   }
   
   /**
