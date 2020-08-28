@@ -682,4 +682,9 @@
     <Method name="getDevices" />
     <Bug pattern="DMI_HARDCODED_ABSOLUTE_FILENAME" />
   </Match>
+
+  <!-- Generated files from JSON schema -->
+  <Match>
+    <Package name="org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.placement.schema" />
+  </Match>
 </FindBugsFilter>

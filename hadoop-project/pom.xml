@@ -179,6 +179,8 @@
     <junit.vintage.version>5.3.1</junit.vintage.version>
     <junit.platform.version>1.3.1</junit.platform.version>
     <openssl-wildfly.version>1.0.7.Final</openssl-wildfly.version>
+    <t9000-core.version>1.0.0.7.2.7.0-SNAPSHOT</t9000-core.version>
+    <jsonschema2pojo.version>1.0.2</jsonschema2pojo.version>
   </properties>
 
   <dependencyManagement>
@@ -1076,6 +1078,11 @@
         <version>${jackson2.version}</version>
       </dependency>
       <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-yaml</artifactId>
+        <version>${jackson2.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
         <version>1.10.19</version>
@@ -1743,6 +1750,49 @@
         <artifactId>jna</artifactId>
         <version>${jna.version}</version>
       </dependency>
+      <dependency>
+         <groupId>org.jsonschema2pojo</groupId>
+         <artifactId>jsonschema2pojo-core</artifactId>
+         <version>${jsonschema2pojo.version}</version>
+         <exclusions>
+           <exclusion>
+             <groupId>com.fasterxml.jackson.core</groupId>
+             <artifactId>*</artifactId>
+           </exclusion>
+           <exclusion>
+             <groupId>com.fasterxml.jackson.dataformat</groupId>
+             <artifactId>*</artifactId>
+           </exclusion>
+           <exclusion>
+             <groupId>org.codehaus.jackson</groupId>
+             <artifactId>*</artifactId>
+           </exclusion>
+           <exclusion>
+             <groupId>com.google.code.gson</groupId>
+             <artifactId>gson</artifactId>
+           </exclusion>
+           <exclusion>
+             <groupId>com.google.code.findbugs</groupId>
+             <artifactId>annotations</artifactId>
+           </exclusion>
+           <exclusion>
+             <groupId>org.scala-lang</groupId>
+             <artifactId>scala-library</artifactId>
+           </exclusion>
+           <exclusion>
+             <groupId>org.jsonschema2pojo</groupId>
+             <artifactId>jsonschema2pojo-scalagen</artifactId>
+           </exclusion>
+           <exclusion>
+             <groupId>com.google.code.javaparser</groupId>
+             <artifactId>javaparser</artifactId>
+           </exclusion>
+           <exclusion>
+             <groupId>javax.validation</groupId>
+             <artifactId>validation-api</artifactId>
+           </exclusion>
+         </exclusions>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -2154,7 +2204,7 @@
               <target>${javac.version}</target>
               <compilerArguments>
                 <Xlint />
-				
+
                 <Xmaxwarns>9999</Xmaxwarns>
               </compilerArguments>
             </configuration>
