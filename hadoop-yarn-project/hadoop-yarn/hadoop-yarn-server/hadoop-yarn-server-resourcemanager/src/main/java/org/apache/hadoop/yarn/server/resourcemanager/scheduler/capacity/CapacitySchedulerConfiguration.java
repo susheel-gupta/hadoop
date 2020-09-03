@@ -23,7 +23,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.yarn.server.resourcemanager.placement.QueuePlacementRuleUtils;
+import org.apache.hadoop.yarn.server.resourcemanager.placement.MappingRule;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.security.authorize.AccessControlList;
@@ -42,6 +42,7 @@ import org.apache.hadoop.yarn.security.AccessType;
 import org.apache.hadoop.yarn.server.resourcemanager.nodelabels.RMNodeLabelsManager;
 import org.apache.hadoop.yarn.server.resourcemanager.placement.QueueMapping;
 import org.apache.hadoop.yarn.server.resourcemanager.placement.QueueMapping.QueueMappingBuilder;
+import org.apache.hadoop.yarn.server.resourcemanager.placement.QueuePlacementRuleUtils;
 import org.apache.hadoop.yarn.server.resourcemanager.reservation.ReservationSchedulerConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerUtils;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.AppPriorityACLConfigurationParser.AppPriorityACLKeyType;
@@ -274,6 +275,10 @@ public class CapacitySchedulerConfiguration extends ReservationSchedulerConfigur
 
   @Private
   public static final String QUEUE_MAPPING = PREFIX + "queue-mappings";
+
+  @Private
+  public static final String QUEUE_MAPPING_NAME =
+      YarnConfiguration.QUEUE_PLACEMENT_RULES + ".app-name";
 
   @Private
   public static final String ENABLE_QUEUE_MAPPING_OVERRIDE = QUEUE_MAPPING + "-override.enable";
@@ -1144,6 +1149,46 @@ public class CapacitySchedulerConfiguration extends ReservationSchedulerConfigur
       if (m != null) {
         mappings.add(m);
       }
+    }
+
+    return mappings;
+  }
+
+  public List<MappingRule> getMappingRules() {
+    List<MappingRule> mappings = new ArrayList<MappingRule>();
+    Collection<String> mappingsString =
+        getTrimmedStringCollection(QUEUE_MAPPING);
+
+    for (String mappingValue : mappingsString) {
+      String[] mapping =
+          StringUtils.getTrimmedStringCollection(mappingValue, ":")
+              .toArray(new String[] {});
+      if (mapping.length != 3 || mapping[1].length() == 0
+          || mapping[2].length() == 0) {
+        throw new IllegalArgumentException(
+            "Illegal queue mapping " + mappingValue);
+      }
+
+      if (mapping[0].equals("u") || mapping[0].equals("g")) {
+        mappings.add(MappingRule.createLegacyRule(
+            mapping[0], mapping[1], mapping[2]));
+      } else {
+        throw new IllegalArgumentException(
+            "unknown mapping prefix " + mapping[0]);
+      }
+    }
+
+    mappingsString = getTrimmedStringCollection(QUEUE_MAPPING_NAME);
+    for (String mappingValue : mappingsString) {
+      String[] mapping =
+          StringUtils.getTrimmedStringCollection(mappingValue, ":")
+              .toArray(new String[] {});
+      if (mapping.length != 2 || mapping[1].length() == 0) {
+        throw new IllegalArgumentException(
+            "Illegal queue mapping " + mappingValue);
+      }
+
+      mappings.add(MappingRule.createLegacyRule(mapping[0], mapping[1]));
     }
 
     return mappings;
