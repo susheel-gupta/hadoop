@@ -75,6 +75,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
+import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.Write.RECOVER_LEASE_ON_CLOSE_EXCEPTION_DEFAULT;
+import static org.apache.hadoop.hdfs.client.HdfsClientConfigKeys.Write.RECOVER_LEASE_ON_CLOSE_EXCEPTION_KEY;
 
 /****************************************************************
  * DFSOutputStream creates files from a stream of bytes.
@@ -126,6 +128,7 @@ public class DFSOutputStream extends FSOutputSummer
   protected final AtomicReference<CachingStrategy> cachingStrategy;
   private FileEncryptionInfo fileEncryptionInfo;
   private int writePacketSize;
+  private boolean leaseRecovered = false;
 
   /** Use {@link ByteArrayManager} to create buffer for non-heartbeat packets.*/
   protected DFSPacket createPacket(int packetSize, int chunksPerPkt,
@@ -856,7 +859,14 @@ public class DFSOutputStream extends FSOutputSummer
   }
 
   protected synchronized void closeImpl() throws IOException {
+    boolean recoverLeaseOnCloseException = dfsClient.getConfiguration()
+        .getBoolean(RECOVER_LEASE_ON_CLOSE_EXCEPTION_KEY,
+            RECOVER_LEASE_ON_CLOSE_EXCEPTION_DEFAULT);
     if (isClosed()) {
+      if (!leaseRecovered) {
+        recoverLease(recoverLeaseOnCloseException);
+      }
+
       LOG.debug("Closing an already closed stream. [Stream:{}, streamer:{}]",
           closed, getStreamer().streamerClosed());
       try {
@@ -891,6 +901,9 @@ public class DFSOutputStream extends FSOutputSummer
       }
       completeFile();
     } catch (ClosedChannelException ignored) {
+    } catch (IOException ioe) {
+      recoverLease(recoverLeaseOnCloseException);
+      throw ioe;
     } finally {
       // Failures may happen when flushing data.
       // Streamers may keep waiting for the new block information.
@@ -901,7 +914,23 @@ public class DFSOutputStream extends FSOutputSummer
     }
   }
 
-  private void completeFile() throws IOException {
+  /**
+   * If recoverLeaseOnCloseException is true and an exception occurs when
+   * closing a file, recover lease.
+   */
+  private void recoverLease(boolean recoverLeaseOnCloseException) {
+    if (recoverLeaseOnCloseException) {
+      try {
+        dfsClient.endFileLease(fileId);
+        dfsClient.recoverLease(src);
+        leaseRecovered = true;
+      } catch (Exception e) {
+        LOG.warn("Fail to recover lease for {}", src, e);
+      }
+    }
+  }
+
+  void completeFile() throws IOException {
     // get last block before destroying the streamer
     ExtendedBlock lastBlock = getStreamer().getBlock();
     try (TraceScope ignored =
@@ -1069,6 +1098,11 @@ public class DFSOutputStream extends FSOutputSummer
   @Override
   public String toString() {
     return getClass().getSimpleName() + ":" + streamer;
+  }
+
+  @VisibleForTesting
+  boolean isLeaseRecovered() {
+    return leaseRecovered;
   }
 
   static LocatedBlock addBlock(DatanodeInfo[] excludedNodes,
