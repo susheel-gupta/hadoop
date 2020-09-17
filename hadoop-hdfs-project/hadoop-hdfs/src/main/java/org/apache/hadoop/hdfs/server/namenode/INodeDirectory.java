@@ -278,12 +278,15 @@ public class INodeDirectory extends INodeWithAdditionalFields
     getDirectorySnapshottableFeature().setSnapshotQuota(snapshotQuota);
   }
 
-  public Snapshot addSnapshot(int id, String name,
-      final LeaseManager leaseManager, final boolean captureOpenFiles,
-      int maxSnapshotLimit)
+  /**
+   * Add a snapshot.
+   * @param name Name of the snapshot.
+   */
+  public Snapshot addSnapshot(SnapshotManager snapshotManager, String name,
+      final LeaseManager leaseManager)
       throws SnapshotException {
-    return getDirectorySnapshottableFeature().addSnapshot(this, id, name,
-        leaseManager, captureOpenFiles, maxSnapshotLimit);
+    return getDirectorySnapshottableFeature().addSnapshot(this,
+        snapshotManager, name, leaseManager);
   }
 
   public Snapshot removeSnapshot(
