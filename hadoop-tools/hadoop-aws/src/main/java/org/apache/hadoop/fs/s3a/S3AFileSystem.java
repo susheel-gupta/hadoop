@@ -112,6 +112,7 @@ import org.apache.hadoop.fs.s3a.impl.OperationCallbacks;
 import org.apache.hadoop.fs.s3a.impl.RenameOperation;
 import org.apache.hadoop.fs.s3a.impl.StatusProbeEnum;
 import org.apache.hadoop.fs.s3a.impl.StoreContext;
+import org.apache.hadoop.fs.s3a.impl.StoreContextBuilder;
 import org.apache.hadoop.fs.s3a.s3guard.BulkOperationState;
 import org.apache.hadoop.fs.s3a.select.InternalSelectConstants;
 import org.apache.hadoop.fs.s3a.tools.MarkerToolOperations;
@@ -4865,24 +4866,24 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
    */
   @InterfaceAudience.Private
   public StoreContext createStoreContext() {
-    return new StoreContext(
-        getUri(),
-        getBucket(),
-        getConf(),
-        getUsername(),
-        owner,
-        boundedThreadPool,
-        executorCapacity,
-        invoker,
-        getInstrumentation(),
-        getStorageStatistics(),
-        getInputPolicy(),
-        changeDetectionPolicy,
-        enableMultiObjectsDelete,
-        metadataStore,
-        useListV1,
-        new ContextAccessorsImpl(),
-        getTtlTimeProvider());
+    return new StoreContextBuilder().setFsURI(getUri())
+        .setBucket(getBucket())
+        .setConfiguration(getConf())
+        .setUsername(getUsername())
+        .setOwner(owner)
+        .setExecutor(boundedThreadPool)
+        .setExecutorCapacity(executorCapacity)
+        .setInvoker(invoker)
+        .setInstrumentation(getInstrumentation())
+        .setStorageStatistics(getStorageStatistics())
+        .setInputPolicy(getInputPolicy())
+        .setChangeDetectionPolicy(changeDetectionPolicy)
+        .setMultiObjectDeleteEnabled(enableMultiObjectsDelete)
+        .setMetadataStore(metadataStore)
+        .setUseListV1(useListV1)
+        .setContextAccessors(new ContextAccessorsImpl())
+        .setTimeProvider(getTtlTimeProvider())
+        .build();
   }
 
   /**
@@ -4918,6 +4919,11 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
     @Override
     public String getBucketLocation() throws IOException {
       return S3AFileSystem.this.getBucketLocation();
+    }
+
+    @Override
+    public Path makeQualified(final Path path) {
+      return S3AFileSystem.this.makeQualified(path);
     }
   }
 }
