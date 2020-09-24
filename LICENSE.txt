@@ -589,6 +589,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 For:
+hadoop-hdfs-project/hadoop-hdfs/src/main/webapps/static/jquery-3.5.1.min.js
+hadoop-hdfs-project/hadoop-hdfs/src/main/webapps/static/jquery.dataTables.min.js
 hadoop-hdfs-project/hadoop-hdfs/src/main/webapps/static/moment.min.js
 --------------------------------------------------------------------------------
 
