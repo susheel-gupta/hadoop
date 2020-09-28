@@ -2448,7 +2448,7 @@ public class TestLeafQueue {
     final int numNodes = 5;
     Resource clusterResource =
         Resources.createResource(numNodes * (8 * GB), numNodes * 16);
-    when(spyRMContext.getScheduler().getNumClusterNodes()).thenReturn(numNodes);
+    when(cs.getNumClusterNodes()).thenReturn(numNodes);
     newRoot.updateClusterResource(clusterResource,
         new ResourceLimits(clusterResource));
 
