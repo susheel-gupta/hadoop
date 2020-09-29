@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.yarn.api.records.Resource;
-import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.ConfigurableResource;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FSLeafQueue;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FSQueue;
@@ -53,7 +52,6 @@ public class FSQueueConverter {
   @SuppressWarnings("unused")
   private final Resource clusterResource;
   private final float queueMaxAMShareDefault;
-  private final boolean autoCreateChildQueues;
   private final int queueMaxAppsDefault;
   private final boolean drfUsed;
 
@@ -66,7 +64,6 @@ public class FSQueueConverter {
     this.sizeBasedWeight = builder.sizeBasedWeight;
     this.clusterResource = builder.clusterResource;
     this.queueMaxAMShareDefault = builder.queueMaxAMShareDefault;
-    this.autoCreateChildQueues = builder.autoCreateChildQueues;
     this.queueMaxAppsDefault = builder.queueMaxAppsDefault;
     this.conversionOptions = builder.conversionOptions;
     this.drfUsed = builder.drfUsed;
@@ -84,7 +81,6 @@ public class FSQueueConverter {
 
     emitChildCapacity(queue);
     emitMaximumCapacity(queueName, queue);
-    emitAutoCreateChildQueue(queueName, queue);
     emitSizeBasedWeight(queueName);
     emitOrderingPolicy(queueName, queue);
     checkMaxChildCapacitySetting(queue);
@@ -215,20 +211,6 @@ public class FSQueueConverter {
     if (preemptionEnabled && !queue.isPreemptable()) {
       capacitySchedulerConfig.set(PREFIX + queueName + ".disable_preemption",
           "true");
-    }
-  }
-
-  /**
-   * yarn.scheduler.fair.allow-undeclared-pools
-   * ==> yarn.scheduler.capacity.&lt;queue-name&gt;
-   * .auto-create-child-queue.enabled.
-   * @param queueName
-   */
-  private void emitAutoCreateChildQueue(String queueName, FSQueue queue) {
-    if (autoCreateChildQueues && !queue.getChildQueues().isEmpty()
-        && !queueName.equals(CapacitySchedulerConfiguration.ROOT)) {
-      capacitySchedulerConfig.setBoolean(PREFIX + queueName +
-          ".auto-create-child-queue.enabled", true);
     }
   }
 
