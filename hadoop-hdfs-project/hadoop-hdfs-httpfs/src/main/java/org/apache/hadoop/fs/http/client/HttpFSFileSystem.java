@@ -49,6 +49,7 @@ import org.apache.hadoop.hdfs.protocol.BlockStoragePolicy;
 import org.apache.hadoop.hdfs.protocol.FsPermissionExtension;
 import org.apache.hadoop.hdfs.protocol.SnapshotDiffReport;
 import org.apache.hadoop.hdfs.protocol.SnapshottableDirectoryStatus;
+import org.apache.hadoop.hdfs.protocol.SnapshotStatus;
 import org.apache.hadoop.hdfs.web.JsonUtilClient;
 import org.apache.hadoop.lib.wsrs.EnumSetParam;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -253,7 +254,7 @@ public class HttpFSFileSystem extends FileSystem
     ALLOWSNAPSHOT(HTTP_PUT), DISALLOWSNAPSHOT(HTTP_PUT),
     CREATESNAPSHOT(HTTP_PUT), DELETESNAPSHOT(HTTP_DELETE),
     RENAMESNAPSHOT(HTTP_PUT), GETSNAPSHOTDIFF(HTTP_GET),
-    GETSNAPSHOTTABLEDIRECTORYLIST(HTTP_GET);
+    GETSNAPSHOTTABLEDIRECTORYLIST(HTTP_GET), GETSNAPSHOTLIST(HTTP_GET);
 
     private String httpMethod;
 
@@ -1563,6 +1564,18 @@ public class HttpFSFileSystem extends FileSystem
     HttpExceptionUtils.validateResponse(conn, HttpURLConnection.HTTP_OK);
     JSONObject json = (JSONObject) HttpFSUtils.jsonParse(conn);
     return JsonUtilClient.toSnapshottableDirectoryList(json);
+  }
+
+  public SnapshotStatus[] getSnapshotListing(Path snapshotRoot)
+      throws IOException {
+    Map<String, String> params = new HashMap<String, String>();
+    params.put(OP_PARAM, Operation.GETSNAPSHOTLIST.toString());
+    HttpURLConnection conn = getConnection(
+        Operation.GETSNAPSHOTLIST.getMethod(),
+        params, snapshotRoot, true);
+    HttpExceptionUtils.validateResponse(conn, HttpURLConnection.HTTP_OK);
+    JSONObject json = (JSONObject) HttpFSUtils.jsonParse(conn);
+    return JsonUtilClient.toSnapshotList(json);
   }
 
   /**

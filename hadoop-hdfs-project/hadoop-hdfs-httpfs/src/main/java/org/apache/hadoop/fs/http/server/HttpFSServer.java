@@ -419,6 +419,14 @@ public class HttpFSServer {
       response = Response.ok(js).type(MediaType.APPLICATION_JSON).build();
       break;
     }
+    case GETSNAPSHOTLIST: {
+      FSOperations.FSGetSnapshotListing command =
+          new FSOperations.FSGetSnapshotListing(path);
+      String js = fsExecute(user, command);
+      AUDIT_LOG.info("[{}]", "/");
+      response = Response.ok(js).type(MediaType.APPLICATION_JSON).build();
+      break;
+    }
     default: {
       throw new IOException(
           MessageFormat.format("Invalid HTTP GET operation [{0}]", op.value()));

@@ -583,6 +583,17 @@ public class JsonUtil {
     return toJsonString("SnapshottableDirectoryList", a);
   }
 
+  public static String toJsonString(SnapshotStatus[] snapshotList) {
+    if (snapshotList == null) {
+      return toJsonString("SnapshotList", null);
+    }
+    Object[] a = new Object[snapshotList.length];
+    for (int i = 0; i < snapshotList.length; i++) {
+      a[i] = toJsonMap(snapshotList[i]);
+    }
+    return toJsonString("SnapshotList", a);
+  }
+
   private static Object toJsonMap(
       SnapshottableDirectoryStatus snapshottableDirectoryStatus) {
     final Map<String, Object> m = new TreeMap<String, Object>();
@@ -591,6 +602,19 @@ public class JsonUtil {
     m.put("parentFullPath", DFSUtilClient
         .bytes2String(snapshottableDirectoryStatus.getParentFullPath()));
     m.put("dirStatus", toJsonMap(snapshottableDirectoryStatus.getDirStatus()));
+    return m;
+  }
+
+  private static Object toJsonMap(
+      SnapshotStatus snapshotStatus) {
+    final Map<String, Object> m = new TreeMap<String, Object>();
+    HdfsFileStatus status = snapshotStatus.getDirStatus();
+    m.put("snapshotID", snapshotStatus.getSnapshotID());
+    m.put("deletionStatus", snapshotStatus.isDeleted() ? "DELETED" : "ACTIVE");
+    m.put("fullPath", SnapshotStatus.getSnapshotPath(
+            DFSUtilClient.bytes2String(snapshotStatus.getParentFullPath()),
+        status.getLocalName()));
+    m.put("dirStatus", toJsonMap(snapshotStatus.getDirStatus()));
     return m;
   }
 

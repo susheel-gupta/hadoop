@@ -48,6 +48,7 @@ import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.apache.hadoop.hdfs.protocol.SnapshotDiffReport;
 import org.apache.hadoop.hdfs.protocol.SnapshotException;
 import org.apache.hadoop.hdfs.protocol.SnapshottableDirectoryStatus;
+import org.apache.hadoop.hdfs.protocol.SnapshotStatus;
 import org.apache.hadoop.hdfs.web.JsonUtil;
 import org.apache.hadoop.hdfs.web.WebHdfsFileSystem;
 import org.apache.hadoop.ipc.RemoteException;
@@ -1141,7 +1142,8 @@ public abstract class BaseTestHttpFSWith extends HFSTestCase {
     LIST_STATUS_BATCH, GETTRASHROOT, STORAGEPOLICY, ERASURE_CODING,
     CREATE_SNAPSHOT, RENAME_SNAPSHOT, DELETE_SNAPSHOT,
     ALLOW_SNAPSHOT, DISALLOW_SNAPSHOT, DISALLOW_SNAPSHOT_EXCEPTION,
-    FILE_STATUS_ATTR, GET_SNAPSHOT_DIFF, GET_SNAPSHOTTABLE_DIRECTORY_LIST
+    FILE_STATUS_ATTR, GET_SNAPSHOT_DIFF, GET_SNAPSHOTTABLE_DIRECTORY_LIST,
+    GET_SNAPSHOT_LIST
   }
 
   private void operation(Operation op) throws Exception {
@@ -1261,6 +1263,9 @@ public abstract class BaseTestHttpFSWith extends HFSTestCase {
       break;
     case GET_SNAPSHOTTABLE_DIRECTORY_LIST:
       testGetSnapshottableDirListing();
+      break;
+    case GET_SNAPSHOT_LIST:
+      testGetSnapshotListing();
       break;
     }
   }
@@ -1626,6 +1631,50 @@ public abstract class BaseTestHttpFSWith extends HFSTestCase {
     Assert.assertEquals(JsonUtil.toJsonString(sds),
         JsonUtil.toJsonString(dfssds));
   }
+
+  private void testGetSnapshotListing() throws Exception {
+    if (!this.isLocalFS()) {
+      // Create a directory with snapshot allowed
+      Path path = new Path("/tmp/tmp-snap-test");
+      createSnapshotTestsPreconditions(path);
+      // Get the FileSystem instance that's being tested
+      FileSystem fs = this.getHttpFSFileSystem();
+      // Check FileStatus
+      Assert.assertTrue(fs.getFileStatus(path).isSnapshotEnabled());
+      // Create a file and take a snapshot
+      Path file1 = new Path(path, "file1");
+      testCreate(file1, false);
+      fs.createSnapshot(path, "snap1");
+      // Create another file and take a snapshot
+      Path file2 = new Path(path, "file2");
+      testCreate(file2, false);
+      fs.createSnapshot(path, "snap2");
+      // Get snapshot diff
+      SnapshotStatus[] snapshotStatus = null;
+      if (fs instanceof HttpFSFileSystem) {
+        HttpFSFileSystem httpFS = (HttpFSFileSystem) fs;
+        snapshotStatus = httpFS.getSnapshotListing(path);
+      } else if (fs instanceof WebHdfsFileSystem) {
+        WebHdfsFileSystem webHdfsFileSystem = (WebHdfsFileSystem) fs;
+        snapshotStatus = webHdfsFileSystem.getSnapshotListing(path);
+      } else {
+        Assert.fail(fs.getClass().getSimpleName() +
+            " doesn't support getSnapshotDiff");
+      }
+      // Verify result with DFS
+      DistributedFileSystem dfs = (DistributedFileSystem)
+          FileSystem.get(path.toUri(), this.getProxiedFSConf());
+      SnapshotStatus[] dfsStatus =
+          dfs.getSnapshotListing(path);
+      Assert.assertEquals(JsonUtil.toJsonString(snapshotStatus),
+          JsonUtil.toJsonString(dfsStatus));
+      // Cleanup
+      fs.deleteSnapshot(path, "snap2");
+      fs.deleteSnapshot(path, "snap1");
+      fs.delete(path, true);
+    }
+  }
+
 
   private void testGetSnapshottableDirListing() throws Exception {
     if (!this.isLocalFS()) {

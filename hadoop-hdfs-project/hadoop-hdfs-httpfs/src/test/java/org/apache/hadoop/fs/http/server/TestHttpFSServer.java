@@ -22,6 +22,7 @@ import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.client.HdfsClientConfigKeys;
 import org.apache.hadoop.hdfs.protocol.SnapshotDiffReport;
 import org.apache.hadoop.hdfs.protocol.SnapshottableDirectoryStatus;
+import org.apache.hadoop.hdfs.protocol.SnapshotStatus;
 import org.apache.hadoop.hdfs.web.JsonUtil;
 import org.apache.hadoop.lib.service.FileSystemAccess;
 import org.apache.hadoop.security.authentication.util.SignerSecretProvider;
@@ -1495,6 +1496,23 @@ public class TestHttpFSServer extends HFSTestCase {
     Assert.assertEquals(dirLst, JsonUtil.toJsonString(dfsDirLst));
   }
 
+  private void verifyGetSnapshotList(DistributedFileSystem dfs, Path path)
+      throws Exception {
+    // Send a request
+    HttpURLConnection conn = sendRequestToHttpFSServer(path.toString(),
+        "GETSNAPSHOTLIST", "");
+    // Should return HTTP_OK
+    Assert.assertEquals(conn.getResponseCode(), HttpURLConnection.HTTP_OK);
+    // Verify the response
+    BufferedReader reader =
+        new BufferedReader(new InputStreamReader(conn.getInputStream()));
+    // The response should be a one-line JSON string.
+    String dirLst = reader.readLine();
+    // Verify the content of status with DFS API.
+    SnapshotStatus[] dfsDirLst = dfs.getSnapshotListing(path);
+    Assert.assertEquals(dirLst, JsonUtil.toJsonString(dfsDirLst));
+  }
+
   @Test
   @TestDir
   @TestJetty
@@ -1528,6 +1546,35 @@ public class TestHttpFSServer extends HFSTestCase {
     verifyGetSnapshottableDirectoryList(dfs);
     dfs.delete(path1, true);
     verifyGetSnapshottableDirectoryList(dfs);
+  }
+
+
+  @Test
+  @TestDir
+  @TestJetty
+  @TestHdfs
+  public void testGetSnapshotList() throws Exception {
+    createHttpFSServer(false, false);
+    // Create test directories
+    String pathStr = "/tmp/tmp-snap-list-test-1";
+    createDirWithHttp(pathStr, "700", null);
+    Path path = new Path(pathStr);
+    DistributedFileSystem dfs = (DistributedFileSystem) FileSystem.get(
+        path.toUri(), TestHdfsHelper.getHdfsConf());
+    // Enable snapshot for path1
+    dfs.allowSnapshot(path);
+    Assert.assertTrue(dfs.getFileStatus(path).isSnapshotEnabled());
+    // Verify response when there is one snapshottable directory
+    verifyGetSnapshotList(dfs, path);
+    // Create a file and take a snapshot
+    String file1 = pathStr + "/file1";
+    createWithHttp(file1, null);
+    dfs.createSnapshot(path, "snap1");
+    // Create another file and take a snapshot
+    String file2 = pathStr + "/file2";
+    createWithHttp(file2, null);
+    dfs.createSnapshot(path, "snap2");
+    verifyGetSnapshotList(dfs, path);
   }
 
   @Test
