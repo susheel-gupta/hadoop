@@ -327,7 +327,7 @@ public class ITestS3ARemoteFileChanged extends AbstractS3ATestBase {
    * @return a number >= 0.
    */
   private int getFileStatusHeadCount() {
-    return authMode ? 0 : 0;
+    return authMode ? 0 : 1;
   }
 
   /**
