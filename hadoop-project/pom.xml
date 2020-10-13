@@ -69,6 +69,10 @@
     <jackson2.version>2.10.5</jackson2.version>
     <jackson2.databind.version>2.10.5.1</jackson2.databind.version>
 
+    <!-- httpcomponents versions -->
+    <httpclient.version>4.5.13</httpclient.version>
+    <httpcore.version>4.4.13</httpcore.version>
+
     <!-- SLF4J/LOG4J version -->
     <slf4j.version>1.7.30</slf4j.version>
     <log4j.version>1.2.17-cloudera1</log4j.version>
@@ -650,12 +654,12 @@
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
-        <version>4.5.6</version>
+        <version>${httpclient.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpcore</artifactId>
-        <version>4.4.10</version>
+        <version>${httpcore.version}</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
