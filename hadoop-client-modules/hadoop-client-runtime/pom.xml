@@ -157,9 +157,6 @@
                       <!-- Leave javax APIs that are stable -->
                       <!-- the jdk ships part of the javax.annotation namespace, so if we want to relocate this we'll have to care it out by class :( -->
                       <exclude>com.google.code.findbugs:jsr305</exclude>
-                      <exclude>org.eclipse.jetty:jetty-client</exclude>
-                      <exclude>org.eclipse.jetty:jetty-http</exclude>
-                      <exclude>org.eclipse.jetty:jetty-xml</exclude>
                       <!-- Leave bouncycastle unshaded because it's signed with a special Oracle certificate so it can be a custom JCE security provider -->
                       <exclude>org.bouncycastle:*</exclude>
                     </excludes>
@@ -204,6 +201,13 @@
                     <filter>
                       <!-- skip jetty license info already incorporated into LICENSE/NOTICE -->
                       <artifact>org.eclipse.jetty:*</artifact>
+                      <excludes>
+                        <exclude>about.html</exclude>
+                      </excludes>
+                    </filter>
+                    <filter>
+                      <!-- skip jetty license info already incorporated into LICENSE/NOTICE -->
+                      <artifact>org.eclipse.jetty.websocket:*</artifact>
                       <excludes>
                         <exclude>about.html</exclude>
                       </excludes>
