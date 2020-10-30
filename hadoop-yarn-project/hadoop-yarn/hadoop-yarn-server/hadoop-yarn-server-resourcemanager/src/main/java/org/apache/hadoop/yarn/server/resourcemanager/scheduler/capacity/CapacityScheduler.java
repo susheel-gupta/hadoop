@@ -2254,6 +2254,20 @@ public class CapacityScheduler extends
   public boolean checkAccess(UserGroupInformation callerUGI,
       QueueACL acl, String queueName) {
     CSQueue queue = getQueue(queueName);
+
+    if (queueName.startsWith("root.")) {
+      // can only check proper ACLs if the path is fully qualified
+      while (queue == null) {
+        int sepIndex = queueName.lastIndexOf(".");
+        String parentName = queueName.substring(0, sepIndex);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Queue " + queueName + " does not exist, checking parent " + parentName);
+        }
+        queueName = parentName;
+        queue = queueManager.getQueue(queueName);
+      }
+    }
+
     if (queue == null) {
       if (LOG.isDebugEnabled()) {
         LOG.debug("ACL not found for queue access-type " + acl + " for queue "
@@ -3266,5 +3280,10 @@ public class CapacityScheduler extends
   @VisibleForTesting
   public void setMaxRunningAppsEnforcer(CSMaxRunningAppsEnforcer enforcer) {
     this.maxRunningEnforcer = enforcer;
+  }
+
+  @VisibleForTesting
+  public void setQueueManager(CapacitySchedulerQueueManager qm) {
+    this.queueManager = qm;
   }
 }
