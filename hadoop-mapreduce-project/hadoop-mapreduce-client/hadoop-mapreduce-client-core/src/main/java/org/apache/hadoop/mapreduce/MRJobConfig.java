@@ -1042,6 +1042,9 @@ public interface MRJobConfig {
   public static final String MR_JOB_END_NOTIFICATION_MAX_RETRY_INTERVAL =
     "mapreduce.job.end-notification.max.retry.interval";
 
+  public static final String MR_JOB_END_NOTIFICATION_CUSTOM_NOTIFIER_CLASS =
+    "mapreduce.job.end-notification.custom-notifier-class";
+
   public static final int DEFAULT_MR_JOB_END_NOTIFICATION_TIMEOUT =
       5000;
 
