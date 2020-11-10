@@ -23,6 +23,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.list.TreeList;
+import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
@@ -2123,7 +2124,7 @@ public class DistributedFileSystem extends FileSystem
               trashRoot + ". Rename or delete it, then try again.");
         }
       }
-    } catch (FileNotFoundException ignored) {
+    } catch (FileNotFoundException | AccessControlException ignored) {
     }
   }
 
