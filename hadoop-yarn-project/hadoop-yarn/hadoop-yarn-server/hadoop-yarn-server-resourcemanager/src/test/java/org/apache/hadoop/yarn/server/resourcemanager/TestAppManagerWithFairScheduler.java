@@ -137,7 +137,7 @@ public class TestAppManagerWithFairScheduler extends AppManagerTestBase {
     ApplicationSubmissionContext asContext = createAppSubmitCtx(appId, res);
 
     // Submit to limited queue
-    when(placementMgr.placeApplication(any(), any()))
+    when(placementMgr.placeApplication(any(), any(), any(Boolean.class)))
         .thenReturn(new ApplicationPlacementContext("limited"));
     try {
       rmAppManager.submitApplication(asContext, "test");
@@ -148,7 +148,7 @@ public class TestAppManagerWithFairScheduler extends AppManagerTestBase {
     }
 
     // submit same app but now place it in the unlimited queue
-    when(placementMgr.placeApplication(any(), any()))
+    when(placementMgr.placeApplication(any(), any(), any(Boolean.class)))
         .thenReturn(new ApplicationPlacementContext("root.unlimited"));
     rmAppManager.submitApplication(asContext, "test");
   }
@@ -185,7 +185,7 @@ public class TestAppManagerWithFairScheduler extends AppManagerTestBase {
     ApplicationSubmissionContext asContext = createAppSubmitCtx(appId, res);
 
     // Submit to no access queue
-    when(placementMgr.placeApplication(any(), any()))
+    when(placementMgr.placeApplication(any(), any(), any(Boolean.class)))
         .thenReturn(new ApplicationPlacementContext("noaccess"));
     try {
       rmAppManager.submitApplication(asContext, "test");
@@ -195,13 +195,13 @@ public class TestAppManagerWithFairScheduler extends AppManagerTestBase {
           e.getCause() instanceof AccessControlException);
     }
     // Submit to submit access queue
-    when(placementMgr.placeApplication(any(), any()))
+    when(placementMgr.placeApplication(any(), any(), any(Boolean.class)))
         .thenReturn(new ApplicationPlacementContext("submitonly"));
     rmAppManager.submitApplication(asContext, "test");
     // Submit second app to admin access queue
     appId = MockApps.newAppID(2);
     asContext = createAppSubmitCtx(appId, res);
-    when(placementMgr.placeApplication(any(), any()))
+    when(placementMgr.placeApplication(any(), any(), any(Boolean.class)))
         .thenReturn(new ApplicationPlacementContext("adminonly"));
     rmAppManager.submitApplication(asContext, "test");
   }
@@ -262,7 +262,7 @@ public class TestAppManagerWithFairScheduler extends AppManagerTestBase {
     ApplicationSubmissionContext asContext = createAppSubmitCtx(appId, res);
 
     // Submit to noaccess parent with non existent child queue
-    when(placementMgr.placeApplication(any(), any()))
+    when(placementMgr.placeApplication(any(), any(), any(Boolean.class)))
         .thenReturn(new ApplicationPlacementContext("root.noaccess.child"));
     try {
       rmAppManager.submitApplication(asContext, "test");
@@ -272,7 +272,7 @@ public class TestAppManagerWithFairScheduler extends AppManagerTestBase {
           e.getCause() instanceof AccessControlException);
     }
     // Submit to submitonly parent with non existent child queue
-    when(placementMgr.placeApplication(any(), any()))
+    when(placementMgr.placeApplication(any(), any(), any(Boolean.class)))
         .thenReturn(new ApplicationPlacementContext("root.submitonly.child"));
     rmAppManager.submitApplication(asContext, "test");
   }

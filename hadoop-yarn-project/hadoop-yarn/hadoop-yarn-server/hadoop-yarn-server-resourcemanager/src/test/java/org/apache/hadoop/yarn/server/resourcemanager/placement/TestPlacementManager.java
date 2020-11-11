@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.yarn.server.resourcemanager.placement;
 
-import org.apache.hadoop.yarn.api.records.ApplicationId;
+
 import org.apache.hadoop.yarn.api.records.ApplicationSubmissionContext;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.MockRM;
@@ -30,6 +30,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.Capacity
 import org.apache.hadoop.yarn.util.Records;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.After;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +50,7 @@ public class TestPlacementManager {
   public static final String PARENT_QUEUE = "c";
 
   private MockRM mockRM = null;
+  private CapacitySchedulerConfiguration conf;
 
   private static final long CLUSTER_TIMESTAMP = System.currentTimeMillis();
 
@@ -80,9 +82,12 @@ public class TestPlacementManager {
                                                   USER1))
                                           .build();
 
-    UserGroupMappingPlacementRule ugRule = new UserGroupMappingPlacementRule(
-        false, Arrays.asList(userQueueMapping), null);
+
+    cs.getConfiguration().setQueueMappings(Arrays.asList(userQueueMapping));
+    CSMappingPlacementRule ugRule = new CSMappingPlacementRule();
+    ugRule.initialize(cs);
     queuePlacementRules.add(ugRule);
+
     pm.updateRules(queuePlacementRules);
 
     ApplicationSubmissionContext asc = Records.newRecord(
@@ -101,16 +106,19 @@ public class TestPlacementManager {
         .parentQueue(PARENT_QUEUE)
         .build();
 
-    AppNameMappingPlacementRule anRule = new AppNameMappingPlacementRule(false,
-        Arrays.asList(queueMappingEntity));
+    cs.getConfiguration().setAppNameMappings(Arrays.asList(queueMappingEntity));
+    CSMappingPlacementRule anRule = new CSMappingPlacementRule();
+    anRule.initialize(cs);
     queuePlacementRules.add(anRule);
     pm.updateRules(queuePlacementRules);
-    try {
-      ApplicationPlacementContext pc = pm.placeApplication(asc, USER2);
-      Assert.assertNotNull(pc);
-    } catch (Exception e) {
-      e.printStackTrace();
-      Assert.fail("Exception not expected");
+    ApplicationPlacementContext pc = pm.placeApplication(asc, USER2);
+    Assert.assertNotNull(pc);
+  }
+
+  @After
+  public void tearDown() {
+    if (null != mockRM) {
+      mockRM.stop();
     }
   }
 

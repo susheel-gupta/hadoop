@@ -38,6 +38,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.yarn.server.resourcemanager.placement.ApplicationPlacementContext;
+import org.apache.hadoop.yarn.server.resourcemanager.placement.CSMappingPlacementRule;
+import org.apache.hadoop.yarn.server.resourcemanager.placement.PlacementFactory;
+import org.apache.hadoop.yarn.server.resourcemanager.placement.PlacementRule;
 import org.apache.hadoop.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.conf.Configurable;
@@ -69,11 +73,6 @@ import org.apache.hadoop.yarn.exceptions.YarnRuntimeException;
 import org.apache.hadoop.yarn.proto.YarnServiceProtos.SchedulerResourceTypes;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
 import org.apache.hadoop.yarn.server.resourcemanager.nodelabels.RMNodeLabelsManager;
-import org.apache.hadoop.yarn.server.resourcemanager.placement.AppNameMappingPlacementRule;
-import org.apache.hadoop.yarn.server.resourcemanager.placement.ApplicationPlacementContext;
-import org.apache.hadoop.yarn.server.resourcemanager.placement.PlacementFactory;
-import org.apache.hadoop.yarn.server.resourcemanager.placement.PlacementRule;
-import org.apache.hadoop.yarn.server.resourcemanager.placement.UserGroupMappingPlacementRule;
 import org.apache.hadoop.yarn.server.resourcemanager.recovery.RMStateStore.RMState;
 import org.apache.hadoop.yarn.server.resourcemanager.recovery.records.ApplicationStateData;
 
@@ -666,23 +665,12 @@ public class CapacityScheduler extends
   }
 
   @VisibleForTesting
-  public PlacementRule getUserGroupMappingPlacementRule() throws IOException {
+  public PlacementRule getCSMappingPlacementRule() throws IOException {
+    readLock.lock();
     try {
-      readLock.lock();
-      UserGroupMappingPlacementRule ugRule = new UserGroupMappingPlacementRule();
-      ugRule.initialize(this);
-      return ugRule;
-    } finally {
-      readLock.unlock();
-    }
-  }
-
-  public PlacementRule getAppNameMappingPlacementRule() throws IOException {
-    try {
-      readLock.lock();
-      AppNameMappingPlacementRule anRule = new AppNameMappingPlacementRule();
-      anRule.initialize(this);
-      return anRule;
+      CSMappingPlacementRule mappingRule = new CSMappingPlacementRule();
+      mappingRule.initialize(this);
+      return mappingRule;
     } finally {
       readLock.unlock();
     }
@@ -701,19 +689,18 @@ public class CapacityScheduler extends
     distinguishRuleSet.add(YarnConfiguration.USER_GROUP_PLACEMENT_RULE);
 
     placementRuleStrs = new ArrayList<>(distinguishRuleSet);
+    boolean csMappingAdded = false;
 
     for (String placementRuleStr : placementRuleStrs) {
       switch (placementRuleStr) {
       case YarnConfiguration.USER_GROUP_PLACEMENT_RULE:
-        PlacementRule ugRule = getUserGroupMappingPlacementRule();
-        if (null != ugRule) {
-          placementRules.add(ugRule);
-        }
-        break;
       case YarnConfiguration.APP_NAME_PLACEMENT_RULE:
-        PlacementRule anRule = getAppNameMappingPlacementRule();
-        if (null != anRule) {
-          placementRules.add(anRule);
+        if (!csMappingAdded) {
+          PlacementRule csMappingRule = getCSMappingPlacementRule();
+          if (null != csMappingRule) {
+            placementRules.add(csMappingRule);
+            csMappingAdded = true;
+          }
         }
         break;
       default:
@@ -742,16 +729,15 @@ public class CapacityScheduler extends
 
   @Lock(CapacityScheduler.class)
   private void initializeQueues(CapacitySchedulerConfiguration conf)
-    throws IOException {
+      throws IOException {
+      this.queueManager.initializeQueues(conf);
 
-    this.queueManager.initializeQueues(conf);
+      updatePlacementRules();
 
-    updatePlacementRules();
+      this.workflowPriorityMappingsMgr.initialize(this);
 
-    this.workflowPriorityMappingsMgr.initialize(this);
-
-    // Notify Preemption Manager
-    preemptionManager.refreshQueues(null, this.getRootQueue());
+      // Notify Preemption Manager
+      preemptionManager.refreshQueues(null, this.getRootQueue());
   }
 
   @Lock(CapacityScheduler.class)

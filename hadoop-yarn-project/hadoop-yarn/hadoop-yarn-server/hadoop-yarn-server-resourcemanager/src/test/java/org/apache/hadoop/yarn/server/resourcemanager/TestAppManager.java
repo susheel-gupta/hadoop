@@ -1065,7 +1065,9 @@ public class TestAppManager{
       }
 
     }).when(placementMgr).placeApplication(
-        any(ApplicationSubmissionContext.class), any(String.class));
+        any(ApplicationSubmissionContext.class),
+        any(String.class),
+        any(Boolean.class));
     rmContext.setQueuePlacementManager(placementMgr);
 
     asContext.setQueue("oldQueue");

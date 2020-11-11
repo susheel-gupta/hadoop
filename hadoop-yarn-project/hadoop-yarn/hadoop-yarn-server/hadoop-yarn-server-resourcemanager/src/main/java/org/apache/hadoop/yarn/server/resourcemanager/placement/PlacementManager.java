@@ -53,18 +53,17 @@ public class PlacementManager {
   }
 
   public ApplicationPlacementContext placeApplication(
-      ApplicationSubmissionContext asc, String user) throws YarnException {
-
+      ApplicationSubmissionContext asc, String user, boolean recovery)
+      throws YarnException {
+    readLock.lock();
     try {
-      readLock.lock();
-
       if (null == rules || rules.isEmpty()) {
         return null;
       }
 
       ApplicationPlacementContext placement = null;
       for (PlacementRule rule : rules) {
-        placement = rule.getPlacementForApp(asc, user);
+        placement = rule.getPlacementForApp(asc, user, recovery);
         if (placement != null) {
           break;
         }
@@ -75,7 +74,12 @@ public class PlacementManager {
       readLock.unlock();
     }
   }
-  
+
+  public ApplicationPlacementContext placeApplication(
+      ApplicationSubmissionContext asc, String user) throws YarnException {
+    return placeApplication(asc, user, false);
+  }
+
   @VisibleForTesting
   public List<PlacementRule> getPlacementRules() {
     return rules;
