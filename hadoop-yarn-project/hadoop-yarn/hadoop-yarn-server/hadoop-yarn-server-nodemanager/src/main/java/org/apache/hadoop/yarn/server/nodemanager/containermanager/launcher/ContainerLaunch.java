@@ -20,8 +20,11 @@ package org.apache.hadoop.yarn.server.nodemanager.containermanager.launcher;
 
 import static org.apache.hadoop.fs.CreateFlag.CREATE;
 import static org.apache.hadoop.fs.CreateFlag.OVERWRITE;
+import static org.apache.hadoop.yarn.server.utils.YarnServerSecurityUtils.DEFAULT_KEYSTORE_TYPE;
+import static org.apache.hadoop.yarn.server.utils.YarnServerSecurityUtils.KEYSTORE_TYPE_BCFKS;
 
 import org.apache.hadoop.yarn.server.nodemanager.executor.DeletionAsUserContext;
+import org.apache.hadoop.yarn.server.utils.YarnServerSecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -280,6 +283,11 @@ public class ContainerLaunch implements Callable<Integer> {
         appDirs.add(new Path(appsdir, appIdStr));
       }
 
+      String keyStoreType = DEFAULT_KEYSTORE_TYPE;
+      if (YarnServerSecurityUtils.isFipsEnabled()) {
+        keyStoreType = KEYSTORE_TYPE_BCFKS;
+      }
+      
       byte[] keystore = container.getCredentials().getSecretKey(
           AMSecretKeys.YARN_APPLICATION_AM_KEYSTORE);
       if (keystore != null) {
@@ -294,6 +302,7 @@ public class ContainerLaunch implements Callable<Integer> {
               new String(container.getCredentials().getSecretKey(
                   AMSecretKeys.YARN_APPLICATION_AM_KEYSTORE_PASSWORD),
                   StandardCharsets.UTF_8));
+          environment.put(ApplicationConstants.KEYSTORE_TYPE_ENV_NAME, keyStoreType);
         }
       } else {
         nmPrivateKeystorePath = null;
@@ -313,6 +322,8 @@ public class ContainerLaunch implements Callable<Integer> {
               new String(container.getCredentials().getSecretKey(
                   AMSecretKeys.YARN_APPLICATION_AM_TRUSTSTORE_PASSWORD),
                   StandardCharsets.UTF_8));
+
+          environment.put(ApplicationConstants.TRUSTSTORE_TYPE_ENV_NAME, keyStoreType);
         }
       } else {
         nmPrivateTruststorePath = null;

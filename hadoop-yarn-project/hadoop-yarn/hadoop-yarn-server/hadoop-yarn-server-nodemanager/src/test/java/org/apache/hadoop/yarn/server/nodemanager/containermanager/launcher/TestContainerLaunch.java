@@ -20,6 +20,7 @@ package org.apache.hadoop.yarn.server.nodemanager.containermanager.launcher;
 
 import static org.apache.hadoop.test.PlatformAssumptions.assumeWindows;
 import static org.apache.hadoop.test.PlatformAssumptions.assumeNotWindows;
+import static org.apache.hadoop.yarn.server.utils.YarnServerSecurityUtils.CCJ_FIPS_APPROVED_ONLY_PROPERTY;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
@@ -120,6 +121,7 @@ import org.apache.hadoop.yarn.server.nodemanager.security.NMTokenSecretManagerIn
 import org.apache.hadoop.yarn.server.security.ApplicationACLsManager;
 import org.apache.hadoop.yarn.server.security.AMSecretKeys;
 import org.apache.hadoop.yarn.server.utils.BuilderUtils;
+import org.apache.hadoop.yarn.server.utils.YarnServerSecurityUtils;
 import org.apache.hadoop.yarn.util.Apps;
 import org.apache.hadoop.yarn.util.AuxiliaryServiceHelper;
 import org.apache.hadoop.yarn.util.LinuxResourceCalculatorPlugin;
@@ -2372,15 +2374,26 @@ public class TestContainerLaunch extends BaseContainerManagerTest {
 
   @Test(timeout = 20000)
   public void testFilesAndEnvWithoutHTTPS() throws Exception {
-    testFilesAndEnv(false);
+    testFilesAndEnv(false, YarnServerSecurityUtils.DEFAULT_KEYSTORE_TYPE);
   }
 
   @Test(timeout = 20000)
   public void testFilesAndEnvWithHTTPS() throws Exception {
-    testFilesAndEnv(true);
+    testFilesAndEnv(true, YarnServerSecurityUtils.DEFAULT_KEYSTORE_TYPE);
   }
 
-  private void testFilesAndEnv(boolean https) throws Exception {
+  @Test(timeout = 20000)
+  public void testFilesAndEnvWithHTTPSFipsModeEnabled() throws Exception {
+    try {
+      System.setProperty(CCJ_FIPS_APPROVED_ONLY_PROPERTY, Boolean.TRUE.toString());
+      testFilesAndEnv(true, YarnServerSecurityUtils.KEYSTORE_TYPE_BCFKS);
+    } finally {
+      System.clearProperty(CCJ_FIPS_APPROVED_ONLY_PROPERTY);
+    }
+  }
+
+  private void testFilesAndEnv(boolean https, String expectedKeyStoreType)
+      throws Exception {
     // setup mocks
     Dispatcher dispatcher = mock(Dispatcher.class);
     EventHandler handler = mock(EventHandler.class);
@@ -2490,16 +2503,23 @@ public class TestContainerLaunch extends BaseContainerManagerTest {
           env.get(ApplicationConstants.KEYSTORE_FILE_LOCATION_ENV_NAME));
       Assert.assertEquals("keystore_password",
           env.get(ApplicationConstants.KEYSTORE_PASSWORD_ENV_NAME));
+      Assert.assertEquals(expectedKeyStoreType,
+          env.get(ApplicationConstants.KEYSTORE_TYPE_ENV_NAME));
+      
       Assert.assertEquals(new Path(workDir,
               ContainerLaunch.TRUSTSTORE_FILE).toUri().getPath(),
           env.get(ApplicationConstants.TRUSTSTORE_FILE_LOCATION_ENV_NAME));
       Assert.assertEquals("truststore_password",
           env.get(ApplicationConstants.TRUSTSTORE_PASSWORD_ENV_NAME));
+      Assert.assertEquals(expectedKeyStoreType,
+          env.get(ApplicationConstants.TRUSTSTORE_TYPE_ENV_NAME));
     } else {
       Assert.assertNull(env.get("KEYSTORE_FILE_LOCATION"));
       Assert.assertNull(env.get("KEYSTORE_PASSWORD"));
       Assert.assertNull(env.get("TRUSTSTORE_FILE_LOCATION"));
       Assert.assertNull(env.get("TRUSTSTORE_PASSWORD"));
+      Assert.assertNull(env.get("KEYSTORE_TYPE"));
+      Assert.assertNull(env.get("TRUSTSTORE_TYPE"));
     }
   }
 
