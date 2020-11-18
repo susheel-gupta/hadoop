@@ -94,6 +94,8 @@ public class ParentQueue extends AbstractCSQueue {
 
   private int runnableApps;
 
+  private final boolean allowZeroCapacitySum;
+
   public ParentQueue(CapacitySchedulerContext cs,
       String queueName, CSQueue parent, CSQueue old) throws IOException {
     super(cs, queueName, parent, old);
@@ -110,6 +112,8 @@ public class ParentQueue extends AbstractCSQueue {
     }
 
     this.childQueues = new ArrayList<>();
+    this.allowZeroCapacitySum =
+        cs.getConfiguration().getAllowZeroCapacitySum(getQueuePath());
 
     setupQueueConfigs(cs.getClusterResource());
 
@@ -158,7 +162,8 @@ public class ParentQueue extends AbstractCSQueue {
           + aclsString + ", labels=" + labelStrBuilder.toString() + "\n"
           + ", reservationsContinueLooking=" + reservationsContinueLooking
           + ", orderingPolicy=" + getQueueOrderingPolicyConfigName()
-          + ", priority=" + priority);
+          + ", priority=" + priority
+          + ", allowZeroCapacitySum=" + allowZeroCapacitySum);
     } finally {
       writeLock.unlock();
     }
@@ -191,12 +196,30 @@ public class ParentQueue extends AbstractCSQueue {
       }
 
       float delta = Math.abs(1.0f - childCapacities);  // crude way to check
-      // allow capacities being set to 0
-      if ((minResDefaultLabel.equals(Resources.none())
+
+      if (allowZeroCapacitySum) {
+        // If we allow zero capacity for children, only fail if:
+        // Σ(childCapacities) != 1.0f OR Σ(childCapacities) != 0.0f
+        //
+        // Therefore, child queues either add up to 0% or 100%.
+        //
+        // Current capacity doesn't matter, because we apply this logic
+        // regardless of whether the current capacity is zero or not.
+        if (minResDefaultLabel.equals(Resources.none())
+            && (delta > PRECISION && childCapacities > PRECISION)) {
+          LOG.error("Capacity validation check is relaxed for"
+              + " queue " + getQueuePath()
+              + ", but the capacity must be either 0% or 100%");
+          throw new IllegalArgumentException("Illegal" + " capacity of "
+              + childCapacities + " for children of queue " + queueName);
+        }
+      } else if ((minResDefaultLabel.equals(Resources.none())
           && (queueCapacities.getCapacity() > 0) && (delta > PRECISION))) {
-        throw new IllegalArgumentException("Illegal capacity of "
+          // allow capacities being set to 0
+        throw new IllegalArgumentException("Illegal" + " capacity of "
             + childCapacities + " for children of queue " + queueName);
       }
+
       // check label capacities
       for (String nodeLabel : queueCapacities.getExistingNodeLabels()) {
         float capacityByLabel = queueCapacities.getCapacity(nodeLabel);
@@ -224,7 +247,24 @@ public class ParentQueue extends AbstractCSQueue {
           Resources.addTo(minRes, queue.getQueueResourceQuotas()
               .getConfiguredMinResource(nodeLabel));
         }
-        if ((minResDefaultLabel.equals(Resources.none()) && capacityByLabel > 0
+
+        float labelDelta = Math.abs(1.0f - sum);
+
+        if (allowZeroCapacitySum) {
+          // Similar to above, we only throw exception if
+          // Σ(childCapacities) != 1.0f OR Σ(childCapacities) != 0.0f
+          if (minResDefaultLabel.equals(Resources.none())
+              && capacityByLabel > 0
+              && (labelDelta > PRECISION && sum > PRECISION)) {
+            LOG.error("Capacity validation check is relaxed for"
+                + " queue " + getQueueName()
+                + "but the capacity must be either 0% or 100%");
+            throw new IllegalArgumentException(
+                "Illegal" + " capacity of " + sum + " for children of queue "
+                    + queueName + " for label=" + nodeLabel);
+          }
+        } else if ((minResDefaultLabel.equals(Resources.none())
+            && capacityByLabel > 0
             && Math.abs(1.0f - sum) > PRECISION)) {
           throw new IllegalArgumentException(
               "Illegal capacity of " + sum + " for children of queue "
