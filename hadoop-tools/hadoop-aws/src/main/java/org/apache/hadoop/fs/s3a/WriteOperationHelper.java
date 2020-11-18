@@ -131,6 +131,8 @@ public class WriteOperationHelper {
    */
   void operationRetried(String text, Exception ex, int retries,
       boolean idempotent) {
+    LOG.info("{}: Retried {}: {}", text, retries, ex.toString());
+    LOG.debug("Stack", ex);
     owner.operationRetried(text, ex, retries, idempotent);
   }
 
@@ -323,7 +325,9 @@ public class WriteOperationHelper {
   public void abortMultipartUpload(String destKey, String uploadId,
       Retried retrying)
       throws IOException {
-    invoker.retry("Aborting multipart upload", destKey, true,
+    invoker.retry("Aborting multipart upload ID " + uploadId,
+        destKey,
+        true,
         retrying,
         () -> owner.abortMultipartUpload(
             destKey,
@@ -573,7 +577,8 @@ public class WriteOperationHelper {
   @Retries.RetryTranslated
   public UploadPartResult uploadPart(UploadPartRequest request)
       throws IOException {
-    return retry("upload part",
+    return retry("upload part #" + request.getPartNumber()
+        + " upload ID "+ request.getUploadId(),
         request.getKey(),
         true,
         () -> owner.uploadPart(request));
