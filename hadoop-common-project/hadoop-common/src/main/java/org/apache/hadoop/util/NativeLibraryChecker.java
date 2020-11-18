@@ -22,7 +22,6 @@ import org.apache.hadoop.io.compress.ZStandardCodec;
 import org.apache.hadoop.io.erasurecode.ErasureCodeNative;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.crypto.OpensslCipher;
-import org.apache.hadoop.io.compress.Lz4Codec;
 import org.apache.hadoop.io.compress.bzip2.Bzip2Factory;
 import org.apache.hadoop.io.compress.zlib.ZlibFactory;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -67,8 +66,6 @@ public class NativeLibraryChecker {
     boolean zlibLoaded = false;
     boolean isalLoaded = false;
     boolean zStdLoaded = false;
-    // lz4 is linked within libhadoop
-    boolean lz4Loaded = nativeHadoopLoaded;
     boolean bzip2Loaded = Bzip2Factory.isNativeBzip2Loaded(conf);
     boolean openSslLoaded = false;
     boolean winutilsExists = false;
@@ -78,7 +75,6 @@ public class NativeLibraryChecker {
     String zlibLibraryName = "";
     String isalDetail = "";
     String zstdLibraryName = "";
-    String lz4LibraryName = "";
     String bzip2LibraryName = "";
     String winutilsPath = null;
 
@@ -110,9 +106,6 @@ public class NativeLibraryChecker {
         openSslLoaded = true;
       }
 
-      if (lz4Loaded) {
-        lz4LibraryName = Lz4Codec.getLibraryName();
-      }
       if (bzip2Loaded) {
         bzip2LibraryName = Bzip2Factory.getLibraryName(conf);
       }
@@ -135,7 +128,6 @@ public class NativeLibraryChecker {
     System.out.printf("hadoop:  %b %s%n", nativeHadoopLoaded, hadoopLibraryName);
     System.out.printf("zlib:    %b %s%n", zlibLoaded, zlibLibraryName);
     System.out.printf("zstd  :  %b %s%n", zStdLoaded, zstdLibraryName);
-    System.out.printf("lz4:     %b %s%n", lz4Loaded, lz4LibraryName);
     System.out.printf("bzip2:   %b %s%n", bzip2Loaded, bzip2LibraryName);
     System.out.printf("openssl: %b %s%n", openSslLoaded, openSslDetail);
     System.out.printf("ISA-L:   %b %s%n", isalLoaded, isalDetail);
@@ -145,8 +137,8 @@ public class NativeLibraryChecker {
     }
 
     if ((!nativeHadoopLoaded) || (Shell.WINDOWS && (!winutilsExists)) ||
-        (checkAll && !(zlibLoaded && lz4Loaded
-            && bzip2Loaded && isalLoaded && zStdLoaded))) {
+        (checkAll && !(zlibLoaded && bzip2Loaded
+            && isalLoaded && zStdLoaded))) {
       // return 1 to indicated check failed
       ExitUtil.terminate(1);
     }
