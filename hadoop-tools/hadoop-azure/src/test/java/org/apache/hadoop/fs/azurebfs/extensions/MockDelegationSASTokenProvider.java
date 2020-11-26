@@ -53,6 +53,7 @@ public class MockDelegationSASTokenProvider implements SASTokenProvider {
   public static final String CORRELATION_ID = "66ff4ffc-ff17-417e-a2a9-45db8c5b0b5c";
   private AbfsConfiguration abfsConfiguration;
   private AbfsClientContext abfsClientContext;
+  public static final String NO_AGENT_PATH = "NoAgentPath";
 
   @Override
   public void initialize(Configuration configuration, String accountName)
@@ -145,11 +146,16 @@ public class MockDelegationSASTokenProvider implements SASTokenProvider {
   @Override
   public String getSASToken(String accountName, String fileSystem, String path,
                      String operation) throws IOException, AccessControlException {
-    // The user for these tests is always TEST_OWNER.  The check access operation
+    // Except for the special case where we test without an agent,
+    // the user for these tests is always TEST_OWNER.  The check access operation
     // requires suoid to check permissions for the user and will throw if the
     // user does not have access and otherwise succeed.
-    String saoid = (operation == SASTokenProvider.CHECK_ACCESS_OPERATION) ? null : TEST_OWNER;
-    String suoid = (operation == SASTokenProvider.CHECK_ACCESS_OPERATION) ? TEST_OWNER : null;
+    String saoid = null;
+    String suoid = null;
+    if (path == null || !path.endsWith(NO_AGENT_PATH)) {
+      saoid = (operation == SASTokenProvider.CHECK_ACCESS_OPERATION) ? null : TEST_OWNER;
+      suoid = (operation == SASTokenProvider.CHECK_ACCESS_OPERATION) ? TEST_OWNER : null;
+    }
     return generator.getDelegationSAS(accountName, fileSystem, path, operation,
         saoid, suoid, CORRELATION_ID);
   }
