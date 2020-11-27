@@ -23,7 +23,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.annotations.VisibleForTesting;
 
@@ -54,6 +53,7 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
 
   private static final Logger LOG = LoggerFactory.getLogger(AbfsInputStream.class);
 
+  private int readAheadBlockSize;
   private final AbfsClient client;
   private final Statistics statistics;
   private final String path;
@@ -65,6 +65,7 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
   private final boolean readAheadEnabled; // whether enable readAhead;
   // User configured size of read ahead.
   private final int readAheadRange;
+  private final boolean alwaysReadBufferSize;
 
   // SAS tokens can be re-used until they expire
   private CachedSASToken cachedSasToken;
@@ -107,10 +108,16 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
     this.eTag = eTag;
     this.readAheadEnabled = abfsInputStreamContext.isReadAheadEnabled();
     this.readAheadRange = abfsInputStreamContext.getReadAheadRange();
+    this.alwaysReadBufferSize
+        = abfsInputStreamContext.shouldReadBufferSizeAlways();
     this.cachedSasToken = new CachedSASToken(
         abfsInputStreamContext.getSasTokenRenewPeriodForStreamsInSeconds());
     this.streamStatistics = abfsInputStreamContext.getStreamStatistics();
+    readAheadBlockSize = abfsInputStreamContext.getReadAheadBlockSize();
 
+    // Propagate the config values to ReadBufferManager so that the first instance
+    // to initialize can set the readAheadBlockSize
+    ReadBufferManager.setReadBufferManagerConfigs(readAheadBlockSize);
     if (streamStatistics != null) {
       ioStatistics = streamStatistics.getIOStatistics();
     }
@@ -218,15 +225,23 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
           buffer = new byte[bufferSize];
         }
 
-        // Enable readAhead when reading sequentially
-        if (-1 == fCursorAfterLastRead || fCursorAfterLastRead == fCursor || b.length >= bufferSize) {
-          LOG.debug("Sequential read with read ahead size of {}", bufferSize);
+        if (alwaysReadBufferSize) {
           bytesRead = readInternal(fCursor, buffer, 0, bufferSize, false);
         } else {
-          // Enabling read ahead for random reads as well to reduce number of remote calls.
-          int lengthWithReadAhead = Math.min(b.length + readAheadRange, bufferSize);
-          LOG.debug("Random read with read ahead size of {}", lengthWithReadAhead);
-          bytesRead = readInternal(fCursor, buffer, 0, lengthWithReadAhead, true);
+          // Enable readAhead when reading sequentially
+          if (-1 == fCursorAfterLastRead || fCursorAfterLastRead == fCursor
+              || b.length >= bufferSize) {
+            LOG.debug("Sequential read with read ahead size of {}", bufferSize);
+            bytesRead = readInternal(fCursor, buffer, 0, bufferSize, false);
+          } else {
+            // Enabling read ahead for random reads as well to reduce number of remote calls.
+            int lengthWithReadAhead = Math.min(b.length + readAheadRange,
+                bufferSize);
+            LOG.debug("Random read with read ahead size of {}",
+                lengthWithReadAhead);
+            bytesRead = readInternal(fCursor, buffer, 0, lengthWithReadAhead,
+                true);
+          }
         }
       } else {
         LOG.debug("Random read with read ahead disabled");
@@ -281,16 +296,19 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
 
       // queue read-aheads
       int numReadAheads = this.readAheadQueueDepth;
-      long nextSize;
       long nextOffset = position;
+      // First read to queue needs to be of readBufferSize and later
+      // of readAhead Block size
+      long nextSize = Math.min((long) bufferSize, contentLength - nextOffset);
       LOG.debug("read ahead enabled issuing readheads num = {}", numReadAheads);
       while (numReadAheads > 0 && nextOffset < contentLength) {
-        nextSize = Math.min((long) bufferSize, contentLength - nextOffset);
         LOG.debug("issuing read ahead requestedOffset = {} requested size {}",
             nextOffset, nextSize);
         ReadBufferManager.getBufferManager().queueReadAhead(this, nextOffset, (int) nextSize);
         nextOffset = nextOffset + nextSize;
         numReadAheads--;
+        // From next round onwards should be of readahead block size.
+        nextSize = Math.min((long) readAheadBlockSize, contentLength - nextOffset);
       }
 
       // try reading from buffers first
@@ -561,6 +579,21 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
   @VisibleForTesting
   public long getBytesFromRemoteRead() {
     return bytesFromRemoteRead;
+  }
+
+  @VisibleForTesting
+  public int getBufferSize() {
+    return bufferSize;
+  }
+
+  @VisibleForTesting
+  public int getReadAheadQueueDepth() {
+    return readAheadQueueDepth;
+  }
+
+  @VisibleForTesting
+  public boolean shouldAlwaysReadBufferSize() {
+    return alwaysReadBufferSize;
   }
 
   @Override
