@@ -637,6 +637,7 @@ public class NameNodeRpcServer implements NamenodeProtocols {
     }
     checkNNStartup();
     namesystem.checkSuperuserPrivilege(operationName);
+    namesystem.checkNameNodeSafeMode("Cannot execute getBlocks");
     return namesystem.getBlocks(datanode, size, minBlockSize);
   }
 
