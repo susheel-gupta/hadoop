@@ -29,6 +29,7 @@
   <properties>
     <!-- Needed for generating FindBugs warnings using parent pom -->
     <yarn.basedir>${project.parent.parent.basedir}</yarn.basedir>
+    <joda.time.version>2.10.6</joda.time.version>
   </properties>
 
   <dependencies>
@@ -268,6 +269,16 @@
      <dependency>
          <groupId>org.jsonschema2pojo</groupId>
          <artifactId>jsonschema2pojo-core</artifactId>
+         <exclusions>
+           <exclusion>
+             <groupId>joda-time</groupId>
+             <artifactId>joda-time</artifactId>
+           </exclusion>
+           <exclusion>
+             <groupId>com.google.code.findbugs</groupId>
+             <artifactId>jsr305</artifactId>
+           </exclusion>
+         </exclusions>
      </dependency>
      <dependency>
          <groupId>com.fasterxml.jackson.core</groupId>
@@ -276,6 +287,11 @@
      <dependency>
          <groupId>com.fasterxml.jackson.dataformat</groupId>
          <artifactId>jackson-dataformat-yaml</artifactId>
+     </dependency>
+     <dependency>
+       <groupId>joda-time</groupId>
+       <artifactId>joda-time</artifactId>
+       <version>${joda.time.version}</version>
      </dependency>
   </dependencies>
 
