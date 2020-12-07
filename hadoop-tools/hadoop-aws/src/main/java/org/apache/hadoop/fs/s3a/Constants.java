@@ -1079,4 +1079,10 @@ public final class Constants {
    */
   public static final String AWS_S3_CENTRAL_REGION = "us-east-1";
 
+  /**
+   * To comply with the XAttr rules, all headers of the object retrieved
+   * through the getXAttr APIs have the prefix: {@value}.
+   */
+  public static final String XA_HEADER_PREFIX = "header.";
+
 }

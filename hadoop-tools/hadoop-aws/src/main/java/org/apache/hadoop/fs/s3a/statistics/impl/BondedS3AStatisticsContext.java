@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.s3a.statistics.DelegationTokenStatistics;
 import org.apache.hadoop.fs.s3a.statistics.S3AInputStreamStatistics;
 import org.apache.hadoop.fs.s3a.statistics.S3AStatisticsContext;
 import org.apache.hadoop.fs.s3a.statistics.StatisticsFromAwsSdk;
+import org.apache.hadoop.fs.statistics.DurationTracker;
 
 /**
  * An S3A statistics context which is bonded to a
@@ -202,6 +203,11 @@ public class BondedS3AStatisticsContext implements S3AStatisticsContext {
   @Override
   public StatisticsFromAwsSdk newStatisticsFromAwsSdk() {
     return new StatisticsFromAwsSdkImpl(getInstrumentation());
+  }
+
+  @Override
+  public DurationTracker trackDuration(final String key, final long count) {
+    return getInstrumentation().trackDuration(key, count);
   }
 
   /**

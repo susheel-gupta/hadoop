@@ -38,6 +38,8 @@ public interface DurationTrackerFactory {
    * by the given count.
    *
    * The expected use is within a try-with-resources clause.
+   *
+   * The default implementation returns a stub duration tracker.
    * @param key statistic key prefix
    * @param count  #of times to increment the matching counter in this
    * operation.

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.amazonaws.services.s3.model.AmazonS3Exception;
@@ -89,7 +90,7 @@ import static org.apache.hadoop.fs.s3a.impl.InternalConstants.UPLOAD_PART_COUNT_
  */
 @InterfaceAudience.Private
 @InterfaceStability.Unstable
-public class WriteOperationHelper {
+public class WriteOperationHelper implements WriteOperations {
   private static final Logger LOG =
       LoggerFactory.getLogger(WriteOperationHelper.class);
 
@@ -172,12 +173,19 @@ public class WriteOperationHelper {
    * @param destKey destination key
    * @param inputStream source data.
    * @param length size, if known. Use -1 for not known
+   * @param headers optional map of custom headers.
    * @return the request
    */
   public PutObjectRequest createPutObjectRequest(String destKey,
-      InputStream inputStream, long length) {
+      InputStream inputStream,
+      long length,
+      final Map<String, String> headers) {
+    ObjectMetadata objectMetadata = newObjectMetadata(length);
+    if (headers != null) {
+      objectMetadata.setUserMetadata(headers);
+    }
     return owner.newPutObjectRequest(destKey,
-        newObjectMetadata(length),
+        objectMetadata,
         inputStream);
   }
 
