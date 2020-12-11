@@ -154,6 +154,7 @@ public class NamenodeFsck implements DataEncryptionKeyFactory {
   private boolean showMaintenanceState = false;
   private long staleInterval;
   private Tracer tracer;
+  private String auditSource;
 
   /**
    * True if we encountered an internal error during FSCK, such as not being
@@ -185,7 +186,7 @@ public class NamenodeFsck implements DataEncryptionKeyFactory {
 
   String path = "/";
 
-  private String blockIds = null;
+  private String[] blockIds = null;
 
   // We return back N files that are corrupt; the list of files returned is
   // ordered by block id; to allow continuation support, pass in the last block
@@ -261,11 +262,17 @@ public class NamenodeFsck implements DataEncryptionKeyFactory {
       } else if (key.equals("includeSnapshots")) {
         this.snapshottableDirs = new ArrayList<String>();
       } else if (key.equals("blockId")) {
-        this.blockIds = pmap.get("blockId")[0];
+        this.blockIds = pmap.get("blockId")[0].split(" ");
       } else if (key.equals("replicate")) {
         this.doReplicate = true;
       }
     }
+    this.auditSource = (blockIds != null)
+        ? "blocksIds=" + Arrays.asList(blockIds) : path;
+  }
+
+  public String getAuditSource() {
+    return auditSource;
   }
 
   /**
@@ -367,20 +374,19 @@ public class NamenodeFsck implements DataEncryptionKeyFactory {
   /**
    * Check files on DFS, starting from the indicated path.
    */
-  public void fsck() {
+  public void fsck() throws AccessControlException {
     final long startTime = Time.monotonicNow();
     String operationName = "fsck";
     try {
       if(blockIds != null) {
         namenode.getNamesystem().checkSuperuserPrivilege(operationName, path);
-        String[] blocks = blockIds.split(" ");
         StringBuilder sb = new StringBuilder();
         sb.append("FSCK started by " +
             UserGroupInformation.getCurrentUser() + " from " +
             remoteAddress + " at " + new Date());
         out.println(sb);
         sb.append(" for blockIds: \n");
-        for (String blk: blocks) {
+        for (String blk: blockIds) {
           if(blk == null || !blk.contains(Block.BLOCK_FILE_PREFIX)) {
             out.println("Incorrect blockId format: " + blk);
             continue;
@@ -390,7 +396,6 @@ public class NamenodeFsck implements DataEncryptionKeyFactory {
           sb.append(blk + "\n");
         }
         LOG.info("{}", sb.toString());
-        namenode.getNamesystem().logFsckEvent("/", remoteAddress);
         out.flush();
         return;
       }
@@ -399,7 +404,6 @@ public class NamenodeFsck implements DataEncryptionKeyFactory {
           + " from " + remoteAddress + " for path " + path + " at " + new Date();
       LOG.info(msg);
       out.println(msg);
-      namenode.getNamesystem().logFsckEvent(path, remoteAddress);
 
       if (snapshottableDirs != null) {
         SnapshottableDirectoryStatus[] snapshotDirs =
