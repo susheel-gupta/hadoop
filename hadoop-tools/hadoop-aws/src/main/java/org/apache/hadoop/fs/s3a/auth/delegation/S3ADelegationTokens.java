@@ -37,6 +37,8 @@ import org.apache.hadoop.fs.s3a.AWSCredentialProviderList;
 import org.apache.hadoop.fs.s3a.S3AFileSystem;
 import org.apache.hadoop.fs.s3a.S3AInstrumentation;
 import org.apache.hadoop.fs.s3a.auth.RoleModel;
+import org.apache.hadoop.fs.s3a.impl.StoreContext;
+import org.apache.hadoop.fs.s3a.statistics.DelegationTokenStatistics;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -45,6 +47,8 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.service.ServiceOperations;
 import org.apache.hadoop.util.DurationInfo;
 
+import static org.apache.hadoop.fs.s3a.Statistic.DELEGATION_TOKEN_ISSUED;
+import static org.apache.hadoop.fs.statistics.impl.IOStatisticsBinding.trackDuration;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static org.apache.hadoop.fs.s3a.auth.delegation.DelegationConstants.DEFAULT_DELEGATION_TOKEN_BINDING;
@@ -135,9 +139,9 @@ public class S3ADelegationTokens extends AbstractDTService {
           AWSPolicyProvider.AccessLevel.WRITE);
 
   /**
-   * Statistics for the owner FS.
+   * Statistics for the operations.
    */
-  private S3AInstrumentation.DelegationTokenStatistics stats;
+  private DelegationTokenStatistics stats;
 
   /**
    * Name of the token binding as extracted from token kind; used for
@@ -424,8 +428,10 @@ public class S3ADelegationTokens extends AbstractDTService {
 
     try(DurationInfo ignored = new DurationInfo(LOG, DURATION_LOG_AT_INFO,
         "Creating New Delegation Token", tokenBinding.getKind())) {
-      Token<AbstractS3ATokenIdentifier> token
-          = tokenBinding.createDelegationToken(rolePolicy, encryptionSecrets, renewer);
+      Token<AbstractS3ATokenIdentifier> token = trackDuration(stats,
+          DELEGATION_TOKEN_ISSUED.getSymbol(), () ->
+              tokenBinding.createDelegationToken(rolePolicy,
+                  encryptionSecrets, renewer));
       if (token != null) {
         token.setService(service);
         noteTokenCreated(token);
