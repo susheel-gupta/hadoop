@@ -422,4 +422,15 @@ public final class TestAbfsPerfTracker {
       tracker13.registerResult(httpOperation).registerSuccess(false).registerAggregates(Instant.MIN, TEST_AGGREGATE_COUNT);
     }
   }
+
+  /**
+   * Test helper method to create an AbfsPerfTracker instance.
+   * @param abfsConfig active test abfs config
+   * @return instance of AbfsPerfTracker
+   */
+  public static AbfsPerfTracker getAPerfTrackerInstance(AbfsConfiguration abfsConfig) {
+    AbfsPerfTracker tracker = new AbfsPerfTracker("test",
+        abfsConfig.getAccountName(), abfsConfig);
+    return tracker;
+  }
 }
