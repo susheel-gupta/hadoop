@@ -31,6 +31,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -376,7 +377,7 @@ public class TestParentQueue {
       CapacitySchedulerQueueManager.parseQueue(csContext, csConf, null,
           CapacitySchedulerConfiguration.ROOT, queues, queues,
           TestUtils.spyHook);
-    } catch (IllegalArgumentException ie) {
+    } catch (IOException ie) {
       exceptionOccurred = true;
     }
     if (!exceptionOccurred) {
@@ -646,7 +647,7 @@ public class TestParentQueue {
     reset(a); reset(b); reset(c);
   }
   
-  @Test (expected=IllegalArgumentException.class)
+  @Test (expected=IOException.class)
   public void testQueueCapacitySettingChildZero() throws Exception {
     // Setup queue configs
     setupMultiLevelQueues(csConf);
@@ -662,7 +663,7 @@ public class TestParentQueue {
         TestUtils.spyHook);
   }
   
-  @Test
+  @Test (expected=IOException.class)
   public void testQueueCapacitySettingParentZero() throws Exception {
     // Setup queue configs
     setupMultiLevelQueues(csConf);
@@ -672,14 +673,9 @@ public class TestParentQueue {
     csConf.setCapacity(Q_A, 60);
 
     CSQueueStore queues = new CSQueueStore();
-    try {
-      CapacitySchedulerQueueManager.parseQueue(csContext, csConf, null,
-          CapacitySchedulerConfiguration.ROOT, queues, queues,
-          TestUtils.spyHook);
-      } catch (IllegalArgumentException e) {
-        fail("Failed to set Parent Queue Capacity to 0: " + e);
-      }
-    assertTrue("Failed to set Parent Queue Capacity to 0", true);
+    CapacitySchedulerQueueManager.parseQueue(csContext, csConf, null,
+        CapacitySchedulerConfiguration.ROOT, queues, queues,
+        TestUtils.spyHook);
   }
 
   @Test
@@ -699,7 +695,7 @@ public class TestParentQueue {
         TestUtils.spyHook);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = IOException.class)
   public void testQueueCapacitySettingParentZeroChildren50pctZeroSumAllowed()
       throws Exception {
     // Setup queue configs
