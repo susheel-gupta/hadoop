@@ -72,10 +72,6 @@ public class FSConfigToCSConfigConverter {
   private static final String MAPPING_RULES_JSON =
       "mapping-rules.json";
 
-  public static final String WARNING_TEXT =
-      "WARNING: This feature is experimental and not intended " +
-          "for production use!";
-
   private Resource clusterResource;
   private boolean preemptionEnabled = false;
   private int queueMaxAppsDefault;
@@ -218,8 +214,6 @@ public class FSConfigToCSConfigConverter {
 
   @VisibleForTesting
   void convert(Configuration inputYarnSiteConfig) throws Exception {
-    System.out.println(WARNING_TEXT);
-
     // initialize Fair Scheduler
     RMContext ctx = new RMContextImpl();
     PlacementManager placementManager = new PlacementManager();
