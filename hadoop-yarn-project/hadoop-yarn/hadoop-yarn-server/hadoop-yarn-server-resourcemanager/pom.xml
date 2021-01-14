@@ -266,7 +266,7 @@
     <!-- Necessary to include jackson separately to avoid issues with
          maven enforcer plugin in "hadoop-client-check-test-invariants"
     -->
-     <dependency>
+   <!--  <dependency>
          <groupId>org.jsonschema2pojo</groupId>
          <artifactId>jsonschema2pojo-core</artifactId>
          <exclusions>
@@ -315,7 +315,7 @@
              <artifactId>validation-api</artifactId>
            </exclusion>
          </exclusions>
-     </dependency>
+     </dependency> -->
      <dependency>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-databind</artifactId>
@@ -444,7 +444,7 @@
           </excludes>
         </configuration>
       </plugin>
-      <plugin>
+      <!-- <plugin>
         <groupId>org.jsonschema2pojo</groupId>
         <artifactId>jsonschema2pojo-maven-plugin</artifactId>
         <configuration>
@@ -459,7 +459,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin> -->
     </plugins>
   </build>
 
