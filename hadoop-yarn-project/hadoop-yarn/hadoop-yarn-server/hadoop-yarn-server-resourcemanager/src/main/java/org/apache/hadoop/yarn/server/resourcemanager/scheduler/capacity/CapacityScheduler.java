@@ -223,6 +223,8 @@ public class CapacityScheduler extends
   private AppPriorityACLsManager appPriorityACLManager;
   private boolean multiNodePlacementEnabled;
 
+  private CapacitySchedulerAutoQueueHandler autoQueueHandler;
+
   private static boolean printedVerboseLoggingForAsyncScheduling = false;
 
   /**
@@ -330,6 +332,9 @@ public class CapacityScheduler extends
       this.queueManager = new CapacitySchedulerQueueManager(yarnConf,
           this.labelManager, this.appPriorityACLManager);
       this.queueManager.setCapacitySchedulerContext(this);
+
+      this.autoQueueHandler = new CapacitySchedulerAutoQueueHandler(
+          this.queueManager, this.conf);
 
       this.workflowPriorityMappingsMgr = new WorkflowPriorityMappingsManager();
 
@@ -3261,39 +3266,40 @@ public class CapacityScheduler extends
   private LeafQueue autoCreateLeafQueue(
       ApplicationPlacementContext placementContext)
       throws IOException, YarnException {
-
-    AutoCreatedLeafQueue autoCreatedLeafQueue = null;
-
     String leafQueueName = placementContext.getQueue();
     String parentQueueName = placementContext.getParentQueue();
 
     if (!StringUtils.isEmpty(parentQueueName)) {
       CSQueue parentQueue = getQueue(parentQueueName);
 
-      if (parentQueue != null && conf.isAutoCreateChildQueueEnabled(
-          parentQueue.getQueuePath())) {
+      if (parentQueue == null) {
+        throw new SchedulerDynamicEditException(
+            "Could not auto-create leaf queue for " + leafQueueName
+                + ". Queue mapping specifies an invalid parent queue "
+                + "which does not exist " + parentQueueName);
+      }
 
+      if (parentQueue != null &&
+          conf.isAutoCreateChildQueueEnabled(parentQueue.getQueuePath())) {
+        // Case 1: Handle ManagedParentQueue
+        AutoCreatedLeafQueue autoCreatedLeafQueue = null;
         ManagedParentQueue autoCreateEnabledParentQueue =
             (ManagedParentQueue) parentQueue;
         autoCreatedLeafQueue = new AutoCreatedLeafQueue(this, leafQueueName,
             autoCreateEnabledParentQueue);
 
         addQueue(autoCreatedLeafQueue);
+        return autoCreatedLeafQueue;
 
-      } else{
-        throw new SchedulerDynamicEditException(
-            "Could not auto-create leaf queue for " + leafQueueName
-                + ". Queue mapping specifies an invalid parent queue "
-                + "which does not exist "
-                + parentQueueName);
+      } else {
+        return autoQueueHandler.autoCreateQueue(placementContext);
       }
-    } else{
-      throw new SchedulerDynamicEditException(
-          "Could not auto-create leaf queue for " + leafQueueName
-              + ". Queue mapping does not specify"
-              + " which parent queue it needs to be created under.");
     }
-    return autoCreatedLeafQueue;
+
+    throw new SchedulerDynamicEditException(
+        "Could not auto-create leaf queue for " + leafQueueName
+            + ". Queue mapping does not specify"
+            + " which parent queue it needs to be created under.");
   }
 
   @Override

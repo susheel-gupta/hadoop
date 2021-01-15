@@ -158,11 +158,6 @@ public class LeafQueue extends AbstractCSQueue {
 
   }
 
-  protected void setupQueueConfigs(Resource clusterResource)
-      throws IOException {
-    setupQueueConfigs(clusterResource, csContext.getConfiguration());
-  }
-
   @SuppressWarnings("checkstyle:nowhitespaceafter")
   protected void setupQueueConfigs(Resource clusterResource,
       CapacitySchedulerConfiguration conf) throws
@@ -519,6 +514,13 @@ public class LeafQueue extends AbstractCSQueue {
 
     try {
       writeLock.lock();
+      // We skip reinitialize for dynamic queues, when this is called, and
+      // new queue is different from this queue, we will make this queue to be
+      // static queue.
+      if (newlyParsedQueue != this) {
+        this.setDynamicQueue(false);
+      }
+
       // Sanity check
       if (!(newlyParsedQueue instanceof LeafQueue) || !newlyParsedQueue
           .getQueuePath().equals(getQueuePath())) {
@@ -542,11 +544,6 @@ public class LeafQueue extends AbstractCSQueue {
       }
 
       setupQueueConfigs(clusterResource, configuration);
-
-      // queue metrics are updated, more resource may be available
-      // activate the pending applications if possible
-      activateApplications();
-
     } finally {
       writeLock.unlock();
     }

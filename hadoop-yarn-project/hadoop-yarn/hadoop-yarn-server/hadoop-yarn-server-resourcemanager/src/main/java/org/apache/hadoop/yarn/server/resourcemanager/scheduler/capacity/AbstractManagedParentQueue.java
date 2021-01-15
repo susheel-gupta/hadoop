@@ -58,7 +58,7 @@ public abstract class AbstractManagedParentQueue extends ParentQueue {
       writeLock.lock();
 
       // Set new configs
-      setupQueueConfigs(clusterResource);
+      setupQueueConfigs(clusterResource, csContext.getConfiguration());
 
     } finally {
       writeLock.unlock();
