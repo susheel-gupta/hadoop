@@ -90,6 +90,7 @@ public class CapacitySchedulerQueueInfo {
   protected boolean autoCreateChildQueueEnabled;
   protected LeafQueueTemplateInfo leafQueueTemplate;
   protected String mode;
+  protected String queueType;
 
   CapacitySchedulerQueueInfo() {
   };
@@ -135,6 +136,7 @@ public class CapacitySchedulerQueueInfo {
     populateQueueCapacities(qCapacities, qResQuotas);
 
     mode = CapacitySchedulerInfoHelper.getMode(q);
+    queueType = CapacitySchedulerInfoHelper.getQueueType(q);
 
     ResourceUsage queueResourceUsage = q.getQueueResourceUsage();
     populateQueueResourceUsage(queueResourceUsage);
@@ -318,6 +320,10 @@ public class CapacitySchedulerQueueInfo {
 
   public String getMode() {
     return mode;
+  }
+
+  public String getQueueType() {
+    return queueType;
   }
 
   public float getWeight() {
