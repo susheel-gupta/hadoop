@@ -1545,8 +1545,13 @@ public abstract class AbstractCSQueue implements CSQueue {
       leafQueue.setMaxApplications(maxApplications);
 
       int maxApplicationsPerUser = Math.min(maxApplications,
-          (int) (maxApplications * (leafQueue.getUsersManager().getUserLimit()
-              / 100.0f) * leafQueue.getUsersManager().getUserLimitFactor()));
+          (int) (maxApplications
+              * (leafQueue.getUsersManager().getUserLimit() / 100.0f)
+              * leafQueue.getUsersManager().getUserLimitFactor()));
+      if (leafQueue.getUsersManager().getUserLimitFactor() == -1) {
+        maxApplicationsPerUser =  maxApplications;
+      }
+
       leafQueue.setMaxApplicationsPerUser(maxApplicationsPerUser);
       LOG.info("LeafQueue:" + leafQueue.getQueuePath() + ", maxApplications="
           + maxApplications + ", maxApplicationsPerUser="
