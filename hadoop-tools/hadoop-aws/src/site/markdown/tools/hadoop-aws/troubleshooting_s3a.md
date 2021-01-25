@@ -892,61 +892,6 @@ It may go away if the operation is retried.
 These are the issues where S3 does not appear to behave the way a filesystem
 "should". That's because it "isn't".
 
-### Visible S3 Inconsistency
-
-Amazon S3 is *an eventually consistent object store*. That is: not a filesystem.
-
-To reduce visible inconsistencies, use the [S3Guard](./s3guard.html) consistency
-cache.
-
-
-By default, Amazon S3 offers read-after-create consistency: a newly created file
-is immediately visible.
-There is a small quirk: a negative GET may be cached, such
-that even if an object is immediately created, the fact that there "wasn't"
-an object is still remembered.
-
-That means the following sequence on its own will be consistent
-```
-touch(path) -> getFileStatus(path)
-```
-
-But this sequence *may* be inconsistent.
-
-```
-getFileStatus(path) -> touch(path) -> getFileStatus(path)
-```
-
-A common source of visible inconsistencies is that the S3 metadata
-database —the part of S3 which serves list requests— is updated asynchronously.
-Newly added or deleted files may not be visible in the index, even though direct
-operations on the object (`HEAD` and `GET`) succeed.
-
-That means the `getFileStatus()` and `open()` operations are more likely
-to be consistent with the state of the object store, but without S3Guard enabled,
-directory list operations such as `listStatus()`, `listFiles()`, `listLocatedStatus()`,
-and `listStatusIterator()` may not see newly created files, and still list
-old files.
-
-### `FileNotFoundException` even though the file was just written.
-
-This can be a sign of consistency problems. It may also surface if there is some
-asynchronous file write operation still in progress in the client: the operation
-has returned, but the write has not yet completed. While the S3A client code
-does block during the `close()` operation, we suspect that asynchronous writes
-may be taking place somewhere in the stack —this could explain why parallel tests
-fail more often than serialized tests.
-
-### File not found in a directory listing, even though `getFileStatus()` finds it
-
-(Similarly: deleted file found in listing, though `getFileStatus()` reports
-that it is not there)
-
-This is a visible sign of updates to the metadata server lagging
-behind the state of the underlying filesystem.
-
-Fix: Use [S3Guard](s3guard.html).
-
 
 ### File not visible/saved
 
@@ -1033,6 +978,11 @@ for more information.
 A file being renamed and listed in the S3Guard table could not be found
 in the S3 bucket even after multiple attempts.
 
+Now that S3 is consistent, this is sign that the S3Guard table is out of sync with
+the S3 Data. 
+
+Fix: disable S3Guard: it is no longer needed.
+
 ```
 org.apache.hadoop.fs.s3a.RemoteFileChangedException: copyFile(/sourcedir/missing, /destdir/)
  `s3a://example/sourcedir/missing': File not found on S3 after repeated attempts: `s3a://example/sourcedir/missing'
@@ -1042,10 +992,6 @@ at org.apache.hadoop.fs.s3a.S3AFileSystem$RenameOperationCallbacksImpl.copyFile(
 at org.apache.hadoop.fs.s3a.impl.RenameOperation.copySourceAndUpdateTracker(RenameOperation.java:448)
 at org.apache.hadoop.fs.s3a.impl.RenameOperation.lambda$initiateCopy$0(RenameOperation.java:412)
 ```
-
-Either the file has been deleted, or an attempt was made to read a file before it
-was created and the S3 load balancer has briefly cached the 404 returned by that
-operation. This is something which AWS S3 can do for short periods.
 
 If error occurs and the file is on S3, consider increasing the value of
 `fs.s3a.s3guard.consistency.retry.limit`.
