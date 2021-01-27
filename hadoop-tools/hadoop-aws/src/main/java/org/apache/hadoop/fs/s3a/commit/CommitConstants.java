@@ -107,9 +107,10 @@ public final class CommitConstants {
       = "s3a:magic.committer";
 
   /**
-   * Is the committer enabled by default? No.
+   * Is the committer enabled by default?
+   * Yes, because AWS S3 is consistent.
    */
-  public static final boolean DEFAULT_MAGIC_COMMITTER_ENABLED = false;
+  public static final boolean DEFAULT_MAGIC_COMMITTER_ENABLED = true;
 
   /**
    * This is the "Pending" directory of the {@code FileOutputCommitter};
