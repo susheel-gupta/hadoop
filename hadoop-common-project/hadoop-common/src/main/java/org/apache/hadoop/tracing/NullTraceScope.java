@@ -17,14 +17,10 @@
  */
 package org.apache.hadoop.tracing;
 
-import org.apache.hadoop.classification.InterfaceAudience;
-import org.apache.hadoop.classification.InterfaceStability;
+public class NullTraceScope extends TraceScope {
+  public static final NullTraceScope INSTANCE = new NullTraceScope();
 
-/**
- * CLOUDERA-BUILD: Build system is unhappy about the previous removal of this
- * interface. Place an empty class here for now.
- */
-@InterfaceAudience.Public
-@InterfaceStability.Stable
-public class SpanReceiverInfo {
+  public NullTraceScope() {
+    super(null);
+  }
 }

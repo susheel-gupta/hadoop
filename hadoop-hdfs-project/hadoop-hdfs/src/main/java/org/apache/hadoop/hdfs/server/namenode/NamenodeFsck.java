@@ -86,7 +86,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.tracing.TraceUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.htrace.core.Tracer;
+import org.apache.hadoop.tracing.Tracer;
 
 import com.google.common.annotations.VisibleForTesting;
 

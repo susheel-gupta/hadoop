@@ -17,14 +17,42 @@
  */
 package org.apache.hadoop.tracing;
 
-import org.apache.hadoop.classification.InterfaceAudience;
-import org.apache.hadoop.classification.InterfaceStability;
+import java.io.Closeable;
 
-/**
- * CLOUDERA-BUILD: Build system is unhappy about the previous removal of this
- * interface. Place an empty class here for now.
- */
-@InterfaceAudience.Public
-@InterfaceStability.Stable
-public class SpanReceiverInfo {
+public class TraceScope implements Closeable {
+  Span span;
+
+  public TraceScope(Span span) {
+    this.span = span;
+  }
+
+  // Add tag to the span
+  public void addKVAnnotation(String key, String value) {
+  }
+
+  public void addKVAnnotation(String key, Number value) {
+  }
+
+  public void addTimelineAnnotation(String msg) {
+  }
+
+  public Span span() {
+    return span;
+  }
+
+  public Span getSpan() {
+    return span;
+  }
+
+  public void reattach() {
+  }
+
+  public void detach() {
+  }
+
+  public void close() {
+    if (span != null) {
+      span.close();
+    }
+  }
 }

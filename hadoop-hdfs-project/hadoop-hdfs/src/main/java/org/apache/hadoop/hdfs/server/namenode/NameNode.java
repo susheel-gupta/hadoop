@@ -85,16 +85,14 @@ import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authorize.RefreshAuthorizationPolicyProtocol;
 import org.apache.hadoop.tools.GetUserMappingsProtocol;
-import org.apache.hadoop.tracing.TraceAdminProtocol;
 import org.apache.hadoop.tracing.TraceUtils;
-import org.apache.hadoop.tracing.TracerConfigurationManager;
 import org.apache.hadoop.util.ExitUtil.ExitException;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.JvmPauseMonitor;
 import org.apache.hadoop.util.ServicePlugin;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.htrace.core.Tracer;
+import org.apache.hadoop.tracing.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -351,8 +349,6 @@ public class NameNode extends ReconfigurableBase implements
       return RefreshCallQueueProtocol.versionID;
     } else if (protocol.equals(GetUserMappingsProtocol.class.getName())){
       return GetUserMappingsProtocol.versionID;
-    } else if (protocol.equals(TraceAdminProtocol.class.getName())){
-      return TraceAdminProtocol.versionID;
     } else {
       throw new IOException("Unknown protocol to name node: " + protocol);
     }
@@ -405,7 +401,6 @@ public class NameNode extends ReconfigurableBase implements
   private JvmPauseMonitor pauseMonitor;
   private ObjectName nameNodeStatusBeanName;
   protected final Tracer tracer;
-  protected final TracerConfigurationManager tracerConfigurationManager;
   ScheduledThreadPoolExecutor metricsLoggerTimer;
 
   /**
@@ -942,8 +937,6 @@ public class NameNode extends ReconfigurableBase implements
     this.tracer = new Tracer.Builder("NameNode").
         conf(TraceUtils.wrapHadoopConf(NAMENODE_HTRACE_PREFIX, conf)).
         build();
-    this.tracerConfigurationManager =
-        new TracerConfigurationManager(NAMENODE_HTRACE_PREFIX, conf);
     this.role = role;
     String nsId = getNameServiceId(conf);
     String namenodeId = HAUtil.getNameNodeId(conf, nsId);

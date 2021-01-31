@@ -17,14 +17,16 @@
  */
 package org.apache.hadoop.tracing;
 
-import org.apache.hadoop.classification.InterfaceAudience;
-import org.apache.hadoop.classification.InterfaceStability;
+import java.io.Closeable;
 
 /**
- * CLOUDERA-BUILD: Build system is unhappy about the previous removal of this
- * interface. Place an empty class here for now.
+ * Wrapper class for SpanContext to avoid using OpenTracing/OpenTelemetry
+ * SpanContext class directly for better separation.
  */
-@InterfaceAudience.Public
-@InterfaceStability.Stable
-public class SpanReceiverInfo {
+public class SpanContext implements Closeable {
+  public SpanContext() {
+  }
+
+  public void close() {
+  }
 }
