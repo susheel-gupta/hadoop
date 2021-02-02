@@ -18,14 +18,21 @@
 
 package org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity;
 
+import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.exceptions.YarnException;
 import org.apache.hadoop.yarn.server.resourcemanager.MockNM;
 import org.apache.hadoop.yarn.server.resourcemanager.MockRM;
 import org.apache.hadoop.yarn.server.resourcemanager.nodelabels.NullRMNodeLabelsManager;
 import org.apache.hadoop.yarn.server.resourcemanager.nodelabels.RMNodeLabelsManager;
+import org.apache.hadoop.yarn.server.resourcemanager.placement.ApplicationPlacementContext;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerDynamicEditException;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppAddedSchedulerEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.AppAttemptAddedSchedulerEvent;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.event.SchedulerEvent;
+import org.apache.hadoop.yarn.server.utils.BuilderUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -460,6 +467,62 @@ public class TestCapacitySchedulerNewQueueAutoCreation
     Assert.assertTrue("empty-auto-parent is not eligible " +
             "for auto queue creation",
         ((ParentQueue)empty).isEligibleForAutoQueueCreation());
+  }
+
+  @Test
+  public void testAutoQueueCreationWithDisabledMappingRules() throws Exception {
+    startScheduler();
+
+    ApplicationId appId = BuilderUtils.newApplicationId(1, 1);
+    // Set ApplicationPlacementContext to null in the submitted application
+    // in order to imitate a submission with mapping rules turned off
+    SchedulerEvent addAppEvent = new AppAddedSchedulerEvent(appId,
+        "root.a.a1-auto.a2-auto", USER0, null);
+    ApplicationAttemptId appAttemptId = BuilderUtils.newApplicationAttemptId(
+        appId, 1);
+    SchedulerEvent addAttemptEvent = new AppAttemptAddedSchedulerEvent(
+        appAttemptId, false);
+    cs.handle(addAppEvent);
+    cs.handle(addAttemptEvent);
+
+    CSQueue a2Auto = cs.getQueue("root.a.a1-auto.a2-auto");
+    Assert.assertNotNull(a2Auto);
+  }
+
+  @Test
+  public void testAutoCreateQueueUserLimitDisabled() throws Exception {
+    startScheduler();
+    createBasicQueueStructureAndValidate();
+
+    submitApp(cs, USER0, USER0, "root.e-auto");
+
+    AbstractCSQueue e = (AbstractCSQueue) cs.getQueue("root.e-auto");
+    Assert.assertNotNull(e);
+    Assert.assertTrue(e.isDynamicQueue());
+
+    AbstractCSQueue user0 = (AbstractCSQueue) cs.getQueue(
+        "root.e-auto." + USER0);
+    Assert.assertNotNull(user0);
+    Assert.assertTrue(user0.isDynamicQueue());
+    Assert.assertTrue(user0 instanceof LeafQueue);
+
+    LeafQueue user0LeafQueue = (LeafQueue)user0;
+
+    // Assert user limit factor is -1
+    Assert.assertTrue(user0LeafQueue.getUserLimitFactor() == -1);
+
+    // Assert user max applications not limited
+    Assert.assertEquals(user0LeafQueue.getMaxApplicationsPerUser(),
+        user0LeafQueue.getMaxApplications());
+
+    // Assert AM Resource
+    Assert.assertEquals(user0LeafQueue.getAMResourceLimit().getMemorySize(),
+        user0LeafQueue.getMaxAMResourcePerQueuePercent()*MAX_MEMORY*GB, 1e-6);
+
+    // Assert user limit (no limit) when limit factor is -1
+    Assert.assertEquals(MAX_MEMORY*GB,
+        user0LeafQueue.getEffectiveMaxCapacityDown("",
+            user0LeafQueue.getMinimumAllocation()).getMemorySize(), 1e-6);
   }
 
   private LeafQueue createQueue(String queuePath) throws YarnException {
