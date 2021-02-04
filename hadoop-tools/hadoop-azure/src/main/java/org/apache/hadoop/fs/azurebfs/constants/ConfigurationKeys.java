@@ -130,6 +130,9 @@ public final class ConfigurationKeys {
   /** Enable or disable readahead buffer in AbfsInputStream. It is enabled by default. */
   public static final String FS_AZURE_ENABLE_READAHEAD = "fs.azure.enable.readahead";
 
+  /** Setting this true will make the driver use it's own RemoteIterator implementation */
+  public static final String FS_AZURE_ENABLE_ABFS_LIST_ITERATOR = "fs.azure.enable.abfslistiterator";
+
   /** End point of ABFS account: {@value}. */
   public static final String AZURE_ABFS_ENDPOINT = "fs.azure.abfs.endpoint";
   /** Key for auth type properties: {@value}. */
