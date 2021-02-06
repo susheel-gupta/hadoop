@@ -417,7 +417,7 @@ class BlockManagerSafeMode {
           BlockManagerSafeMode.STEP_AWAITING_REPORTED_BLOCKS);
       prog.endPhase(Phase.SAFEMODE);
     }
-
+    namesystem.checkAndProvisionSnapshotTrashRoots();
     return true;
   }
 

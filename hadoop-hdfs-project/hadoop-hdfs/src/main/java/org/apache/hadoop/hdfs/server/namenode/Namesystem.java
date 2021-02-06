@@ -25,7 +25,9 @@ import org.apache.hadoop.hdfs.util.RwLock;
 /** Namesystem operations. */
 @InterfaceAudience.Private
 public interface Namesystem extends RwLock, SafeMode {
-  /** Is this name system running? */
+  /**
+   * Is this name system running?
+   */
   boolean isRunning();
 
   BlockCollection getBlockCollection(long id);
@@ -45,4 +47,10 @@ public interface Namesystem extends RwLock, SafeMode {
    *         middle of the starting active services.
    */
   boolean inTransitionToActive();
+
+  /**
+   * Check if snapshot roots are created for all existing snapshottable
+   * directories. Create them if not.
+   */
+  void checkAndProvisionSnapshotTrashRoots();
 }
