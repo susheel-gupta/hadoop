@@ -480,6 +480,10 @@ public class FifoIntraQueuePreemptionPlugin
 
     // have an internal temp app structure to store intermediate data(priority)
     for (FiCaSchedulerApp app : apps) {
+      if( !tq.leafQueue.getOrderingPolicy()
+          .getSchedulableEntities().contains(app) ) {
+        continue;
+      }
 
       Resource used = app.getAppAttemptResourceUsage().getUsed(partition);
       Resource amUsed = null;
