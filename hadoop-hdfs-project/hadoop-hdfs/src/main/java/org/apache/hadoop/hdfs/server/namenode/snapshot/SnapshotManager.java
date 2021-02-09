@@ -532,6 +532,8 @@ public class SnapshotManager implements SnapshotStatsMXBean {
             INodesInPath.append(iip, snapshot.getRoot(),
                 DFSUtil.string2Bytes(snapshotName)), xattrs,
             EnumSet.of(XAttrSetFlag.CREATE, XAttrSetFlag.REPLACE));
+        renameSnapshot(iip, srcRoot.getFullPathName(), snapshotName,
+            Snapshot.generateDeletedSnapshotName(snapshot));
         return;
       }
 
