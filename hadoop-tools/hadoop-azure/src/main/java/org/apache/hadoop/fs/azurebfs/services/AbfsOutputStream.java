@@ -22,7 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.util.Locale;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Future;
 import java.util.UUID;
@@ -55,6 +54,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations.STREAM_ID_LEN;
 import static org.apache.hadoop.fs.azurebfs.services.AbfsErrors.ERR_WRITE_WITHOUT_LEASE;
 import static org.apache.hadoop.io.IOUtils.cleanupWithLogger;
+import static org.apache.hadoop.fs.impl.StoreImplementationUtils.isProbeForSyncable;
 import static org.apache.hadoop.io.IOUtils.wrapException;
 import static org.apache.hadoop.fs.azurebfs.contracts.services.AppendRequestParameters.Mode.APPEND_MODE;
 import static org.apache.hadoop.fs.azurebfs.contracts.services.AppendRequestParameters.Mode.FLUSH_CLOSE_MODE;
@@ -185,13 +185,7 @@ public class AbfsOutputStream extends OutputStream implements Syncable,
    */
   @Override
   public boolean hasCapability(String capability) {
-    switch (capability.toLowerCase(Locale.ENGLISH)) {
-      case StreamCapabilities.HSYNC:
-      case StreamCapabilities.HFLUSH:
-        return supportFlush;
-      default:
-        return false;
-    }
+    return supportFlush && isProbeForSyncable(capability);
   }
 
   /**
