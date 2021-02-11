@@ -88,6 +88,11 @@ public enum Statistic {
       TYPE_COUNTER),
   IGNORED_ERRORS("ignored_errors", "Errors caught and ignored",
       TYPE_COUNTER),
+
+  INVOCATION_ABORT(
+      StoreStatisticNames.OP_ABORT,
+      "Calls of abort()",
+      TYPE_DURATION),
   INVOCATION_COPY_FROM_LOCAL_FILE(
       StoreStatisticNames.OP_COPY_FROM_LOCAL_FILE,
       "Calls of copyFromLocalFile()",
@@ -497,7 +502,38 @@ public enum Statistic {
   DELEGATION_TOKEN_ISSUED(
       StoreStatisticNames.DELEGATION_TOKEN_ISSUED,
       "Count of delegation tokens issued",
-      TYPE_DURATION);
+      TYPE_DURATION),
+
+  /* Multipart Upload API */
+
+  MULTIPART_UPLOAD_INSTANTIATED(
+      StoreStatisticNames.MULTIPART_UPLOAD_INSTANTIATED,
+      "Multipart Uploader Instantiated",
+      TYPE_COUNTER),
+  MULTIPART_UPLOAD_PART_PUT(
+      StoreStatisticNames.MULTIPART_UPLOAD_PART_PUT,
+      "Multipart Part Put Operation",
+      TYPE_COUNTER),
+  MULTIPART_UPLOAD_PART_PUT_BYTES(
+      StoreStatisticNames.MULTIPART_UPLOAD_PART_PUT_BYTES,
+      "Multipart Part Put Bytes",
+      TYPE_COUNTER),
+  MULTIPART_UPLOAD_ABORTED(
+      StoreStatisticNames.MULTIPART_UPLOAD_ABORTED,
+      "Multipart Upload Aborted",
+      TYPE_COUNTER),
+  MULTIPART_UPLOAD_ABORT_UNDER_PATH_INVOKED(
+      StoreStatisticNames.MULTIPART_UPLOAD_ABORT_UNDER_PATH_INVOKED,
+      "Multipart Upload Abort Unner Path Invoked",
+      TYPE_COUNTER),
+  MULTIPART_UPLOAD_COMPLETED(
+      StoreStatisticNames.MULTIPART_UPLOAD_COMPLETED,
+      "Multipart Upload Completed",
+      TYPE_COUNTER),
+  MULTIPART_UPLOAD_STARTED(
+      StoreStatisticNames.MULTIPART_UPLOAD_STARTED,
+      "Multipart Upload Started",
+      TYPE_COUNTER);
 
 
   /**

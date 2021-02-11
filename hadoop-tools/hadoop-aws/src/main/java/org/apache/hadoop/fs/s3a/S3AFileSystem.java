@@ -4725,6 +4725,8 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
       return getConf().getBoolean(ETAG_CHECKSUM_ENABLED,
           ETAG_CHECKSUM_ENABLED_DEFAULT);
 
+    case CommonPathCapabilities.ABORTABLE_STREAM:
+      return true;
 
     // this client is safe to use with buckets
     // containing directory markers anywhere in
