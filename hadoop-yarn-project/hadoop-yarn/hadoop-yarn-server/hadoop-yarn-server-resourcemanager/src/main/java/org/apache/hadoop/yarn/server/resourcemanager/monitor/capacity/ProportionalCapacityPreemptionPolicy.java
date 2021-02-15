@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.yarn.server.resourcemanager.monitor.capacity;
 
+import org.apache.commons.collections.CollectionUtils;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang.StringUtils;
@@ -411,9 +412,11 @@ public class ProportionalCapacityPreemptionPolicy
   }
 
   private Set<String> getLeafQueueNames(TempQueuePerPartition q) {
-    // If its a ManagedParentQueue, it might not have any children
-    if ((q.children == null || q.children.isEmpty())
-        && !(q.parentQueue instanceof ManagedParentQueue)) {
+    // Also exclude ParentQueues, which might be without children
+    if (CollectionUtils.isEmpty(q.children)
+        && !(q.parentQueue instanceof ManagedParentQueue)
+        && (q.parentQueue == null
+        || !q.parentQueue.isEligibleForAutoQueueCreation())) {
       return ImmutableSet.of(q.queueName);
     }
 
