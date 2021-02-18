@@ -36,6 +36,11 @@ import org.apache.hadoop.fs.StreamCapabilities;
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.AbfsRestOperationException;
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.AzureBlobFileSystemException;
 import org.apache.hadoop.fs.azurebfs.utils.CachedSASToken;
+import org.apache.hadoop.fs.statistics.IOStatistics;
+import org.apache.hadoop.fs.statistics.IOStatisticsSource;
+import org.apache.hadoop.fs.statistics.StoreStatisticNames;
+import org.apache.hadoop.fs.statistics.impl.IOStatisticsBinding;
+import org.apache.hadoop.fs.statistics.impl.IOStatisticsStore;
 
 import static org.apache.hadoop.util.StringUtils.toLowerCase;
 
@@ -43,7 +48,7 @@ import static org.apache.hadoop.util.StringUtils.toLowerCase;
  * The AbfsInputStream for AbfsClient.
  */
 public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
-        StreamCapabilities {
+        StreamCapabilities, IOStatisticsSource {
 
   private static final Logger LOG = LoggerFactory.getLogger(AbfsInputStream.class);
 
@@ -81,6 +86,8 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
   private long bytesFromReadAhead; // bytes read from readAhead; for testing
   private long bytesFromRemoteRead; // bytes read remotely; for testing
 
+  private IOStatistics ioStatistics;
+
   public AbfsInputStream(
           final AbfsClient client,
           final Statistics statistics,
@@ -101,6 +108,10 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
     this.cachedSasToken = new CachedSASToken(
         abfsInputStreamContext.getSasTokenRenewPeriodForStreamsInSeconds());
     this.streamStatistics = abfsInputStreamContext.getStreamStatistics();
+
+    if (streamStatistics != null) {
+      ioStatistics = streamStatistics.getIOStatistics();
+    }
   }
 
   public String getPath() {
@@ -133,7 +144,7 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
     int lastReadBytes;
     int totalReadBytes = 0;
     if (streamStatistics != null) {
-      streamStatistics.readOperationStarted(off, len);
+      streamStatistics.readOperationStarted();
     }
     incrementReadOps();
     do {
@@ -329,7 +340,10 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
       LOG.debug(
           "issuing HTTP GET request params position = {} b.length = {} offset = {} length = {}",
           position, b.length, offset, length);
-      op = client.read(path, position, b, offset, length, tolerateOobAppends ? "*" : eTag, cachedSasToken.get());
+      op = IOStatisticsBinding.trackDuration((IOStatisticsStore) ioStatistics,
+          StoreStatisticNames.ACTION_HTTP_GET_REQUEST,
+          () -> client.read(path, position, b, offset, length,
+              tolerateOobAppends ? "*" : eTag, cachedSasToken.get()));
       cachedSasToken.update(op.getSasToken());
       perfInfo.registerResult(op.getResult()).registerSuccess(true);
       incrementReadOps();
@@ -475,7 +489,9 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
   public synchronized void close() throws IOException {
     closed = true;
     buffer = null; // de-reference the buffer so it can be GC'ed sooner
-    LOG.debug("Closing {}", this);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Closing AbfsInputStream: {}", toString());
+    }
   }
 
   /**
@@ -543,6 +559,11 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
   @VisibleForTesting
   public long getBytesFromRemoteRead() {
     return bytesFromRemoteRead;
+  }
+
+  @Override
+  public IOStatistics getIOStatistics() {
+    return ioStatistics;
   }
 
   /**
