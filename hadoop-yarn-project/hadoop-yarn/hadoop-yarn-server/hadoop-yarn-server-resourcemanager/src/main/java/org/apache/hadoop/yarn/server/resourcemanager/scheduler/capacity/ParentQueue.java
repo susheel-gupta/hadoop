@@ -174,7 +174,7 @@ public class ParentQueue extends AbstractCSQueue {
               ((ParentQueue) parent).getQueueOrderingPolicyConfigName());
       queueOrderingPolicy.setQueues(childQueues);
 
-      LOG.info(queueName + ", capacity=" + this.queueCapacities.getCapacity()
+      LOG.info(queueName + ", " + getCapacityOrWeightString()
           + ", absoluteCapacity=" + this.queueCapacities.getAbsoluteCapacity()
           + ", maxCapacity=" + this.queueCapacities.getMaximumCapacity()
           + ", absoluteMaxCapacity=" + this.queueCapacities
@@ -463,8 +463,8 @@ public class ParentQueue extends AbstractCSQueue {
 
   public String toString() {
     return queueName + ": " +
-        "numChildQueue= " + childQueues.size() + ", " + 
-        "capacity=" + queueCapacities.getCapacity() + ", " +  
+        "numChildQueue= " + childQueues.size() + ", " +
+        getCapacityOrWeightString() + ", " +
         "absoluteCapacity=" + queueCapacities.getAbsoluteCapacity() + ", " +
         "usedResources=" + queueUsage.getUsed() + 
         "usedCapacity=" + getUsedCapacity() + ", " + 

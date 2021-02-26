@@ -258,9 +258,8 @@ public class LeafQueue extends AbstractCSQueue {
       usersManager.updateUserWeights();
 
       LOG.info(
-          "Initializing " + getQueuePath() + "\n" + "capacity = "
-              + queueCapacities.getCapacity()
-              + " [= (float) configuredCapacity / 100 ]" + "\n"
+          "Initializing " + getQueuePath() + "\n" +
+              getExtendedCapacityOrWeightString() + "\n"
               + "absoluteCapacity = " + queueCapacities.getAbsoluteCapacity()
               + " [= parentAbsoluteCapacity * capacity ]" + "\n"
               + "maxCapacity = " + queueCapacities.getMaximumCapacity()
@@ -476,7 +475,7 @@ public class LeafQueue extends AbstractCSQueue {
   public String toString() {
     try {
       readLock.lock();
-      return getQueuePath() + ": " + "capacity=" + queueCapacities.getCapacity()
+      return getQueuePath() + ": " + getCapacityOrWeightString()
           + ", " + "absoluteCapacity=" + queueCapacities.getAbsoluteCapacity()
           + ", " + "usedResources=" + queueUsage.getUsed() + ", "
           + "usedCapacity=" + getUsedCapacity() + ", " + "absoluteUsedCapacity="
@@ -489,7 +488,19 @@ public class LeafQueue extends AbstractCSQueue {
     } finally {
       readLock.unlock();
     }
+  }
 
+  protected String getExtendedCapacityOrWeightString() {
+    if (queueCapacities.getWeight() != -1) {
+      return "weight = " + queueCapacities.getWeight()
+          + " [= (float) configuredCapacity (with w suffix)] " + "\n"
+          + "normalizedWeight = " + queueCapacities.getNormalizedWeight()
+          + " [= (float) configuredCapacity / sum(configuredCapacity of "
+          + "all queues under the parent)]";
+    } else {
+      return "capacity = " + queueCapacities.getCapacity()
+          + " [= (float) configuredCapacity / 100 ]";
+    }
   }
 
   @VisibleForTesting
