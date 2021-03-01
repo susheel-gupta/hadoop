@@ -22,6 +22,7 @@ package org.apache.hadoop.yarn.server.resourcemanager;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -1067,7 +1068,7 @@ public class TestAppManager{
     }).when(placementMgr).placeApplication(
         any(ApplicationSubmissionContext.class),
         any(String.class),
-        any(Boolean.class));
+        anyBoolean());
     rmContext.setQueuePlacementManager(placementMgr);
 
     asContext.setQueue("oldQueue");
