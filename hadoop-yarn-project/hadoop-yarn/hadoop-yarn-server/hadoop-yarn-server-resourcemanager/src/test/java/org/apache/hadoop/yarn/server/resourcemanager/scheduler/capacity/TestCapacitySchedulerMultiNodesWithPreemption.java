@@ -60,7 +60,7 @@ public class TestCapacitySchedulerMultiNodesWithPreemption
   private CapacitySchedulerConfiguration conf;
   private static final String POLICY_CLASS_NAME =
       "org.apache.hadoop.yarn.server.resourcemanager.scheduler.placement."
-      + "LayeredNodeUsageBinPackingPolicy";
+          + "ResourceUsageMultiNodeLookupPolicy";
 
   @Before
   public void setUp() {
