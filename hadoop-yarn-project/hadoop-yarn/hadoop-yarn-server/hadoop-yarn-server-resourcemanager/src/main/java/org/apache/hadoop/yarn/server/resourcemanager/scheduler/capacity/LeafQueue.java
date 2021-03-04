@@ -604,6 +604,9 @@ public class LeafQueue extends AbstractCSQueue {
     // Careful! Locking order is important!
     validateSubmitApplication(applicationId, userName, queue);
 
+    // Signal for expired auto deletion.
+    updateLastSubmittedTimeStamp();
+
     // Inform the parent queue
     try {
       getParent().submitApplication(applicationId, userName, queue);
@@ -2363,8 +2366,8 @@ public class LeafQueue extends AbstractCSQueue {
    */
   public Resource getTotalPendingResources(String partition,
       boolean deductReservedFromPending) {
+    readLock.lock();
     try {
-      readLock.lock();
       Resource totalPending = Resource.newInstance(0, 0);
       for (FiCaSchedulerApp app : getApplications()) {
         Resource pending =
@@ -2381,5 +2384,12 @@ public class LeafQueue extends AbstractCSQueue {
     } finally {
       readLock.unlock();
     }
+  }
+
+  @Override
+  public boolean isEligibleForAutoDeletion() {
+    return isDynamicQueue() && getNumApplications() == 0
+        && csContext.getConfiguration().
+        isAutoExpiredDeletionEnabled(this.getQueuePath());
   }
 }

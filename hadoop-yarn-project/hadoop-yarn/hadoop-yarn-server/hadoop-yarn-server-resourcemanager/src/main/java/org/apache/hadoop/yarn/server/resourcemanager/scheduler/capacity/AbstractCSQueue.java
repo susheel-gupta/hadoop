@@ -29,6 +29,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.util.Time;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
@@ -152,6 +153,10 @@ public abstract class AbstractCSQueue implements CSQueue {
 
   // is it a dynamic queue?
   private boolean dynamicQueue = false;
+
+  // The timestamp of the last submitted application to this queue.
+  // Only applies to dynamic queues.
+  private long lastSubmittedTimestamp;
 
   public AbstractCSQueue(CapacitySchedulerContext cs,
       String queueName, CSQueue parent, CSQueue old) throws IOException {
@@ -1651,4 +1656,46 @@ public abstract class AbstractCSQueue implements CSQueue {
       return "capacity=" + queueCapacities.getCapacity();
     }
   }
+
+  public boolean isEligibleForAutoDeletion() {
+    return false;
+  }
+
+  public boolean isInactiveDynamicQueue() {
+    long idleDurationSeconds =
+        (Time.monotonicNow() - getLastSubmittedTimestamp())/1000;
+    return isDynamicQueue() && isEligibleForAutoDeletion() &&
+        (idleDurationSeconds > this.csContext.getConfiguration().
+            getAutoExpiredDeletionTime());
+  }
+
+  public void updateLastSubmittedTimeStamp() {
+    writeLock.lock();
+    try {
+      this.lastSubmittedTimestamp = Time.monotonicNow();
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
+  public long getLastSubmittedTimestamp() {
+    readLock.lock();
+
+    try {
+      return lastSubmittedTimestamp;
+    } finally {
+      readLock.unlock();
+    }
+  }
+
+  @VisibleForTesting
+  public void setLastSubmittedTimestamp(long lastSubmittedTimestamp) {
+    writeLock.lock();
+    try {
+      this.lastSubmittedTimestamp = lastSubmittedTimestamp;
+    } finally {
+      writeLock.unlock();
+    }
+  }
+
 }
