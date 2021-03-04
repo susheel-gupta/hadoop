@@ -82,4 +82,12 @@ public class FileSystemBasedConfigurationProvider
   public synchronized void closeInternal() throws Exception {
     fs.close();
   }
+
+  public FileSystem getFs() {
+    return fs;
+  }
+
+  public Path getConfigDir() {
+    return configDir;
+  }
 }

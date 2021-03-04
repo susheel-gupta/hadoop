@@ -3382,6 +3382,33 @@ public class CapacityScheduler extends
     return null;
   }
 
+  public CSConfigurationProvider getCsConfProvider() {
+    return csConfProvider;
+  }
+
+  @Override
+  public void resetSchedulerMetrics() {
+    CapacitySchedulerMetrics.destroy();
+  }
+
+  public boolean isMultiNodePlacementEnabled() {
+    return multiNodePlacementEnabled;
+  }
+
+  public int getNumAsyncSchedulerThreads() {
+    return asyncSchedulerThreads == null ? 0 : asyncSchedulerThreads.size();
+  }
+
+  @VisibleForTesting
+  public void setMaxRunningAppsEnforcer(CSMaxRunningAppsEnforcer enforcer) {
+    this.maxRunningEnforcer = enforcer;
+  }
+
+  @VisibleForTesting
+  public void setQueueManager(CapacitySchedulerQueueManager qm) {
+    this.queueManager = qm;
+  }
+
   private LeafQueue autoCreateLeafQueue(
       ApplicationPlacementContext placementContext)
       throws IOException, YarnException {
@@ -3417,20 +3444,5 @@ public class CapacityScheduler extends
         "Could not auto-create leaf queue for " + leafQueueName
             + ". Queue mapping does not specify"
             + " which parent queue it needs to be created under.");
-  }
-
-  @Override
-  public void resetSchedulerMetrics() {
-    CapacitySchedulerMetrics.destroy();
-  }
-
-  @VisibleForTesting
-  public void setMaxRunningAppsEnforcer(CSMaxRunningAppsEnforcer enforcer) {
-    this.maxRunningEnforcer = enforcer;
-  }
-
-  @VisibleForTesting
-  public void setQueueManager(CapacitySchedulerQueueManager qm) {
-    this.queueManager = qm;
   }
 }
