@@ -732,6 +732,7 @@ public abstract class AbstractCSQueue implements CSQueue {
     queueInfo.setIntraQueuePreemptionDisabled(
         getIntraQueuePreemptionDisabled());
     queueInfo.setQueueConfigurations(getQueueConfigurations());
+    queueInfo.setWeight(queueCapacities.getWeight());
     return queueInfo;
   }
 

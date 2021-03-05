@@ -1708,7 +1708,8 @@ public class TestYarnCLI {
     nodeLabels.add("GPU");
     nodeLabels.add("JDK_7");
     QueueInfo queueInfo = QueueInfo.newInstance("queueA", 0.4f, 0.8f, 0.5f,
-        null, null, QueueState.RUNNING, nodeLabels, "GPU", null, false, null,
+        null, null, QueueState.RUNNING, nodeLabels,
+        "GPU", null, false, -1.0f, null,
         false);
     when(client.getQueueInfo(any(String.class))).thenReturn(queueInfo);
     int result = cli.run(new String[] { "-status", "queueA" });
@@ -1719,9 +1720,10 @@ public class TestYarnCLI {
     pw.println("Queue Information : ");
     pw.println("Queue Name : " + "queueA");
     pw.println("\tState : " + "RUNNING");
-    pw.println("\tCapacity : " + "40.0%");
-    pw.println("\tCurrent Capacity : " + "50.0%");
-    pw.println("\tMaximum Capacity : " + "80.0%");
+    pw.println("\tCapacity : " + "40.00%");
+    pw.println("\tCurrent Capacity : " + "50.00%");
+    pw.println("\tMaximum Capacity : " + "80.00%");
+    pw.println("\tWeight : " + "-1.00");
     pw.println("\tDefault Node Label expression : " + "GPU");
     pw.println("\tAccessible Node Labels : " + "JDK_7,GPU");
     pw.println("\tPreemption : " + "enabled");
@@ -1876,7 +1878,8 @@ public class TestYarnCLI {
   public void testGetQueueInfoWithEmptyNodeLabel() throws Exception {
     QueueCLI cli = createAndGetQueueCLI();
     QueueInfo queueInfo = QueueInfo.newInstance("queueA", 0.4f, 0.8f, 0.5f,
-        null, null, QueueState.RUNNING, null, null, null, true, null, true);
+        null, null, QueueState.RUNNING, null, null, null,
+        true, -1.0f, null, true);
     when(client.getQueueInfo(any(String.class))).thenReturn(queueInfo);
     int result = cli.run(new String[] { "-status", "queueA" });
     assertEquals(0, result);
@@ -1886,9 +1889,10 @@ public class TestYarnCLI {
     pw.println("Queue Information : ");
     pw.println("Queue Name : " + "queueA");
     pw.println("\tState : " + "RUNNING");
-    pw.println("\tCapacity : " + "40.0%");
-    pw.println("\tCurrent Capacity : " + "50.0%");
-    pw.println("\tMaximum Capacity : " + "80.0%");
+    pw.println("\tCapacity : " + "40.00%");
+    pw.println("\tCurrent Capacity : " + "50.00%");
+    pw.println("\tMaximum Capacity : " + "80.00%");
+    pw.println("\tWeight : " + "-1.00");
     pw.println("\tDefault Node Label expression : "
         + NodeLabel.DEFAULT_NODE_LABEL_PARTITION);
     pw.println("\tAccessible Node Labels : ");
