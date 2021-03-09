@@ -49,10 +49,14 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.MetricRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Private
 @Unstable
 public class SLSWebApp extends HttpServlet {
+  private static final Logger LOG = LoggerFactory.getLogger(SLSWebApp.class);
+
   private static final long serialVersionUID = 1905162041950251407L;
   private transient Server server;
   private transient SchedulerWrapper wrapper;
@@ -100,7 +104,7 @@ public class SLSWebApp extends HttpServlet {
       trackTemplate = IOUtils.toString(
           cl.getResourceAsStream("html/track.html.template"));
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error("Caught exception while initializing templates", e);
     }
   }
 
@@ -165,7 +169,7 @@ public class SLSWebApp extends HttpServlet {
                 printJsonTrack(request, response);
               }
         } catch (Exception e) {
-          e.printStackTrace();
+          LOG.error("Caught exception while starting SLSWebApp", e);
         }
       }
     };
