@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.yarn.server.resourcemanager.placement.MappingRule;
+import org.apache.hadoop.yarn.server.resourcemanager.placement.csmappingrule.MappingRule;
 import org.apache.hadoop.yarn.server.resourcemanager.placement.QueueMapping;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
@@ -41,10 +41,10 @@ public class TestQueueMappings {
       CapacitySchedulerConfiguration.ROOT + "." + Q1;
   private final static String Q2_PATH =
       CapacitySchedulerConfiguration.ROOT + "." + Q2;
-  
+
   private CapacityScheduler cs;
   private YarnConfiguration conf;
-  
+
   @Before
   public void setup() {
     CapacitySchedulerConfiguration csConf =
@@ -69,7 +69,7 @@ public class TestQueueMappings {
 
     LOG.info("Setup top-level queues q1 and q2");
   }
-  
+
   @Test
   public void testQueueMappingSpecifyingNotExistedQueue() {
     // if the mapping specifies a queue that does not exist, reinitialize will
@@ -84,7 +84,7 @@ public class TestQueueMappings {
     }
     Assert.assertTrue("queue initialization failed for non-existent q", fail);
   }
-  
+
   @Test
   public void testQueueMappingTrimSpaces() throws IOException {
     // space trimming

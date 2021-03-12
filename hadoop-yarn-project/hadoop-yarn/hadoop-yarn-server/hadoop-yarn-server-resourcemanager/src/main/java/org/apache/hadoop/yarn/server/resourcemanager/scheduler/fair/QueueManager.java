@@ -18,6 +18,12 @@
 
 package org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair;
 
+import org.apache.hadoop.classification.InterfaceAudience.Private;
+import org.apache.hadoop.classification.InterfaceStability.Unstable;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.policies.FifoPolicy;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,11 +41,6 @@ import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.classification.InterfaceAudience.Private;
-import org.apache.hadoop.classification.InterfaceStability.Unstable;
-import org.apache.hadoop.yarn.api.records.ApplicationId;
-import org.apache.hadoop.yarn.conf.YarnConfiguration;
-import org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.policies.FifoPolicy;
 
 /**
  * Maintains a list of queues as well as scheduling parameters for each queue,
@@ -82,10 +83,10 @@ public class QueueManager {
   }
 
   public static final String ROOT_QUEUE = "root";
-  
+
   private final FairScheduler scheduler;
 
-  private final Collection<FSLeafQueue> leafQueues = 
+  private final Collection<FSLeafQueue> leafQueues =
       new CopyOnWriteArrayList<FSLeafQueue>();
   private final Map<String, FSQueue> queues = new HashMap<String, FSQueue>();
   private Set<IncompatibleQueueRemovalTask> incompatibleQueuesPendingRemoval =
@@ -95,7 +96,7 @@ public class QueueManager {
   public QueueManager(FairScheduler scheduler) {
     this.scheduler = scheduler;
   }
-  
+
   public FSParentQueue getRootQueue() {
     return rootQueue;
   }
@@ -123,9 +124,9 @@ public class QueueManager {
    * a parent queue, or one of the parents in its name is already a leaf queue,
    * <code>null</code> is returned.
    *
-   * The root part of the name is optional, so a queue underneath the root 
+   * The root part of the name is optional, so a queue underneath the root
    * named "queue1" could be referred to  as just "queue1", and a queue named
-   * "queue2" underneath a parent named "parent1" that is underneath the root 
+   * "queue2" underneath a parent named "parent1" that is underneath the root
    * could be referred to as just "parent1.queue2".
    * @param name name of the queue
    * @param create <code>true</code> if the queue must be created if it does
@@ -186,9 +187,9 @@ public class QueueManager {
    * as a leaf queue, or one of the parents in its name is already a leaf
    * queue, <code>null</code> is returned.
    *
-   * The root part of the name is optional, so a queue underneath the root 
+   * The root part of the name is optional, so a queue underneath the root
    * named "queue1" could be referred to  as just "queue1", and a queue named
-   * "queue2" underneath a parent named "parent1" that is underneath the root 
+   * "queue2" underneath a parent named "parent1" that is underneath the root
    * could be referred to as just "parent1.queue2".
    * @param name name of the queue
    * @param create <code>true</code> if the queue must be created if it does
@@ -258,7 +259,7 @@ public class QueueManager {
    * Create a leaf or parent queue based on what is specified in
    * {@code queueType} and place it in the tree. Create any parents that don't
    * already exist.
-   * 
+   *
    * @return the created queue, if successful or null if not allowed (one of the
    * parent queues in the queue name is already a leaf queue)
    */
@@ -418,7 +419,7 @@ public class QueueManager {
    * (1) queueToCreate being currently a parent but needs to change to leaf
    * (2) queueToCreate being currently a leaf but needs to change to parent
    * (3) an existing leaf queue in the ancestry of queueToCreate.
-   * 
+   *
    * We will never remove the root queue or the default queue in this way.
    *
    * @return Optional.of(Boolean.TRUE)  if there was an incompatible queue that
@@ -453,7 +454,7 @@ public class QueueManager {
         if (queueType == FSQueueType.PARENT) {
           return Optional.empty();
         }
-        // If it's an existing parent queue and needs to change to leaf, 
+        // If it's an existing parent queue and needs to change to leaf,
         // remove it if it's empty.
         return Optional.of(removeQueueIfEmpty(queue));
       }
@@ -526,7 +527,7 @@ public class QueueManager {
     }
     return false;
   }
-  
+
   /**
    * Remove a queue and all its descendents.
    */
@@ -544,7 +545,7 @@ public class QueueManager {
       parent.removeChildQueue(queue);
     }
   }
-  
+
   /**
    * Gets a queue by name.
    */
@@ -564,7 +565,7 @@ public class QueueManager {
       return queues.containsKey(name);
     }
   }
-  
+
   /**
    * Get a collection of all leaf queues
    */
@@ -573,7 +574,7 @@ public class QueueManager {
       return leafQueues;
     }
   }
-  
+
   /**
    * Get a collection of all queues
    */
@@ -582,14 +583,14 @@ public class QueueManager {
       return ImmutableList.copyOf(queues.values());
     }
   }
-  
+
   private String ensureRootPrefix(String name) {
     if (!name.startsWith(ROOT_QUEUE + ".") && !name.equals(ROOT_QUEUE)) {
       name = ROOT_QUEUE + "." + name;
     }
     return name;
   }
-  
+
   public void updateAllocationConfiguration(AllocationConfiguration queueConf) {
     // Create leaf queues and the parent queues in a leaf's ancestry if they do not exist
     synchronized (queues) {
