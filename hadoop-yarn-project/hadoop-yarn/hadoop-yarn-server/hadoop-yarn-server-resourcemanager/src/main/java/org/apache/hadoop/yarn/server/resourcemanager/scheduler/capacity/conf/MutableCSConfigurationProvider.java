@@ -68,29 +68,18 @@ public class MutableCSConfigurationProvider implements CSConfigurationProvider,
     this.rmContext = rmContext;
   }
 
+  // Unit test can overwrite this method
+  protected Configuration getInitSchedulerConfig() {
+    Configuration initialSchedConf = new Configuration(false);
+    initialSchedConf.
+        addResource(YarnConfiguration.CS_CONFIGURATION_FILE);
+    return initialSchedConf;
+  }
+
   @Override
   public void init(Configuration config) throws IOException {
-    String store = config.get(
-        YarnConfiguration.SCHEDULER_CONFIGURATION_STORE_CLASS,
-        YarnConfiguration.MEMORY_CONFIGURATION_STORE);
-    switch (store) {
-    case YarnConfiguration.MEMORY_CONFIGURATION_STORE:
-      this.confStore = new InMemoryConfigurationStore();
-      break;
-    case YarnConfiguration.LEVELDB_CONFIGURATION_STORE:
-      this.confStore = new LeveldbConfigurationStore();
-      break;
-    case YarnConfiguration.ZK_CONFIGURATION_STORE:
-      this.confStore = new ZKConfigurationStore();
-      break;
-    case YarnConfiguration.FS_CONFIGURATION_STORE:
-      this.confStore = new FSSchedulerConfigurationStore();
-      break;
-    default:
-      this.confStore = YarnConfigurationStoreFactory.getStore(config);
-      break;
-    }
-    Configuration initialSchedConf = new Configuration(false);
+    this.confStore = YarnConfigurationStoreFactory.getStore(config);
+    Configuration initialSchedConf = getInitSchedulerConfig();
     initialSchedConf.addResource(YarnConfiguration.CS_CONFIGURATION_FILE);
     this.schedConf = new Configuration(false);
     // We need to explicitly set the key-values in schedConf, otherwise
@@ -248,7 +237,7 @@ public class MutableCSConfigurationProvider implements CSConfigurationProvider,
     String childQueuesKey = CapacitySchedulerConfiguration.PREFIX +
         parentQueue + CapacitySchedulerConfiguration.DOT +
         CapacitySchedulerConfiguration.QUEUES;
-    return new ArrayList<>(conf.getStringCollection(childQueuesKey));
+    return new ArrayList<>(conf.getTrimmedStringCollection(childQueuesKey));
   }
 
   private Map<String, String> constructKeyValueConfUpdate(
