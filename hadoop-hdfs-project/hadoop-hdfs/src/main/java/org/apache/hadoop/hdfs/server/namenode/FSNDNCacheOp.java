@@ -81,7 +81,10 @@ class FSNDNCacheOp {
     final FSPermissionChecker pc = getFsPermissionChecker(fsn);
 
     if (pc != null) {
-      pc.checkSuperuserPrivilege();
+      String operationName = "addCachePool";
+      String poolName = req == null ? null : req.getPoolName();
+      FSPermissionChecker.setOperationType(operationName);
+      pc.checkSuperuserPrivilege(poolName);
     }
     CachePoolInfo info = cacheManager.addCachePool(req);
     fsn.getEditLog().logAddCachePool(info, logRetryCache);
@@ -93,7 +96,10 @@ class FSNDNCacheOp {
       boolean logRetryCache) throws IOException {
     final FSPermissionChecker pc = getFsPermissionChecker(fsn);
     if (pc != null) {
-      pc.checkSuperuserPrivilege();
+      String operationName = "modifyCachePool";
+      String poolName = req == null ? null : req.getPoolName();
+      FSPermissionChecker.setOperationType(operationName);
+      pc.checkSuperuserPrivilege(poolName);
     }
     cacheManager.modifyCachePool(req);
     fsn.getEditLog().logModifyCachePool(req, logRetryCache);
@@ -104,7 +110,9 @@ class FSNDNCacheOp {
       boolean logRetryCache) throws IOException {
     final FSPermissionChecker pc = getFsPermissionChecker(fsn);
     if (pc != null) {
-      pc.checkSuperuserPrivilege();
+      String operationName = "removeCachePool";
+      FSPermissionChecker.setOperationType(operationName);
+      pc.checkSuperuserPrivilege(cachePoolName);
     }
     cacheManager.removeCachePool(cachePoolName);
     fsn.getEditLog().logRemoveCachePool(cachePoolName, logRetryCache);

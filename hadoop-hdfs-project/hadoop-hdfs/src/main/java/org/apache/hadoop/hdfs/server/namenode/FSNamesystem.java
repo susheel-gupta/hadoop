@@ -1871,7 +1871,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
   BatchedListEntries<OpenFileEntry> listOpenFiles(long prevId,
       EnumSet<OpenFilesType> openFilesTypes, String path) throws IOException {
     final String operationName = "listOpenFiles";
-    checkSuperuserPrivilege();
+    checkSuperuserPrivilege(operationName, path);
     checkOperation(OperationCategory.READ);
     BatchedListEntries<OpenFileEntry> batchedListEntries;
     try {
@@ -3385,6 +3385,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     final FSPermissionChecker pc = getPermissionChecker();
     FSPermissionChecker.setOperationType(operationName);
     try {
+      checkSuperuserPrivilege(operationName, src);
       writeLock();
       try {
         checkOperation(OperationCategory.WRITE);
@@ -3396,9 +3397,8 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     } catch (AccessControlException ace) {
       logAuditEvent(false, operationName, src);
       throw ace;
-    } finally {
-      getEditLog().logSync();
     }
+    getEditLog().logSync();
     logAuditEvent(true, operationName, src);
   }
 
@@ -5005,18 +5005,22 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     return new PermissionStatus(fsOwner.getShortUserName(), supergroup, permission);
   }
 
+  /**
+   * This method is retained for backward compatibility.
+   * Please use {@link #checkSuperuserPrivilege(String)} instead.
+   *
+   * @throws AccessControlException if user is not a super user.
+   */
   void checkSuperuserPrivilege() throws AccessControlException {
     if (isPermissionEnabled) {
       FSPermissionChecker pc = getPermissionChecker();
-      pc.checkSuperuserPrivilege();
+      pc.checkSuperuserPrivilege(null);
     }
   }
 
-  void checkSuperuserPrivilege(FSPermissionChecker pc)
-      throws AccessControlException {
-    if (isPermissionEnabled) {
-      pc.checkSuperuserPrivilege();
-    }
+  void checkSuperuserPrivilege(String operationName)
+      throws IOException {
+    checkSuperuserPrivilege(operationName, null);
   }
 
   /**
@@ -5781,7 +5785,8 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
    */
   Collection<CorruptFileBlockInfo> listCorruptFileBlocks(String path,
   String[] cookieTab) throws IOException {
-    checkSuperuserPrivilege();
+    final String operationName = "listCorruptFileBlocks";
+    checkSuperuserPrivilege(operationName, path);
     checkOperation(OperationCategory.READ);
 
     int count = 0;
@@ -6699,7 +6704,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     checkOperation(OperationCategory.WRITE);
     final String operationName = "allowSnapshot";
     boolean success = false;
-    checkSuperuserPrivilege(operationName);
+    checkSuperuserPrivilege(operationName, path);
     writeLock();
     try {
       checkOperation(OperationCategory.WRITE);
@@ -6717,7 +6722,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
   void disallowSnapshot(String path) throws IOException {
     checkOperation(OperationCategory.WRITE);
     final String operationName = "disallowSnapshot";
-    checkSuperuserPrivilege(operationName);
+    checkSuperuserPrivilege(operationName, path);
     writeLock();
     try {
       checkOperation(OperationCategory.WRITE);
@@ -7676,8 +7681,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
       Metadata metadata = FSDirEncryptionZoneOp.ensureKeyIsInitialized(dir,
           keyName, src);
       final FSPermissionChecker pc = getPermissionChecker();
-      FSPermissionChecker.setOperationType(operationName);
-      checkSuperuserPrivilege(pc);
+      checkSuperuserPrivilege(operationName, src);
       checkOperation(OperationCategory.WRITE);
       final FileStatus resultingStat;
       writeLock();
@@ -7738,9 +7742,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     final String operationName = "listEncryptionZones";
     boolean success = false;
     checkOperation(OperationCategory.READ);
-    final FSPermissionChecker pc = getPermissionChecker();
-    FSPermissionChecker.setOperationType(operationName);
-    checkSuperuserPrivilege(pc);
+    checkSuperuserPrivilege(operationName, dir.rootDir.getFullPathName());
     readLock();
     try {
       checkOperation(OperationCategory.READ);
@@ -7756,12 +7758,13 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
 
   void reencryptEncryptionZone(final String zone, final ReencryptAction action,
       final boolean logRetryCache) throws IOException {
+    final String operationName = "reencryptEncryptionZone";
     boolean success = false;
     try {
       Preconditions.checkNotNull(zone, "zone is null.");
       checkOperation(OperationCategory.WRITE);
       final FSPermissionChecker pc = dir.getPermissionChecker();
-      checkSuperuserPrivilege(pc);
+      checkSuperuserPrivilege(operationName, zone);
       checkNameNodeSafeMode("NameNode in safemode, cannot " + action
           + " re-encryption on zone " + zone);
       reencryptEncryptionZoneInt(pc, zone, action, logRetryCache);
@@ -7776,9 +7779,7 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     final String operationName = "listReencryptionStatus";
     boolean success = false;
     checkOperation(OperationCategory.READ);
-    final FSPermissionChecker pc = getPermissionChecker();
-    FSPermissionChecker.setOperationType(operationName);
-    checkSuperuserPrivilege(pc);
+    checkSuperuserPrivilege(operationName, dir.rootDir.getFullPathName());
     readLock();
     try {
       checkOperation(OperationCategory.READ);
@@ -8527,15 +8528,19 @@ public class FSNamesystem implements Namesystem, FSNamesystemMBean,
     return JSON.toString(resultMap);
   }
 
-  // This method logs operatoinName without super user privilege.
+  // This method logs operationName without super user privilege.
   // It should be called without holding FSN lock.
-  void checkSuperuserPrivilege(String operationName)
+  void checkSuperuserPrivilege(String operationName, String path)
       throws IOException {
-    try {
-      checkSuperuserPrivilege();
-    } catch (AccessControlException ace) {
-      logAuditEvent(false, operationName, null);
-      throw ace;
+    if (isPermissionEnabled) {
+      try {
+        FSPermissionChecker.setOperationType(operationName);
+        FSPermissionChecker pc = getPermissionChecker();
+        pc.checkSuperuserPrivilege(path);
+      } catch(AccessControlException ace) {
+        logAuditEvent(false, operationName, path);
+        throw ace;
+      }
     }
   }
 
