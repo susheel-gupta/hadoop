@@ -1929,7 +1929,6 @@ public class UserGroupInformation {
   /**
    * Log current UGI and token information into specified log.
    * @param ugi - UGI
-   * @throws IOException
    */
   @InterfaceAudience.LimitedPrivate({"HDFS", "KMS"})
   @InterfaceStability.Unstable
