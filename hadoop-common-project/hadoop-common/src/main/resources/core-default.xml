@@ -3650,20 +3650,6 @@
   </property>
 
   <property>
-    <name>fs.o3fs.impl</name>
-    <value>org.apache.hadoop.fs.ozone.OzoneFileSystem</value>
-    <description>
-      The implementation class of the OzoneFileSystem
-    </description>
-  </property>
-
-  <property>
-    <name>fs.AbstractFileSystem.o3fs.impl</name>
-    <value>org.apache.hadoop.fs.ozone.OzFs</value>
-    <description>The AbstractFileSystem for o3fs: uris.</description>
-  </property>
-
-  <property>
     <name>dfs.client.ignore.namenode.default.kms.uri</name>
     <value>false</value>
     <description>

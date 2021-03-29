@@ -151,10 +151,6 @@ public class TestCommonConfigurationFields extends TestConfigurationFieldsBase {
     xmlPropsToSkipCompare.add("fs.azure.saskey.usecontainersaskeyforallaccess");
     xmlPropsToSkipCompare.add("fs.azure.user.agent.prefix");
 
-    // Ozone o3fs properties are in a different repository
-    xmlPropsToSkipCompare.add("fs.o3fs.impl");
-    xmlPropsToSkipCompare.add("fs.AbstractFileSystem.o3fs.impl");
-
     // Deprecated properties.  These should eventually be removed from the
     // class.
     configurationPropsToSkipCompare
