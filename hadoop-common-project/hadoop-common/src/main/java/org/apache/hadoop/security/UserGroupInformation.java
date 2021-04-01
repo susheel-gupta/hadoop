@@ -1934,12 +1934,11 @@ public class UserGroupInformation {
   @InterfaceAudience.LimitedPrivate({"HDFS", "KMS"})
   @InterfaceStability.Unstable
   public static void logUserInfo(Logger log, String caption,
-      UserGroupInformation ugi) {
+      UserGroupInformation ugi) throws IOException {
     if (log.isDebugEnabled()) {
       log.debug(caption + " UGI: " + ugi);
-      for (Map.Entry<Text, Token<? extends TokenIdentifier>> kv :
-          ugi.getCredentials().getTokenMap().entrySet()) {
-        log.debug("+token: {} -> {}", kv.getKey(), kv.getValue());
+      for (Token<?> token : ugi.getTokens()) {
+        log.debug("+token:" + token);
       }
     }
   }
