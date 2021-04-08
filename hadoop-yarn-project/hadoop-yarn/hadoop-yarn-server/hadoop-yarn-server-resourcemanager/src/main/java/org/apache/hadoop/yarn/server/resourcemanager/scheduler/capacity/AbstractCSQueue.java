@@ -360,6 +360,10 @@ public abstract class AbstractCSQueue implements CSQueue {
 
     writeLock.lock();
     try {
+      if (isDynamicQueue() && getParent() instanceof ParentQueue) {
+        ((ParentQueue) getParent()).getAutoCreatedQueueTemplate()
+            .setTemplateEntriesForChild(configuration, getQueuePath());
+      }
       // get labels
       this.accessibleLabels =
           configuration.getAccessibleNodeLabels(getQueuePath());

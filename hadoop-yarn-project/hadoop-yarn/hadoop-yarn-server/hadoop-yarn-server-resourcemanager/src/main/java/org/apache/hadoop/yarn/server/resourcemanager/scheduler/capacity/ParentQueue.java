@@ -30,6 +30,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import com.google.common.collect.Sets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.hadoop.yarn.exceptions.YarnRuntimeException;
@@ -102,6 +103,8 @@ public class ParentQueue extends AbstractCSQueue {
 
   private final boolean allowZeroCapacitySum;
 
+  private AutoCreatedQueueTemplate autoCreatedQueueTemplate;
+
   // effective min ratio per resource, it is used during updateClusterResource,
   // leaf queue can use this to calculate effective resources.
   // This field will not be edited, reference will point to a new immutable map
@@ -153,6 +156,8 @@ public class ParentQueue extends AbstractCSQueue {
       throws IOException {
     writeLock.lock();
     try {
+      autoCreatedQueueTemplate = new AutoCreatedQueueTemplate(
+          csConf, getQueuePath());
       super.setupQueueConfigs(clusterResource, csConf);
       StringBuilder aclsString = new StringBuilder();
       for (Map.Entry<AccessType, AccessControlList> e : acls.entrySet()) {
@@ -478,6 +483,8 @@ public class ParentQueue extends AbstractCSQueue {
     CapacitySchedulerConfiguration dupCSConfig =
         new CapacitySchedulerConfiguration(
         csContext.getConfiguration(), false);
+    autoCreatedQueueTemplate.setTemplateEntriesForChild(dupCSConfig,
+        childQueuePath);
     if (isLeaf) {
       // set to -1, to disable it
       dupCSConfig.setUserLimitFactor(childQueuePath, -1);
@@ -648,6 +655,18 @@ public class ParentQueue extends AbstractCSQueue {
       Map<String, CSQueue> currentChildQueues = getQueuesMap(childQueues);
       Map<String, CSQueue> newChildQueues = getQueuesMap(
           newlyParsedParentQueue.childQueues);
+
+      // Reinitialize dynamic queues as well, because they are not parsed
+      for (String queue : Sets.difference(currentChildQueues.keySet(),
+          newChildQueues.keySet())) {
+        CSQueue candidate = currentChildQueues.get(queue);
+        if (candidate instanceof AbstractCSQueue) {
+          if (((AbstractCSQueue) candidate).isDynamicQueue()) {
+            candidate.reinitialize(candidate, clusterResource);
+          }
+        }
+      }
+
       for (Map.Entry<String, CSQueue> e : newChildQueues.entrySet()) {
         String newChildQueueName = e.getKey();
         CSQueue newChildQueue = e.getValue();
@@ -1221,7 +1240,9 @@ public class ParentQueue extends AbstractCSQueue {
           // For dynamic queue, we will set weight to 1 every time, because it
           // is possible new labels added to the parent.
           if (((AbstractCSQueue) queue).isDynamicQueue()) {
-            queue.getQueueCapacities().setWeight(nodeLabel, 1f);
+            if (queue.getQueueCapacities().getWeight(nodeLabel) == -1f) {
+              queue.getQueueCapacities().setWeight(nodeLabel, 1f);
+            }
           }
         }
       }
@@ -1640,5 +1661,9 @@ public class ParentQueue extends AbstractCSQueue {
     return isDynamicQueue() && getChildQueues().size() == 0 &&
         csContext.getConfiguration().
             isAutoExpiredDeletionEnabled(this.getQueuePath());
+  }
+
+  public AutoCreatedQueueTemplate getAutoCreatedQueueTemplate() {
+    return autoCreatedQueueTemplate;
   }
 }
