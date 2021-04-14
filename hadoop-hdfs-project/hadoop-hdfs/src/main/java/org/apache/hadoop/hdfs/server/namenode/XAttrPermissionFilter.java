@@ -73,6 +73,7 @@ public class XAttrPermissionFilter {
         // call the external enforcer for audit.
         pc.checkSuperuserPrivilege(xAttrString);
       }
+      return;
     }
     if (xAttr.getNameSpace() == XAttr.NameSpace.RAW && isRawPath) {
       return;
