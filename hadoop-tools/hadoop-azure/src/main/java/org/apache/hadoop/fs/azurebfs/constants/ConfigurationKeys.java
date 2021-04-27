@@ -191,6 +191,8 @@ public final class ConfigurationKeys {
 
   /** Setting this true will make the driver use it's own RemoteIterator implementation */
   public static final String FS_AZURE_ENABLE_ABFS_LIST_ITERATOR = "fs.azure.enable.abfslistiterator";
+  /** Server side encryption key */
+  public static final String FS_AZURE_CLIENT_PROVIDED_ENCRYPTION_KEY = "fs.azure.client-provided-encryption-key";
 
   /** End point of ABFS account: {@value}. */
   public static final String AZURE_ABFS_ENDPOINT = "fs.azure.abfs.endpoint";
