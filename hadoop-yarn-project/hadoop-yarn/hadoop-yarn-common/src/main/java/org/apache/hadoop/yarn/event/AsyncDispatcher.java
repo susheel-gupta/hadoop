@@ -25,7 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience.Public;
@@ -79,6 +83,8 @@ public class AsyncDispatcher extends AbstractService implements Dispatcher {
   private Thread eventHandlingThread;
   protected final Map<Class<? extends Enum>, EventHandler> eventDispatchers;
   private boolean exitOnDispatchException = true;
+
+  private ThreadPoolExecutor printEventDetailsExecutor;
 
   /**
    * The thread name for dispatcher.
@@ -155,6 +161,15 @@ public class AsyncDispatcher extends AbstractService implements Dispatcher {
                     YARN_DISPATCHER_PRINT_EVENTS_INFO_THRESHOLD,
             YarnConfiguration.
                     DEFAULT_YARN_DISPATCHER_PRINT_EVENTS_INFO_THRESHOLD);
+
+    ThreadFactory threadFactory = new ThreadFactoryBuilder()
+        .setNameFormat("PrintEventDetailsThread #%d")
+        .build();
+    // Thread pool for async print event details,
+    // to prevent wasting too much time for RM.
+    printEventDetailsExecutor = new ThreadPoolExecutor(
+        1, 5, 10, TimeUnit.SECONDS,
+        new LinkedBlockingQueue<>(), threadFactory);
   }
 
   @Override
@@ -198,6 +213,7 @@ public class AsyncDispatcher extends AbstractService implements Dispatcher {
         LOG.warn("Interrupted Exception while stopping", ie);
       }
     }
+    printEventDetailsExecutor.shutdownNow();
 
     // stop all the components
     super.serviceStop();
@@ -297,7 +313,7 @@ public class AsyncDispatcher extends AbstractService implements Dispatcher {
       if (qSize != 0 && qSize % detailsInterval == 0
               && lastEventDetailsQueueSizeLogged != qSize) {
         lastEventDetailsQueueSizeLogged = qSize;
-        printEventQueueDetails();
+        printEventDetailsExecutor.submit(this::printEventQueueDetails);
         printTrigger = true;
       }
       int remCapacity = eventQueue.remainingCapacity();
