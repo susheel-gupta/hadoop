@@ -31,7 +31,7 @@
 
     <failIfNoTests>false</failIfNoTests>
     <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
-    <jetty.version>9.4.39.v20210325</jetty.version>
+    <jetty.version>9.4.31.v20200723</jetty.version>
     <test.exclude>_</test.exclude>
     <test.exclude.pattern>_</test.exclude.pattern>
 
@@ -653,12 +653,12 @@
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpclient</artifactId>
-        <version>${httpclient.version}</version>
+        <version>4.5.13</version>
       </dependency>
       <dependency>
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpcore</artifactId>
-        <version>${httpcore.version}</version>
+        <version>4.4.13</version>
       </dependency>
       <dependency>
         <groupId>commons-codec</groupId>
