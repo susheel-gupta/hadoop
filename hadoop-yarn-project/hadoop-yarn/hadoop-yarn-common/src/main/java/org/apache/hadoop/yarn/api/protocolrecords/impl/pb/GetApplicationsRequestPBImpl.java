@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.yarn.api.protocolrecords.impl.pb;
 
+import static org.apache.hadoop.yarn.conf.YarnConfiguration.APPLICATION_TAG_FORCE_LOWERCASE_CONVERSION;
+import static org.apache.hadoop.yarn.conf.YarnConfiguration.DEFAULT_APPLICATION_TAG_FORCE_LOWERCASE_CONVERSION;
+
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +29,7 @@ import java.util.Set;
 import org.apache.commons.lang.math.LongRange;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.protocolrecords.ApplicationsRequestScope;
 import org.apache.hadoop.yarn.api.protocolrecords.GetApplicationsRequest;
@@ -34,14 +38,16 @@ import org.apache.hadoop.yarn.api.records.impl.pb.ProtoUtils;
 import org.apache.hadoop.yarn.proto.YarnProtos.YarnApplicationStateProto;
 import org.apache.hadoop.yarn.proto.YarnServiceProtos.GetApplicationsRequestProto;
 import org.apache.hadoop.yarn.proto.YarnServiceProtos.GetApplicationsRequestProtoOrBuilder;
-
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.protobuf.TextFormat;
+import com.google.common.annotations.VisibleForTesting;
 
 @Private
 @Unstable
 public class GetApplicationsRequestPBImpl extends GetApplicationsRequest {
+  private static volatile Boolean forceLowerCaseTags;
+
   GetApplicationsRequestProto proto = GetApplicationsRequestProto.getDefaultInstance();
   GetApplicationsRequestProto.Builder builder = null;
   boolean viaProto = false;
@@ -59,11 +65,23 @@ public class GetApplicationsRequestPBImpl extends GetApplicationsRequest {
 
   public GetApplicationsRequestPBImpl() {
     builder = GetApplicationsRequestProto.newBuilder();
+    initLowerCaseConfig();
   }
 
   public GetApplicationsRequestPBImpl(GetApplicationsRequestProto proto) {
     this.proto = proto;
     viaProto = true;
+    initLowerCaseConfig();
+  }
+
+  private static void initLowerCaseConfig() {
+    if (forceLowerCaseTags == null) {
+      Configuration conf = new Configuration();
+
+      forceLowerCaseTags =
+          conf.getBoolean(APPLICATION_TAG_FORCE_LOWERCASE_CONVERSION,
+              DEFAULT_APPLICATION_TAG_FORCE_LOWERCASE_CONVERSION);
+    }
   }
 
   public synchronized GetApplicationsRequestProto getProto() {
@@ -218,7 +236,8 @@ public class GetApplicationsRequestPBImpl extends GetApplicationsRequest {
     // Convert applicationTags to lower case and add
     this.applicationTags = new HashSet<String>();
     for (String tag : tags) {
-      this.applicationTags.add(StringUtils.toLowerCase(tag));
+      this.applicationTags.add(
+          forceLowerCaseTags ? StringUtils.toLowerCase(tag) : tag);
     }
   }
 
@@ -413,5 +432,10 @@ public class GetApplicationsRequestPBImpl extends GetApplicationsRequest {
   @Override
   public String toString() {
     return TextFormat.shortDebugString(getProto());
+  }
+
+  @VisibleForTesting
+  static void setForceLowerCaseTags(boolean convert) {
+    GetApplicationsRequestPBImpl.forceLowerCaseTags = convert;
   }
 }

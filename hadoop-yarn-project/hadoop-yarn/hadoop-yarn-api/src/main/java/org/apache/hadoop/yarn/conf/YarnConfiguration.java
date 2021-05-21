@@ -1815,6 +1815,10 @@ public class YarnConfiguration extends Configuration {
           false;
   public static final String APPLICATION_TAG_BASED_PLACEMENT_USER_WHITELIST =
           APPLICATION_TAG_BASED_PLACEMENT_PREFIX + ".username.whitelist";
+  public static final String APPLICATION_TAG_FORCE_LOWERCASE_CONVERSION =
+      APPLICATION_TAG_BASED_PLACEMENT_PREFIX + ".force-lowercase";
+  public static final boolean DEFAULT_APPLICATION_TAG_FORCE_LOWERCASE_CONVERSION =
+          true;
 
   /** Enable/disable container metrics. */
   @Private

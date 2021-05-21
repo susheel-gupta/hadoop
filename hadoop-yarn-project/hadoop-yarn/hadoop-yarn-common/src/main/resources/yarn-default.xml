@@ -4153,4 +4153,10 @@
     <name>yarn.resourcemanager.activities-manager.app-activities.max-queue-length</name>
     <value>100</value>
   </property>
+
+  <property>
+    <description>Specifies whether application tags should be converted to lowercase or not.</description>
+    <name>yarn.resourcemanager.application-tag-based-placement.force-lowercase</name>
+    <value>true</value>
+  </property>
 </configuration>
