@@ -1353,7 +1353,7 @@ public class ITestS3ARemoteFileChanged extends AbstractS3ATestBase {
       // enabled
       Assume.assumeTrue(
           "Target filesystem does not support versioning",
-          fs.getObjectMetadata(fs.pathToKey(testpath)).getVersionId() != null);
+          fs.getObjectMetadata(testpath).getVersionId() != null);
     }
   }
 

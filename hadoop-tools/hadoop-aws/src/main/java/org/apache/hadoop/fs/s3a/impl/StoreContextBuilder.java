@@ -26,9 +26,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.s3a.Invoker;
 import org.apache.hadoop.fs.s3a.S3AInputPolicy;
 import org.apache.hadoop.fs.s3a.S3AStorageStatistics;
+import org.apache.hadoop.fs.s3a.audit.AuditSpanS3A;
 import org.apache.hadoop.fs.s3a.statistics.S3AStatisticsContext;
 import org.apache.hadoop.fs.s3a.s3guard.ITtlTimeProvider;
 import org.apache.hadoop.fs.s3a.s3guard.MetadataStore;
+import org.apache.hadoop.fs.store.audit.AuditSpanSource;
 import org.apache.hadoop.security.UserGroupInformation;
 
 /**
@@ -69,6 +71,8 @@ public class StoreContextBuilder {
   private ContextAccessors contextAccessors;
 
   private ITtlTimeProvider timeProvider;
+
+  private AuditSpanSource<AuditSpanS3A> auditor;
 
   public StoreContextBuilder setFsURI(final URI fsURI) {
     this.fsURI = fsURI;
@@ -166,6 +170,17 @@ public class StoreContextBuilder {
     return this;
   }
 
+  /**
+   * Set builder value.
+   * @param value new value
+   * @return the builder
+   */
+  public StoreContextBuilder setAuditor(
+      final AuditSpanSource<AuditSpanS3A> value) {
+    auditor = value;
+    return this;
+  }
+
   @SuppressWarnings("deprecation")
   public StoreContext build() {
     return new StoreContext(fsURI,
@@ -184,6 +199,7 @@ public class StoreContextBuilder {
         metadataStore,
         useListV1,
         contextAccessors,
-        timeProvider);
+        timeProvider,
+        auditor);
   }
 }

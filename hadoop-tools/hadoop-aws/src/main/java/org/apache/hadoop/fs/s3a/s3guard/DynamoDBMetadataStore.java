@@ -63,6 +63,8 @@ import com.amazonaws.services.dynamodbv2.model.AmazonDynamoDBException;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughputDescription;
 import com.amazonaws.services.dynamodbv2.model.TableDescription;
 import com.amazonaws.services.dynamodbv2.model.WriteRequest;
+
+import org.apache.hadoop.fs.s3a.impl.InternalConstants;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -590,7 +592,7 @@ public class DynamoDBMetadataStore implements MetadataStore,
     }
     // the policy on whether repeating delete operations is based
     // on that of S3A itself
-    boolean idempotent = S3AFileSystem.DELETE_CONSIDERED_IDEMPOTENT;
+    boolean idempotent = InternalConstants.DELETE_CONSIDERED_IDEMPOTENT;
     if (tombstone) {
       Preconditions.checkArgument(ttlTimeProvider != null, "ttlTimeProvider "
           + "must not be null");
