@@ -19,7 +19,6 @@ package org.apache.hadoop.yarn.server.resourcemanager.webapp.dao;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -92,6 +91,8 @@ public class CapacitySchedulerQueueInfo {
   protected String creationMethod;
   protected String autoCreationEligibility;
   protected String defaultNodeLabelExpression;
+  protected AutoQueueTemplatePropertiesInfo autoQueueTemplateProperties =
+      new AutoQueueTemplatePropertiesInfo();
 
   CapacitySchedulerQueueInfo() {
   };
@@ -174,6 +175,8 @@ public class CapacitySchedulerQueueInfo {
     if (q instanceof ParentQueue) {
       orderingPolicyInfo = ((ParentQueue) q).getQueueOrderingPolicy()
           .getConfigName();
+      autoQueueTemplateProperties = CapacitySchedulerInfoHelper
+            .getAutoCreatedTemplate((ParentQueue) q);
     }
 
     autoCreateChildQueueEnabled = conf.
