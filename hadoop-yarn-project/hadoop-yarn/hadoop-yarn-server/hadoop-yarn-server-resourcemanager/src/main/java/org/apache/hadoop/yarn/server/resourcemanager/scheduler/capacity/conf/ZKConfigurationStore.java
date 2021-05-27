@@ -29,6 +29,7 @@ import org.apache.hadoop.yarn.server.records.Version;
 import org.apache.hadoop.yarn.server.records.impl.pb.VersionPBImpl;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.data.ACL;
 
 import java.io.IOException;
@@ -63,7 +64,9 @@ public class ZKConfigurationStore extends YarnConfigurationStore {
   private static final String CONF_STORE_PATH = "CONF_STORE";
   private static final String FENCING_PATH = "FENCING";
   private static final String CONF_VERSION_PATH = "CONF_VERSION";
-
+  private static final String NODEEXISTS_MSG = "Encountered NodeExists error."
+      + " Skipping znode creation since another RM has already created it";
+  
   private String zkVersionPath;
   private String logsPath;
   private String confStorePath;
@@ -93,22 +96,23 @@ public class ZKConfigurationStore extends YarnConfigurationStore {
     this.fencingNodePath = getNodePath(znodeParentPath, FENCING_PATH);
     this.confVersionPath = getNodePath(znodeParentPath, CONF_VERSION_PATH);
 
-    zkManager.createRootDirRecursively(znodeParentPath, zkAcl);
+    try {
+      zkManager.createRootDirRecursively(znodeParentPath, zkAcl);
+    } catch(NodeExistsException e) {
+      LOG.warn(NODEEXISTS_MSG, e);
+    }
     zkManager.delete(fencingNodePath);
 
-    if (!zkManager.exists(logsPath)) {
-      zkManager.create(logsPath);
+    if (createNewZkPath(logsPath)) {
       zkManager.setData(logsPath,
           serializeObject(new LinkedList<LogMutation>()), -1);
     }
 
-    if (!zkManager.exists(confVersionPath)) {
-      zkManager.create(confVersionPath);
+    if (createNewZkPath(confVersionPath)) {
       zkManager.setData(confVersionPath, String.valueOf(0), -1);
     }
 
-    if (!zkManager.exists(confStorePath)) {
-      zkManager.create(confStorePath);
+    if (createNewZkPath(confStorePath)) {
       HashMap<String, String> mapSchedConf = new HashMap<>();
       for (Map.Entry<String, String> entry : schedConf) {
         mapSchedConf.put(entry.getKey(), entry.getValue());
@@ -156,8 +160,12 @@ public class ZKConfigurationStore extends YarnConfigurationStore {
     if (zkManager.exists(zkVersionPath)) {
       zkManager.safeSetData(zkVersionPath, data, -1, zkAcl, fencingNodePath);
     } else {
-      zkManager.safeCreate(zkVersionPath, data, zkAcl, CreateMode.PERSISTENT,
-          zkAcl, fencingNodePath);
+      try {
+        zkManager.safeCreate(zkVersionPath, data, zkAcl, CreateMode.PERSISTENT,
+            zkAcl, fencingNodePath);
+      } catch(NodeExistsException e) {
+        LOG.warn(NODEEXISTS_MSG, e);
+      }
     }
   }
 
@@ -235,6 +243,28 @@ public class ZKConfigurationStore extends YarnConfigurationStore {
   @Override
   public List<LogMutation> getConfirmedConfHistory(long fromId) {
     return null; // unimplemented
+  }
+
+  /**
+   * Creates a new path in Zookeeper only, if it does not already exist.
+   *
+   * @param path Value of the Zookeeper path
+   * @return <code>true</code>if the creation executed; <code>false</code>
+   * otherwise.
+   * @throws Exception
+   */
+  private boolean createNewZkPath(String path) throws Exception {
+    if (!zkManager.exists(path)) {
+      try {
+        zkManager.create(path);
+      } catch(NodeExistsException e) {
+        LOG.warn(NODEEXISTS_MSG, e);
+        return false;
+      }
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private static String getNodePath(String root, String nodeName) {
