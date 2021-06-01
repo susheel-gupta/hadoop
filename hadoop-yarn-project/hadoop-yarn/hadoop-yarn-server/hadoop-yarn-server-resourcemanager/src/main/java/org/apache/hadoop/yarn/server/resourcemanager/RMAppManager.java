@@ -80,9 +80,9 @@ import com.google.common.util.concurrent.SettableFuture;
 import org.apache.hadoop.yarn.util.StringHelper;
 
 /**
- * This class manages the list of applications for the resource manager. 
+ * This class manages the list of applications for the resource manager.
  */
-public class RMAppManager implements EventHandler<RMAppManagerEvent>, 
+public class RMAppManager implements EventHandler<RMAppManagerEvent>,
                                         Recoverable {
 
   private static final Log LOG = LogFactory.getLog(RMAppManager.class);
@@ -131,7 +131,7 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
   static class ApplicationSummary {
     static final Log LOG = LogFactory.getLog(ApplicationSummary.class);
 
-    // Escape sequences 
+    // Escape sequences
     static final char EQUALS = '=';
     static final char[] charsToEscape =
       {StringUtils.COMMA, EQUALS, StringUtils.ESCAPE_CHAR};
@@ -170,7 +170,7 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
 
     /**
      * create a summary of the application's runtime.
-     * 
+     *
      * @param app {@link RMApp} whose summary is to be created, cannot
      *            be <code>null</code>.
      */
@@ -214,7 +214,7 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
 
     /**
      * Log a summary of the application's runtime.
-     * 
+     *
      * @param app {@link RMApp} whose summary is to be logged
      */
     public static void logAppSummary(RMApp app) {
@@ -241,7 +241,7 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
   }
 
   protected synchronized int getCompletedAppsListSize() {
-    return this.completedApps.size(); 
+    return this.completedApps.size();
   }
 
   protected synchronized void finishApplication(ApplicationId applicationId) {
@@ -252,7 +252,7 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
       if (UserGroupInformation.isSecurityEnabled()) {
         rmContext.getDelegationTokenRenewer().applicationFinished(applicationId);
       }
-      
+
       completedApps.add(applicationId);
       completedAppsInStateStore++;
       writeAuditLog(applicationId);
@@ -264,26 +264,26 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
     String operation = "UNKONWN";
     boolean success = false;
     switch (app.getState()) {
-      case FAILED: 
+      case FAILED:
         operation = AuditConstants.FINISH_FAILED_APP;
         break;
       case FINISHED:
         operation = AuditConstants.FINISH_SUCCESS_APP;
         success = true;
         break;
-      case KILLED: 
+      case KILLED:
         operation = AuditConstants.FINISH_KILLED_APP;
         success = true;
         break;
       default:
         break;
     }
-    
+
     if (success) {
       RMAuditLogger.logSuccess(app.getUser(), operation,
           "RMAppManager", app.getApplicationId());
     } else {
-      StringBuilder diag = app.getDiagnostics(); 
+      StringBuilder diag = app.getDiagnostics();
       String msg = diag == null ? null : diag.toString();
       RMAuditLogger.logFailure(app.getUser(), operation, msg, "RMAppManager",
           "App failed with state: " + app.getState(), appId);
@@ -408,7 +408,9 @@ public class RMAppManager implements EventHandler<RMAppManagerEvent>,
 
     if (!isRecovery && YarnConfiguration.isAclEnabled(conf)) {
       if (scheduler instanceof CapacityScheduler) {
-        String queueName = submissionContext.getQueue();
+        String queueName = placementContext == null ?
+            submissionContext.getQueue() : placementContext.getFullQueuePath();
+
         String appName = submissionContext.getApplicationName();
         CSQueue csqueue = ((CapacityScheduler) scheduler).getQueue(queueName);
 
