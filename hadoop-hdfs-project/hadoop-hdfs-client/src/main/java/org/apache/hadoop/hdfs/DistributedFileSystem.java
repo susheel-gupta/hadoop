@@ -23,6 +23,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.list.TreeList;
+import org.apache.hadoop.ipc.RpcNoSuchMethodException;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.HadoopIllegalArgumentException;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -2362,8 +2363,15 @@ public class DistributedFileSystem extends FileSystem
     List<DiffReportListingEntry> deletedList = new ChunkedArrayList<>();
     SnapshotDiffReportListing report;
     do {
-      report = dfs.getSnapshotDiffReportListing(snapshotDir, fromSnapshot,
-          toSnapshot, startPath, index);
+      try {
+        report = dfs.getSnapshotDiffReportListing(snapshotDir, fromSnapshot,
+            toSnapshot, startPath, index);
+      } catch (RpcNoSuchMethodException e) {
+        // In case the server doesn't support getSnapshotDiffReportListing,
+        // fallback to getSnapshotDiffReport.
+        DFSClient.LOG.warn("Falling back to getSnapshotDiffReport {}", e.getMessage());
+        return dfs.getSnapshotDiffReport(snapshotDir, fromSnapshot, toSnapshot);
+      }
       startPath = report.getLastPath();
       index = report.getLastIndex();
       modifiedList.addAll(report.getModifyList());
