@@ -31,10 +31,12 @@ import org.apache.hadoop.hdfs.DFSUtil;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants;
 import org.apache.hadoop.hdfs.server.namenode.AclFeature;
 import org.apache.hadoop.hdfs.server.namenode.ContentSummaryComputationContext;
+import org.apache.hadoop.hdfs.server.namenode.DirectoryWithQuotaFeature;
 import org.apache.hadoop.hdfs.server.namenode.FSImageFormat;
 import org.apache.hadoop.hdfs.server.namenode.FSImageSerialization;
 import org.apache.hadoop.hdfs.server.namenode.INode;
 import org.apache.hadoop.hdfs.server.namenode.INodeDirectory;
+import org.apache.hadoop.hdfs.server.namenode.QuotaCounts;
 import org.apache.hadoop.hdfs.server.namenode.XAttrFeature;
 import org.apache.hadoop.hdfs.util.ReadOnlyList;
 
@@ -154,21 +156,26 @@ public class Snapshot implements Comparable<byte[]> {
   /** The root directory of the snapshot. */
   static public class Root extends INodeDirectory {
     Root(INodeDirectory other) {
-      // Always preserve ACL, XAttr.
-      super(other, false, Lists.newArrayList(
-        Iterables.filter(Arrays.asList(other.getFeatures()), new Predicate<Feature>() {
-
-          @Override
-          public boolean apply(Feature input) {
-            if (AclFeature.class.isInstance(input) 
-                || XAttrFeature.class.isInstance(input)) {
-              return true;
+      // Always preserve ACL, XAttr and Quota.
+      super(other, false,
+          Arrays.stream(other.getFeatures()).filter(feature ->
+              feature instanceof AclFeature
+                  || feature instanceof XAttrFeature
+                  || feature instanceof DirectoryWithQuotaFeature
+          ).map(feature -> {
+            if (feature instanceof DirectoryWithQuotaFeature) {
+              // Return copy if feature is quota because a ref could be updated
+              final QuotaCounts quota =
+                  ((DirectoryWithQuotaFeature) feature).getSpaceAllowed();
+              return new DirectoryWithQuotaFeature.Builder()
+                  .nameSpaceQuota(quota.getNameSpace())
+                  .storageSpaceQuota(quota.getStorageSpace())
+                  .typeQuotas(quota.getTypeSpaces())
+                  .build();
+            } else {
+              return feature;
             }
-            return false;
-          }
-          
-        }))
-        .toArray(new Feature[0]));
+          }).toArray(Feature[]::new));
     }
 
     boolean isMarkedAsDeleted() {
