@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Auto Creation enabled Parent queue. This queue initially does not have any
@@ -168,10 +169,13 @@ public class ManagedParentQueue extends AbstractManagedParentQueue {
     CapacitySchedulerConfiguration conf =
         super.initializeLeafQueueConfigs(leafQueueTemplateConfPrefix);
     builder.configuration(conf);
+    String templateQueuePath = csContext.getConfiguration()
+        .getAutoCreatedQueueTemplateConfPrefix(getQueuePath());
 
-    for (String nodeLabel : conf
-        .getConfiguredNodeLabels(csContext.getConfiguration()
-            .getAutoCreatedQueueTemplateConfPrefix(getQueuePath()))) {
+    Set<String> templateConfiguredNodeLabels = csContext
+        .getCapacitySchedulerQueueManager().getConfiguredNodeLabels()
+        .getLabelsByQueue(templateQueuePath);
+    for (String nodeLabel : templateConfiguredNodeLabels) {
       Resource templateMinResource = conf.getMinimumResourceRequirement(
           nodeLabel, csContext.getConfiguration()
               .getAutoCreatedQueueTemplateConfPrefix(getQueuePath()),
@@ -186,10 +190,10 @@ public class ManagedParentQueue extends AbstractManagedParentQueue {
 
     //Load template capacities
     QueueCapacities queueCapacities = new QueueCapacities(false);
-    CSQueueUtils.loadCapacitiesByLabelsFromConf(csContext.getConfiguration()
-            .getAutoCreatedQueueTemplateConfPrefix(getQueuePath()),
+    CSQueueUtils.loadCapacitiesByLabelsFromConf(templateQueuePath,
         queueCapacities,
-        csContext.getConfiguration());
+        csContext.getConfiguration(),
+        templateConfiguredNodeLabels);
 
     /**
      * Populate leaf queue template (of Parent resources configured in
