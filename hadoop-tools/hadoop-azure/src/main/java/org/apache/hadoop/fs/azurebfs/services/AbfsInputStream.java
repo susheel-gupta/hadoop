@@ -214,62 +214,43 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
       }
 
       //reset buffer to initial state - i.e., throw away existing data
-      if (readAheadEnabled) {
-        bCursor = 0;
-        limit = 0;
-        if (buffer == null) {
-          LOG.debug("created new buffer size {}", bufferSize);
-          buffer = new byte[bufferSize];
-        }
+      bCursor = 0;
+      limit = 0;
+      if (buffer == null) {
+        LOG.debug("created new buffer size {}", bufferSize);
+        buffer = new byte[bufferSize];
+      }
 
-        if (alwaysReadBufferSize) {
-          bytesRead = readInternal(fCursor, buffer, 0, bufferSize, false);
-        } else {
-          // Enable readAhead when reading sequentially
-          if (-1 == fCursorAfterLastRead || fCursorAfterLastRead == fCursor
-              || b.length >= bufferSize) {
-            LOG.debug("Sequential read with read ahead size of {}", bufferSize);
-            bytesRead = readInternal(fCursor, buffer, 0, bufferSize, false);
-          } else {
-            // Enabling read ahead for random reads as well to reduce number of remote calls.
-            int lengthWithReadAhead = Math.min(b.length + readAheadRange,
-                bufferSize);
-            LOG.debug("Random read with read ahead size of {}",
-                lengthWithReadAhead);
-            bytesRead = readInternal(fCursor, buffer, 0, lengthWithReadAhead,
-                true);
-          }
-        }
+
+      // Enable readAhead when reading sequentially
+      if (-1 == fCursorAfterLastRead || fCursorAfterLastRead == fCursor || b.length >= bufferSize) {
+        LOG.debug("Sequential read with read ahead size of {}", bufferSize);
+        bytesRead = readInternal(fCursor, buffer, 0, bufferSize, false);
       } else {
-        LOG.debug("Random read with read ahead disabled");
-        bytesRead = readInternal(fCursor, b, off, len, true);
+        // Enabling read ahead for random reads as well to reduce number of remote calls.
+        int lengthWithReadAhead = Math.min(b.length + readAheadRange, bufferSize);
+        LOG.debug("Random read with read ahead size of {}", lengthWithReadAhead);
+        bytesRead = readInternal(fCursor, buffer, 0, lengthWithReadAhead, true);
       }
 
       if (bytesRead == -1) {
         return -1;
       }
 
-      if (readAheadEnabled) {
-        limit += bytesRead;
-      }
+      limit += bytesRead;
       fCursor += bytesRead;
       fCursorAfterLastRead = fCursor;
     }
 
     //If there is anything in the buffer, then return lesser of (requested bytes) and (bytes in buffer)
     //(bytes returned may be less than requested)
-    int bytesToRead;
-    if (readAheadEnabled) {
-      int bytesRemaining = limit - bCursor;
-      bytesToRead = Math.min(len, bytesRemaining);
-      System.arraycopy(buffer, bCursor, b, off, bytesToRead);
-      bCursor += bytesToRead;
-      if (streamStatistics != null) {
-        //bytes read from buffer.
-        streamStatistics.bytesReadFromBuffer(bytesToRead);
-      }
-    } else {
-      bytesToRead = bytesRead;
+    int bytesRemaining = limit - bCursor;
+    int bytesToRead = Math.min(len, bytesRemaining);
+    System.arraycopy(buffer, bCursor, b, off, bytesToRead);
+    bCursor += bytesToRead;
+    if (streamStatistics != null) {
+      //bytes read from buffer.
+      streamStatistics.bytesReadFromBuffer(bytesToRead);
     }
     nextReadPos += bytesToRead;
     if (statistics != null) {
@@ -547,10 +528,6 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
     return readAheadRange;
   }
 
-  @VisibleForTesting
-  public boolean isBufferNull() {
-    return buffer == null;
-  }
 
   @VisibleForTesting
   public AbfsInputStreamStatistics getStreamStatistics() {
