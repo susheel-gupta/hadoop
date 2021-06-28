@@ -973,6 +973,7 @@ public final class Constants {
    */
   public static final int THREAD_POOL_SHUTDOWN_DELAY_SECONDS = 30;
 
+
   /**
    * Policy for directory markers.
    * This is a new feature of HADOOP-13230 which addresses
@@ -1059,5 +1060,11 @@ public final class Constants {
    */
   public static final String STORE_CAPABILITY_DIRECTORY_MARKER_ACTION_DELETE
       = "fs.s3a.capability.directory.marker.action.delete";
+
+  /**
+   * AWS S3 region for the bucket. When set bypasses the construction of
+   * region through endpoint url.
+   */
+  public static final String AWS_REGION = "fs.s3a.endpoint.region";
 
 }
