@@ -344,6 +344,11 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
       LOG.debug("Initializing S3AFileSystem for {}", bucket);
       // clone the configuration into one with propagated bucket options
       Configuration conf = propagateBucketOptions(originalConf, bucket);
+      // fix up the classloader of the configuration to be whatever
+      // classloader loaded this filesystem.
+      // See: HADOOP-17372
+      conf.setClassLoader(this.getClass().getClassLoader());
+
       // patch the Hadoop security providers
       patchSecurityCredentialProviders(conf);
       // look for delegation token support early.
@@ -671,9 +676,16 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
     Class<? extends S3ClientFactory> s3ClientFactoryClass = conf.getClass(
         S3_CLIENT_FACTORY_IMPL, DEFAULT_S3_CLIENT_FACTORY_IMPL,
         S3ClientFactory.class);
+    S3ClientFactory.S3ClientCreationParameters parameters = null;
+    parameters = new S3ClientFactory.S3ClientCreationParameters()
+        .withCredentialSet(credentials)
+        .withEndpoint(conf.getTrimmed(ENDPOINT, DEFAULT_ENDPOINT))
+        .withPathStyleAccess(conf.getBoolean(PATH_STYLE_ACCESS, false))
+        .withUserAgentSuffix(uaSuffix);
 
     s3 = ReflectionUtils.newInstance(s3ClientFactoryClass, conf)
-        .createS3Client(getUri(), bucket, credentials, uaSuffix);
+        .createS3Client(getUri(),
+            parameters);
   }
 
   /**

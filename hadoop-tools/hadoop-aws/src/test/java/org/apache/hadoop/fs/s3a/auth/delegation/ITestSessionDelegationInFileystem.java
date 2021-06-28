@@ -43,6 +43,7 @@ import org.apache.hadoop.fs.s3a.Invoker;
 import org.apache.hadoop.fs.s3a.S3AEncryptionMethods;
 import org.apache.hadoop.fs.s3a.S3AFileSystem;
 import org.apache.hadoop.fs.s3a.S3ATestUtils;
+import org.apache.hadoop.fs.s3a.S3ClientFactory;
 import org.apache.hadoop.fs.s3a.Statistic;
 import org.apache.hadoop.hdfs.tools.DelegationTokenFetcher;
 import org.apache.hadoop.io.Text;
@@ -551,18 +552,20 @@ public class ITestSessionDelegationInFileystem extends AbstractDelegationIT {
    */
   protected ObjectMetadata readLandsatMetadata(final S3AFileSystem delegatedFS)
       throws Exception {
-    AWSCredentialProviderList testing
+    AWSCredentialProviderList testingCreds
         = delegatedFS.shareCredentials("testing");
 
     URI landsat = new URI(DEFAULT_CSVTEST_FILE);
     DefaultS3ClientFactory factory
         = new DefaultS3ClientFactory();
-    Configuration conf = new Configuration(delegatedFS.getConf());
-    conf.set(ENDPOINT, "");
-    factory.setConf(conf);
+    factory.setConf(new Configuration(delegatedFS.getConf()));
     String host = landsat.getHost();
-    AmazonS3 s3 = factory.createS3Client(landsat, host, testing,
-        "ITestSessionDelegationInFileystem");
+    S3ClientFactory.S3ClientCreationParameters parameters = null;
+    parameters = new S3ClientFactory.S3ClientCreationParameters()
+        .withCredentialSet(testingCreds)
+        .withEndpoint(DEFAULT_ENDPOINT)
+        .withUserAgentSuffix("ITestSessionDelegationInFileystem");
+    AmazonS3 s3 = factory.createS3Client(landsat, parameters);
 
     return Invoker.once("HEAD", host,
         () -> s3.getObjectMetadata(host, landsat.getPath().substring(1)));
