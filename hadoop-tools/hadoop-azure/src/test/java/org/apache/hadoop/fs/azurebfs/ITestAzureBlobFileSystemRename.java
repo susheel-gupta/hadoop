@@ -44,7 +44,6 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import static java.util.UUID.randomUUID;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -241,8 +240,8 @@ public class ITestAzureBlobFileSystemRename extends
     AbfsRestOperation idempotencyRetOp = mock(AbfsRestOperation.class);
     when(idempotencyRetOp.getResult()).thenReturn(idempotencyRetHttpOp);
     doReturn(idempotencyRetOp).when(client).renameIdempotencyCheckOp(any(),
-        any(), anyString());
-    when(client.renamePath(anyString(), anyString(), anyString())).thenCallRealMethod();
+        any(), any(), any());
+    when(client.renamePath(any(), any(), any(), any())).thenCallRealMethod();
 
     // rename on non-existing source file will trigger idempotency check
     if (idempotencyRetHttpOp.getStatusCode() == HTTP_OK) {
@@ -250,7 +249,8 @@ public class ITestAzureBlobFileSystemRename extends
       Assertions.assertThat(client.renamePath(
           "/NonExistingsourcepath",
           "/destpath",
-          null)
+          null,
+          getTestTracingContext(fs, true))
           .getResult()
           .getStatusCode())
           .describedAs("Idempotency check reports recent successful "
@@ -262,7 +262,8 @@ public class ITestAzureBlobFileSystemRename extends
           () -> client.renamePath(
               "/NonExistingsourcepath",
               "/destpath",
-              ""));
+              "",
+              getTestTracingContext(fs, true)));
     }
   }
 
@@ -322,7 +323,8 @@ public class ITestAzureBlobFileSystemRename extends
     Assertions.assertThat(testClient.renameIdempotencyCheckOp(
         renameRequestStartTime,
         op,
-        destinationPath.toUri().getPath())
+        destinationPath.toUri().getPath(),
+        getTestTracingContext(fs, true))
         .getResult()
         .getStatusCode())
         .describedAs(assertMessage)

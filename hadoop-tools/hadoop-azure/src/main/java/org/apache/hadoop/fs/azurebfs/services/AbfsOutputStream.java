@@ -31,17 +31,22 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.UUID;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.PathIOException;
+import org.apache.hadoop.fs.azurebfs.constants.FSOperationType;
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.AbfsRestOperationException;
 import org.apache.hadoop.fs.azurebfs.contracts.exceptions.AzureBlobFileSystemException;
 import org.apache.hadoop.fs.azurebfs.contracts.services.AppendRequestParameters;
 import org.apache.hadoop.fs.azurebfs.utils.CachedSASToken;
+import org.apache.hadoop.fs.azurebfs.utils.Listener;
+import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
 import org.apache.hadoop.fs.statistics.DurationTracker;
 import org.apache.hadoop.fs.statistics.IOStatistics;
 import org.apache.hadoop.fs.statistics.IOStatisticsSource;
@@ -51,6 +56,7 @@ import org.apache.hadoop.fs.FSExceptionMessages;
 import org.apache.hadoop.fs.StreamCapabilities;
 import org.apache.hadoop.fs.Syncable;
 
+import static org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations.STREAM_ID_LEN;
 import static org.apache.hadoop.fs.azurebfs.services.AbfsErrors.ERR_WRITE_WITHOUT_LEASE;
 import static org.apache.hadoop.io.IOUtils.wrapException;
 import static org.apache.hadoop.fs.azurebfs.contracts.services.AppendRequestParameters.Mode.APPEND_MODE;
@@ -89,6 +95,9 @@ public class AbfsOutputStream extends OutputStream implements Syncable,
 
   // SAS tokens can be re-used until they expire
   private CachedSASToken cachedSasToken;
+  private final String outputStreamId;
+  private final TracingContext tracingContext;
+  private Listener listener;
 
   private AbfsLease lease;
   private String leaseId;
@@ -114,7 +123,8 @@ public class AbfsOutputStream extends OutputStream implements Syncable,
           final Statistics statistics,
           final String path,
           final long position,
-          AbfsOutputStreamContext abfsOutputStreamContext) {
+          AbfsOutputStreamContext abfsOutputStreamContext,
+          TracingContext tracingContext) {
     this.client = client;
     this.statistics = statistics;
     this.path = path;
@@ -159,6 +169,14 @@ public class AbfsOutputStream extends OutputStream implements Syncable,
     if (outputStreamStatistics != null) {
       this.ioStatistics = outputStreamStatistics.getIOStatistics();
     }
+    this.outputStreamId = createOutputStreamId();
+    this.tracingContext = new TracingContext(tracingContext);
+    this.tracingContext.setStreamID(outputStreamId);
+    this.tracingContext.setOperation(FSOperationType.WRITE);
+  }
+
+  private String createOutputStreamId() {
+    return StringUtils.right(UUID.randomUUID().toString(), STREAM_ID_LEN);
   }
 
   /**
@@ -297,6 +315,15 @@ public class AbfsOutputStream extends OutputStream implements Syncable,
     }
   }
 
+  public String getStreamID() {
+    return outputStreamId;
+  }
+
+  public void registerListener(Listener listener1) {
+    listener = listener1;
+    tracingContext.setListener(listener);
+  }
+
   /**
    * Force all data in the output stream to be written to Azure storage.
    * Wait to return until this is complete. Close the access to the stream and
@@ -390,7 +417,9 @@ public class AbfsOutputStream extends OutputStream implements Syncable,
             "writeCurrentBufferToService", "append")) {
       AppendRequestParameters reqParams = new AppendRequestParameters(offset, 0,
           bytesLength, APPEND_MODE, true, leaseId);
-      AbfsRestOperation op = client.append(path, bytes, reqParams, cachedSasToken.get());
+      AbfsRestOperation op = client
+          .append(path, bytes, reqParams, cachedSasToken.get(),
+              new TracingContext(tracingContext));
       cachedSasToken.update(op.getSasToken());
       if (outputStreamStatistics != null) {
         outputStreamStatistics.uploadSuccessful(bytesLength);
@@ -449,10 +478,8 @@ public class AbfsOutputStream extends OutputStream implements Syncable,
         waitForTaskToComplete();
       }
     }
-    final Future<Void> job =
-        completionService.submit(() -> {
-          AbfsPerfTracker tracker =
-              client.getAbfsPerfTracker();
+    final Future<Void> job = completionService.submit(() -> {
+      AbfsPerfTracker tracker = client.getAbfsPerfTracker();
           try (AbfsPerfInfo perfInfo = new AbfsPerfInfo(tracker,
               "writeCurrentBufferToService", "append")) {
             AppendRequestParameters.Mode
@@ -465,7 +492,7 @@ public class AbfsOutputStream extends OutputStream implements Syncable,
             AppendRequestParameters reqParams = new AppendRequestParameters(
                         offset, 0, bytesLength, mode, false, leaseId);
             AbfsRestOperation op = client.append(path, bytes, reqParams,
-                cachedSasToken.get());
+                cachedSasToken.get(), new TracingContext(tracingContext));
             cachedSasToken.update(op.getSasToken());
             perfInfo.registerResult(op.getResult());
             byteBufferPool.putBuffer(ByteBuffer.wrap(bytes));
@@ -532,7 +559,7 @@ public class AbfsOutputStream extends OutputStream implements Syncable,
     try (AbfsPerfInfo perfInfo = new AbfsPerfInfo(tracker,
             "flushWrittenBytesToServiceInternal", "flush")) {
       AbfsRestOperation op = client.flush(path, offset, retainUncommitedData, isClose,
-          cachedSasToken.get(), leaseId);
+          cachedSasToken.get(), leaseId, new TracingContext(tracingContext));
       cachedSasToken.update(op.getSasToken());
       perfInfo.registerResult(op.getResult()).registerSuccess(true);
     } catch (AzureBlobFileSystemException ex) {

@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.azurebfs.AzureBlobFileSystem;
+import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
 
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.doReturn;
@@ -249,7 +250,8 @@ public class ITestAbfsInputStreamSmallFileReads extends ITestAbfsInputStream {
           .doReturn(10)
           .doCallRealMethod()
           .when(abfsInputStream)
-          .readRemote(anyLong(), any(), anyInt(), anyInt());
+          .readRemote(anyLong(), any(), anyInt(), anyInt(),
+              any(TracingContext.class));
 
       iStream = new FSDataInputStream(abfsInputStream);
       seek(iStream, seekPos);
@@ -299,7 +301,8 @@ public class ITestAbfsInputStreamSmallFileReads extends ITestAbfsInputStream {
           .doReturn(secondReturnSize)
           .doCallRealMethod()
           .when(abfsInputStream)
-          .readRemote(anyLong(), any(), anyInt(), anyInt());
+          .readRemote(anyLong(), any(), anyInt(), anyInt(),
+              any(TracingContext.class));
 
       iStream = new FSDataInputStream(abfsInputStream);
       seek(iStream, seekPos);

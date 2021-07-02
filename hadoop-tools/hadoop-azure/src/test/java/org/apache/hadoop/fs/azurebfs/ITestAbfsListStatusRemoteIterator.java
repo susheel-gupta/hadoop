@@ -38,6 +38,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.azurebfs.services.AbfsListStatusRemoteIterator;
 import org.apache.hadoop.fs.azurebfs.services.ListingSupport;
+import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyList;
+import static org.mockito.Mockito.verify;
 
 /**
  * Test ListStatusRemoteIterator operation.
@@ -58,7 +64,8 @@ public class ITestAbfsListStatusRemoteIterator extends AbstractAbfsIntegrationTe
 
     ListingSupport listngSupport = Mockito.spy(getFileSystem().getAbfsStore());
     RemoteIterator<FileStatus> fsItr = new AbfsListStatusRemoteIterator(
-        getFileSystem().getFileStatus(testDir), listngSupport);
+        getFileSystem().getFileStatus(testDir), listngSupport,
+        getTestTracingContext(getFileSystem(), true));
     Assertions.assertThat(fsItr)
         .describedAs("RemoteIterator should be instance of "
             + "AbfsListStatusRemoteIterator by default")
@@ -90,7 +97,8 @@ public class ITestAbfsListStatusRemoteIterator extends AbstractAbfsIntegrationTe
 
     ListingSupport listngSupport = Mockito.spy(getFileSystem().getAbfsStore());
     RemoteIterator<FileStatus> fsItr = new AbfsListStatusRemoteIterator(
-        getFileSystem().getFileStatus(testDir), listngSupport);
+        getFileSystem().getFileStatus(testDir), listngSupport,
+        getTestTracingContext(getFileSystem(), true));
     Assertions.assertThat(fsItr)
         .describedAs("RemoteIterator should be instance of "
             + "AbfsListStatusRemoteIterator by default")
@@ -190,7 +198,8 @@ public class ITestAbfsListStatusRemoteIterator extends AbstractAbfsIntegrationTe
     setPageSize(10);
     RemoteIterator fsItr =
         new AbfsListStatusRemoteIterator(getFileSystem().getFileStatus(testDir),
-            getFileSystem().getAbfsStore());
+            getFileSystem().getAbfsStore(),
+            getTestTracingContext(getFileSystem(), true));
     fsItr = Mockito.spy(fsItr);
     Mockito.doReturn(false).when(fsItr).hasNext();
 
@@ -238,7 +247,7 @@ public class ITestAbfsListStatusRemoteIterator extends AbstractAbfsIntegrationTe
     ListingSupport lsSupport =getMockListingSupport(exceptionMessage);
     RemoteIterator fsItr =
         new AbfsListStatusRemoteIterator(getFileSystem().getFileStatus(testDir),
-        lsSupport);
+        lsSupport, getTestTracingContext(getFileSystem(), true));
 
     Assertions.assertThatThrownBy(() -> fsItr.next())
         .describedAs(
@@ -261,19 +270,20 @@ public class ITestAbfsListStatusRemoteIterator extends AbstractAbfsIntegrationTe
   private ListingSupport getMockListingSupport(String exceptionMessage) {
     return new ListingSupport() {
       @Override
-      public FileStatus[] listStatus(Path path) throws IOException {
+      public FileStatus[] listStatus(Path path, TracingContext tracingContext) throws IOException {
         return null;
       }
 
       @Override
-      public FileStatus[] listStatus(Path path, String startFrom)
+      public FileStatus[] listStatus(Path path, String startFrom, TracingContext tracingContext)
           throws IOException {
         return null;
       }
 
       @Override
       public String listStatus(Path path, String startFrom,
-          List<FileStatus> fileStatuses, boolean fetchAll, String continuation)
+          List<FileStatus> fileStatuses, boolean fetchAll,
+          String continuation, TracingContext tracingContext)
           throws IOException {
         throw new IOException(exceptionMessage);
       }

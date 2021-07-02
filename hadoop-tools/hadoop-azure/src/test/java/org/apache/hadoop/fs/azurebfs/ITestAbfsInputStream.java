@@ -82,7 +82,7 @@ public class ITestAbfsInputStream extends AbstractAbfsIntegrationTest {
     final AzureBlobFileSystemStore abfsStore = testAbfs.getAbfsStore();
     final FileSystem.Statistics statistics = testAbfs.getFsStatistics();
     final AbfsInputStream abfsInputStream = abfsStore.openFileForRead(
-        TEST_PATH, statistics);
+        TEST_PATH, statistics, getTestTracingContext(testAbfs, false));
     assertFalse("ReadAhead should be disabled if it's disabled in " +
         "the configuration.", abfsInputStream.isReadAheadEnabled());
     final byte[] readBuffer = new byte[2 * DEFAULT_READ_BUFFER_SIZE];
@@ -105,7 +105,7 @@ public class ITestAbfsInputStream extends AbstractAbfsIntegrationTest {
     final AzureBlobFileSystemStore abfsStore = testAbfs.getAbfsStore();
     final FileSystem.Statistics statistics = testAbfs.getFsStatistics();
     final AbfsInputStream abfsInputStream = abfsStore.openFileForRead(
-        TEST_PATH, statistics);
+        TEST_PATH, statistics, getTestTracingContext(testAbfs, false));
     assertTrue("ReadAhead should be enabled if it's enabled in " +
         "the configuration.", abfsInputStream.isReadAheadEnabled());
 
