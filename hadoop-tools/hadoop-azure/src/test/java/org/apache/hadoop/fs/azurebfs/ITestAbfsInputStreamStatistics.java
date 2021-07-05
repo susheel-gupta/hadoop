@@ -262,6 +262,7 @@ public class ITestAbfsInputStreamStatistics
             .withReadBufferSize(getConfiguration().getReadBufferSize())
             .withReadAheadQueueDepth(getConfiguration().getReadAheadQueueDepth())
             .withStreamStatistics(null)
+            .withReadAheadRange(getConfiguration().getReadAheadRange())
             .build();
 
     AbfsOutputStream out = null;

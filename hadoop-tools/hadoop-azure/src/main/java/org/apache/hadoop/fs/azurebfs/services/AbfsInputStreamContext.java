@@ -42,6 +42,8 @@ public class AbfsInputStreamContext extends AbfsStreamContext {
 
   private int readAheadBlockSize;
 
+  private int readAheadRange;
+
   private AbfsInputStreamStatistics streamStatistics;
 
   private boolean readSmallFilesCompletely;
@@ -79,6 +81,12 @@ public class AbfsInputStreamContext extends AbfsStreamContext {
     return this;
   }
 
+
+  public AbfsInputStreamContext withReadAheadRange(
+          final int readAheadRange) {
+    this.readAheadRange = readAheadRange;
+    return this;
+  }
 
   public AbfsInputStreamContext withStreamStatistics(
       final AbfsInputStreamStatistics streamStatistics) {
@@ -125,6 +133,9 @@ public class AbfsInputStreamContext extends AbfsStreamContext {
           readBufferSize, readAheadBlockSize);
       readAheadBlockSize = readBufferSize;
     }
+    // Validation of parameters to be done here.
+    Preconditions.checkArgument(readAheadRange > 0,
+            "Read ahead range should be greater than 0");
     return this;
   }
 
@@ -144,6 +155,10 @@ public class AbfsInputStreamContext extends AbfsStreamContext {
     return isReadAheadEnabled;
   }
 
+
+  public int getReadAheadRange() {
+    return readAheadRange;
+  }
 
   public AbfsInputStreamStatistics getStreamStatistics() {
     return streamStatistics;

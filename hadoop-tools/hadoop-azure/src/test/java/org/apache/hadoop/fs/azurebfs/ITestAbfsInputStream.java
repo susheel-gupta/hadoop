@@ -85,15 +85,14 @@ public class ITestAbfsInputStream extends AbstractAbfsIntegrationTest {
         TEST_PATH, statistics);
     assertFalse("ReadAhead should be disabled if it's disabled in " +
         "the configuration.", abfsInputStream.isReadAheadEnabled());
-
     final byte[] readBuffer = new byte[2 * DEFAULT_READ_BUFFER_SIZE];
     abfsInputStream.read(readBuffer, 0, DEFAULT_READ_BUFFER_SIZE);
     abfsInputStream.read(readBuffer, DEFAULT_READ_BUFFER_SIZE, DEFAULT_READ_BUFFER_SIZE);
     AbfsInputStreamStatisticsImpl abfsInputStreamStatistics =
             (AbfsInputStreamStatisticsImpl) abfsInputStream.getStreamStatistics();
-    assertTrue(
-        "Data should always be read from buffer",
-        0 < abfsInputStreamStatistics.getBytesReadFromBuffer());
+    assertEquals(
+            "If the readahead is disabled there should be no read from the readahead buffers.",
+            0, abfsInputStreamStatistics.getReadAheadBytesRead());
   }
 
   private void testAbfsInputStreamReadAheadConfigEnable() throws Exception {
@@ -116,8 +115,8 @@ public class ITestAbfsInputStream extends AbstractAbfsIntegrationTest {
     AbfsInputStreamStatisticsImpl abfsInputStreamStatistics =
             (AbfsInputStreamStatisticsImpl) abfsInputStream.getStreamStatistics();
     assertTrue(
-        "Data should always be read from buffer",
-        0 < abfsInputStreamStatistics.getBytesReadFromBuffer());
+            "If the readahead is enabled there should be read from the readahead buffers.",
+        0 < abfsInputStreamStatistics.getReadAheadBytesRead());
   }
 
 }
