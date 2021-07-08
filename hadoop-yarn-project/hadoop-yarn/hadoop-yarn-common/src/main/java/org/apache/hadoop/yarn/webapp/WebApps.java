@@ -324,6 +324,18 @@ public class WebApps {
                 YarnConfiguration.YARN_ADMIN_ACL,
                 YarnConfiguration.DEFAULT_YARN_ADMIN_ACL)))
             .setPathSpec(pathList.toArray(new String[0]));
+
+        // Set the X-FRAME-OPTIONS header, use the HttpServer2 default if
+        // the header value is not specified
+        Map<String, String> xfsParameters =
+            getConfigParameters(xfsConfigPrefix);
+        if (xfsParameters != null) {
+          String xFrameOptions = xfsParameters.get("xframe-options");
+          if (xFrameOptions != null) {
+            builder.configureXFrame(hasXFSEnabled())
+                .setXFrameOption(xFrameOptions);
+          }
+        }
         // Get port ranges from config.
         IntegerRanges ranges = null;
         if (portRangeConfigKey != null) {
@@ -412,15 +424,6 @@ public class WebApps {
           HttpServer2.defineFilter(server.getWebAppContext(), restCsrfClassName,
                                    restCsrfClassName, params,
                                    new String[] {"/*"});
-        }
-
-        params = getConfigParameters(xfsConfigPrefix);
-
-        if (hasXFSEnabled()) {
-          String xfsClassName = XFrameOptionsFilter.class.getName();
-          HttpServer2.defineFilter(server.getWebAppContext(), xfsClassName,
-              xfsClassName, params,
-              new String[] {"/*"});
         }
 
         HttpServer2.defineFilter(server.getWebAppContext(), "guice",
