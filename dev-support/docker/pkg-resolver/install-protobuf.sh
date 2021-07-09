@@ -27,18 +27,26 @@ if [ $? -eq 1 ]; then
   exit 1
 fi
 
-default_version="3.7.1"
+default_version="2.5.0"
 version_to_install=$default_version
 if [ -n "$2" ]; then
   version_to_install="$2"
 fi
 
-if [ "$version_to_install" != "3.7.1" ]; then
-  echo "WARN: Don't know how to install version $version_to_install, installing the default version $default_version instead"
-  version_to_install=$default_version
-fi
-
-if [ "$version_to_install" == "3.7.1" ]; then
+if [ "$version_to_install" == "2.5.0" ]; then
+  # hadolint ignore=DL3003
+  mkdir -p /opt/protobuf-src &&
+    curl -L -s -S \
+      https://github.com/google/protobuf/releases/download/v2.5.0/protobuf-2.5.0.tar.gz \
+      -o /opt/protobuf.tar.gz &&
+    tar xzf /opt/protobuf.tar.gz --strip-components 1 -C /opt/protobuf-src &&
+    cd /opt/protobuf-src &&
+    ./configure --prefix=/opt/protobuf &&
+    make "-j$(nproc)" &&
+    make install &&
+    cd /root &&
+    rm -rf /opt/protobuf-src
+elif [ "$version_to_install" == "3.7.1" ]; then
   # hadolint ignore=DL3003
   mkdir -p /opt/protobuf-src &&
     curl -L -s -S \
