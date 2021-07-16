@@ -1061,9 +1061,19 @@ public class TestDelegationTokenRenewer {
     final MockNM nm1 =
         new MockNM("127.0.0.1:1234", 15120, rm2.getResourceTrackerService());
     nm1.registerNode();
-    NodeHeartbeatResponse response = nm1.nodeHeartbeat(true);
-    ByteBuffer tokenBuffer =
-        response.getSystemCredentialsForApps().get(app.getApplicationId());
+
+    final ByteBuffer[] buffer = new ByteBuffer[1];
+    GenericTestUtils.waitFor(() -> {
+      try {
+        NodeHeartbeatResponse response = nm1.nodeHeartbeat(true);
+        buffer[0] = response.getSystemCredentialsForApps().get(app.getApplicationId());
+        return buffer[0] != null;
+      } catch (Exception ignored) {
+        return false;
+      }
+    }, 100, 2000);
+
+    ByteBuffer tokenBuffer = buffer[0];
     Assert.assertNotNull(tokenBuffer);
     Credentials appCredentials = new Credentials();
     DataInputByteBuffer buf = new DataInputByteBuffer();
