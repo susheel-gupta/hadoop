@@ -71,7 +71,7 @@ import static org.apache.hadoop.fs.azurebfs.AbfsStatistic.CONNECTIONS_MADE;
 public class ITestAzureBlobFileSystemCreate extends
     AbstractAbfsIntegrationTest {
   private static final Path TEST_FILE_PATH = new Path("testfile");
-  private static final Path TEST_FOLDER_PATH = new Path("testFolder");
+  private static final String TEST_FOLDER_PATH = "testFolder";
   private static final String TEST_CHILD_FILE = "childFile";
 
   public ITestAzureBlobFileSystemCreate() throws Exception {
@@ -94,7 +94,8 @@ public class ITestAzureBlobFileSystemCreate extends
   @SuppressWarnings("deprecation")
   public void testCreateNonRecursive() throws Exception {
     final AzureBlobFileSystem fs = getFileSystem();
-    Path testFile = new Path(TEST_FOLDER_PATH, TEST_CHILD_FILE);
+    Path testFolderPath = path(TEST_FOLDER_PATH);
+    Path testFile = new Path(testFolderPath, TEST_CHILD_FILE);
     try {
       fs.createNonRecursive(testFile, true, 1024, (short) 1, 1024, null);
       fail("Should've thrown");
@@ -103,7 +104,7 @@ public class ITestAzureBlobFileSystemCreate extends
     fs.registerListener(new TracingHeaderValidator(
         fs.getAbfsStore().getAbfsConfiguration().getClientCorrelationId(),
         fs.getFileSystemId(), FSOperationType.MKDIR, false, 0));
-    fs.mkdirs(TEST_FOLDER_PATH);
+    fs.mkdirs(testFolderPath);
     fs.registerListener(null);
 
     fs.createNonRecursive(testFile, true, 1024, (short) 1, 1024, null)
@@ -115,13 +116,14 @@ public class ITestAzureBlobFileSystemCreate extends
   @SuppressWarnings("deprecation")
   public void testCreateNonRecursive1() throws Exception {
     final AzureBlobFileSystem fs = getFileSystem();
-    Path testFile = new Path(TEST_FOLDER_PATH, TEST_CHILD_FILE);
+    Path testFolderPath = path(TEST_FOLDER_PATH);
+    Path testFile = new Path(testFolderPath, TEST_CHILD_FILE);
     try {
       fs.createNonRecursive(testFile, FsPermission.getDefault(), EnumSet.of(CreateFlag.CREATE, CreateFlag.OVERWRITE), 1024, (short) 1, 1024, null);
       fail("Should've thrown");
     } catch (FileNotFoundException expected) {
     }
-    fs.mkdirs(TEST_FOLDER_PATH);
+    fs.mkdirs(testFolderPath);
     fs.createNonRecursive(testFile, true, 1024, (short) 1, 1024, null)
         .close();
     assertIsFile(fs, testFile);
@@ -133,13 +135,14 @@ public class ITestAzureBlobFileSystemCreate extends
   public void testCreateNonRecursive2() throws Exception {
     final AzureBlobFileSystem fs = getFileSystem();
 
-    Path testFile = new Path(TEST_FOLDER_PATH, TEST_CHILD_FILE);
+    Path testFolderPath = path(TEST_FOLDER_PATH);
+    Path testFile = new Path(testFolderPath, TEST_CHILD_FILE);
     try {
       fs.createNonRecursive(testFile, FsPermission.getDefault(), false, 1024, (short) 1, 1024, null);
       fail("Should've thrown");
     } catch (FileNotFoundException e) {
     }
-    fs.mkdirs(TEST_FOLDER_PATH);
+    fs.mkdirs(testFolderPath);
     fs.createNonRecursive(testFile, true, 1024, (short) 1, 1024, null)
         .close();
     assertIsFile(fs, testFile);
@@ -151,7 +154,8 @@ public class ITestAzureBlobFileSystemCreate extends
   @Test
   public void testWriteAfterClose() throws Throwable {
     final AzureBlobFileSystem fs = getFileSystem();
-    Path testPath = new Path(TEST_FOLDER_PATH, TEST_CHILD_FILE);
+    Path testFolderPath = path(TEST_FOLDER_PATH);
+    Path testPath = new Path(testFolderPath, TEST_CHILD_FILE);
     FSDataOutputStream out = fs.create(testPath);
     out.close();
     intercept(IOException.class, () -> out.write('a'));
@@ -171,7 +175,8 @@ public class ITestAzureBlobFileSystemCreate extends
   @Test
   public void testTryWithResources() throws Throwable {
     final AzureBlobFileSystem fs = getFileSystem();
-    Path testPath = new Path(TEST_FOLDER_PATH, TEST_CHILD_FILE);
+    Path testFolderPath = path(TEST_FOLDER_PATH);
+    Path testPath = new Path(testFolderPath, TEST_CHILD_FILE);
     try (FSDataOutputStream out = fs.create(testPath)) {
       out.write('1');
       out.hsync();
@@ -204,7 +209,8 @@ public class ITestAzureBlobFileSystemCreate extends
   @Test
   public void testFilterFSWriteAfterClose() throws Throwable {
     final AzureBlobFileSystem fs = getFileSystem();
-    Path testPath = new Path(TEST_FOLDER_PATH, TEST_CHILD_FILE);
+    Path testFolderPath = path(TEST_FOLDER_PATH);
+    Path testPath = new Path(testFolderPath, TEST_CHILD_FILE);
     FSDataOutputStream out = fs.create(testPath);
     intercept(FileNotFoundException.class,
         () -> {
