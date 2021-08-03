@@ -69,6 +69,12 @@ public class DataNodeFaultInjector {
   }
 
   /**
+   * Used as a hook to delay sending the response of the last packet.
+   */
+  public void delayAckLastPacket() throws IOException {
+  }
+
+  /**
    * Used as a hook to intercept the latency of sending ack.
    */
   public void logDelaySendingAckToUpstream(
