@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.yarn.server.resourcemanager;
 
+import static org.apache.hadoop.yarn.util.StringHelper.ujoin;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -33,6 +35,7 @@ import org.apache.hadoop.yarn.LocalConfigurationProvider;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
 import org.apache.hadoop.yarn.api.records.NodeId;
 import org.apache.hadoop.yarn.conf.ConfigurationProvider;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.event.Dispatcher;
 import org.apache.hadoop.yarn.nodelabels.NodeAttributesManager;
 import org.apache.hadoop.yarn.server.resourcemanager.ahs.RMApplicationHistoryWriter;
@@ -625,6 +628,14 @@ public class RMContextImpl implements RMContext {
       final String scheme = WebAppUtils.getHttpSchemePrefix(conf);
       URI proxyUri = ProxyUriUtils.getUriFromAMUrl(scheme,
           getProxyHostAndPort(conf));
+      String gateway = conf.get(YarnConfiguration.PROXY_GATEWAY_URL);
+      if(gateway != null && !gateway.isEmpty()) {
+        URI gatewayURI = new URI(gateway);
+        String gatewayProxyPath = ujoin(gatewayURI.getPath(), ProxyUriUtils.getPath(applicationId));
+        return new URI(gatewayURI.getScheme(), gatewayURI.getHost(),
+            gatewayProxyPath, gatewayURI.getFragment())
+            .toASCIIString();
+      }
       URI result = ProxyUriUtils.getProxyUri(null, proxyUri, applicationId);
       return result.toASCIIString();
     } catch(URISyntaxException e) {

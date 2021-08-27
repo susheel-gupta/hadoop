@@ -2388,6 +2388,8 @@ public class YarnConfiguration extends Configuration {
   public static final int DEFAULT_PROXY_PORT = 9099;
   public static final String DEFAULT_PROXY_ADDRESS =
     "0.0.0.0:" + DEFAULT_PROXY_PORT;
+
+  public static final String PROXY_GATEWAY_URL = PROXY_PREFIX + "gateway.url";
   
   /**
    * YARN Service Level Authorization
