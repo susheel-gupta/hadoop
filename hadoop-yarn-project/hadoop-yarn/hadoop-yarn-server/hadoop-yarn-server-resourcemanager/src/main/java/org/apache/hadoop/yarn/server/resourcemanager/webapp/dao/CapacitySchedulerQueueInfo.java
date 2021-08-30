@@ -66,6 +66,7 @@ public class CapacitySchedulerQueueInfo {
   protected float weight;
   protected float normalizedWeight;
   protected int numApplications;
+  protected int maxParallelApps;
   protected String queueName;
   protected boolean isAbsoluteResource;
   protected QueueState state;
@@ -121,6 +122,7 @@ public class CapacitySchedulerQueueInfo {
     weight = q.getQueueCapacities().getWeight();
     normalizedWeight = q.getQueueCapacities().getNormalizedWeight();
     numApplications = q.getNumApplications();
+    maxParallelApps = q.getMaxParallelApps();
     allocatedContainers = q.getMetrics().getAllocatedContainers();
     pendingContainers = q.getMetrics().getPendingContainers();
     reservedContainers = q.getMetrics().getReservedContainers();
@@ -352,6 +354,10 @@ public class CapacitySchedulerQueueInfo {
 
   public float getNormalizedWeight() {
     return normalizedWeight;
+  }
+
+  public int getMaxParallelApps() {
+    return maxParallelApps;
   }
 
   public String getDefaultNodeLabelExpression() {

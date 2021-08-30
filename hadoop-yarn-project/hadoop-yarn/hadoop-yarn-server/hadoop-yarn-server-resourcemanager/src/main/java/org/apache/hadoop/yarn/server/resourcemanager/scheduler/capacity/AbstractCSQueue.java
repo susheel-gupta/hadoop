@@ -789,6 +789,7 @@ public abstract class AbstractCSQueue implements CSQueue {
         getIntraQueuePreemptionDisabled());
     queueInfo.setQueueConfigurations(getQueueConfigurations());
     queueInfo.setWeight(queueCapacities.getWeight());
+    queueInfo.setMaxParallelApps(maxParallelApps);
     return queueInfo;
   }
 
@@ -1505,6 +1506,7 @@ public abstract class AbstractCSQueue implements CSQueue {
     this.maxParallelApps = maxParallelApps;
   }
 
+  @Override
   public int getMaxParallelApps() {
     return maxParallelApps;
   }
