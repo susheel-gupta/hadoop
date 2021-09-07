@@ -673,11 +673,12 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
 
   @Override
   public synchronized void close() throws IOException {
-    closed = true;
-    buffer = null; // de-reference the buffer so it can be GC'ed sooner
     if (LOG.isDebugEnabled()) {
       LOG.debug("Closing AbfsInputStream: {}", toString());
     }
+    closed = true;
+    buffer = null; // de-reference the buffer so it can be GC'ed sooner
+    ReadBufferManager.getBufferManager().purgeBuffersForStream(this);
   }
 
   /**
