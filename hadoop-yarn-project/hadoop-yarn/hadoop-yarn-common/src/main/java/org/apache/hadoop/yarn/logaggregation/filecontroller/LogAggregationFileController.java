@@ -22,6 +22,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang3.RandomStringUtils;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -381,10 +382,13 @@ public abstract class LogAggregationFileController {
         throw new YarnRuntimeException("Failed to create remoteLogDir ["
             + remoteRootLogDir + "]", e);
       }
-    } else{
+    } else {
       //Check if FS has capability to set/modify permissions
+      Path permissionCheckFile = new Path(qualified, String.format("%s.permission_check",
+          RandomStringUtils.randomAlphanumeric(8)));
       try {
-        remoteFS.setPermission(qualified, new FsPermission(TLDIR_PERMISSIONS));
+        remoteFS.createNewFile(permissionCheckFile);
+        remoteFS.setPermission(permissionCheckFile, new FsPermission(TLDIR_PERMISSIONS));
       } catch (UnsupportedOperationException use) {
         LOG.info("Unable to set permissions for configured filesystem since"
             + " it does not support this", remoteFS.getScheme());
@@ -392,6 +396,11 @@ public abstract class LogAggregationFileController {
       } catch (IOException e) {
         LOG.warn("Failed to check if FileSystem suppports permissions on "
             + "remoteLogDir [" + remoteRootLogDir + "]", e);
+      } finally {
+        try {
+          remoteFS.delete(permissionCheckFile, false);
+        } catch (IOException ignored) {
+        }
       }
     }
   }
