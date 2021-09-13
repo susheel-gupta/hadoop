@@ -961,10 +961,9 @@ public abstract class AbstractParentQueue extends AbstractCSQueue {
     // Two conditions need to meet when trying to allocate:
     // 1) Node doesn't have reserved container
     // 2) Node's available-resource + killable-resource should > 0
-    boolean accept = node.getReservedContainer() == null && Resources
-        .greaterThanOrEqual(resourceCalculator, clusterResource, Resources
-            .add(node.getUnallocatedResource(),
-                node.getTotalKillableResources()), queueAllocationSettings.getMinimumAllocation());
+    boolean accept = node.getReservedContainer() == null &&
+        Resources.fitsIn(resourceCalculator, queueAllocationSettings.getMinimumAllocation(),
+            Resources.add(node.getUnallocatedResource(), node.getTotalKillableResources()));
     if (!accept) {
       ActivitiesLogger.QUEUE.recordQueueActivity(activitiesManager, node,
           getParentName(), getQueueName(), ActivityState.REJECTED,
