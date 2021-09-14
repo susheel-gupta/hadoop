@@ -30,8 +30,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.util.Time;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.ipc.Server;
 import org.apache.hadoop.security.AccessControlException;
@@ -74,6 +72,8 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.placement.SimpleC
 import org.apache.hadoop.yarn.util.resource.ResourceCalculator;
 import org.apache.hadoop.yarn.util.resource.ResourceUtils;
 import org.apache.hadoop.yarn.util.resource.Resources;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
 import java.util.Optional;
@@ -83,7 +83,8 @@ import static org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.C
 
 public abstract class AbstractCSQueue implements CSQueue {
 
-  private static final Log LOG = LogFactory.getLog(AbstractCSQueue.class);
+  private static final Logger LOG =
+      LoggerFactory.getLogger(AbstractCSQueue.class);
   volatile CSQueue parent;
   final String queueName;
   private final String queuePath;
@@ -369,14 +370,15 @@ public abstract class AbstractCSQueue implements CSQueue {
       setupConfigurableCapacities(configuration);
       updateAbsoluteCapacities();
 
+      updateCapacityConfigType();
+
       // Fetch minimum/maximum resource limits for this queue if
       // configured
-      capacityConfigType = CapacityConfigType.NONE;
       this.resourceTypes = new HashSet<>();
       for (AbsoluteResourceType type : AbsoluteResourceType.values()) {
         resourceTypes.add(type.toString().toLowerCase());
       }
-      updateConfigurableResourceRequirement(getQueuePath(), clusterResource);
+      updateConfigurableResourceLimits(clusterResource);
 
       // Setup queue's maximumAllocation respecting the global
       // and the queue settings
@@ -600,15 +602,13 @@ public abstract class AbstractCSQueue implements CSQueue {
         queuePath, resourceTypes);
   }
 
-  protected void updateConfigurableResourceRequirement(String queuePath,
-      Resource clusterResource) {
+  protected void updateCapacityConfigType() {
+    this.capacityConfigType = CapacityConfigType.NONE;
     for (String label : configuredNodeLabels) {
-      Resource minResource = getMinimumAbsoluteResource(queuePath, label);
-      Resource maxResource = getMaximumAbsoluteResource(queuePath, label);
 
       if (LOG.isDebugEnabled()) {
-        LOG.debug("capacityConfigType is '" + capacityConfigType
-            + "' for queue '" + getQueuePath());
+        LOG.debug("capacityConfigType is '{}' for queue {}",
+            capacityConfigType, getQueuePath());
       }
 
       CapacityConfigType localType = checkConfigTypeIsAbsoluteResource(
@@ -624,47 +624,53 @@ public abstract class AbstractCSQueue implements CSQueue {
       } else {
         validateAbsoluteVsPercentageCapacityConfig(localType);
       }
+    }
+  }
 
-      // If min resource for a resource type is greater than its max resource,
-      // throw exception to handle such error configs.
-      if (!maxResource.equals(Resources.none()) && Resources.greaterThan(
-          resourceCalculator, clusterResource, minResource, maxResource)) {
-        throw new IllegalArgumentException("Min resource configuration "
-            + minResource + " is greater than its max value:" + maxResource
-            + " in queue:" + getQueuePath());
-      }
+  protected void updateConfigurableResourceLimits(Resource clusterResource) {
+    for (String label : configuredNodeLabels) {
+      final Resource minResource = getMinimumAbsoluteResource(queuePath, label);
+      Resource maxResource = getMaximumAbsoluteResource(queuePath, label);
 
-      // If parent's max resource is lesser to a specific child's max
-      // resource, throw exception to handle such error configs.
       if (parent != null) {
-        Resource parentMaxRes = parent.getQueueResourceQuotas()
-            .getConfiguredMaxResource(label);
-        if (Resources.greaterThan(resourceCalculator, clusterResource,
-            parentMaxRes, Resources.none())) {
-          if (Resources.greaterThan(resourceCalculator, clusterResource,
-              maxResource, parentMaxRes)) {
-            throw new IllegalArgumentException("Max resource configuration "
+        final Resource parentMax = parent.getQueueResourceQuotas().getConfiguredMaxResource(label);
+        validateMinResourceIsNotGreaterThanMaxResource(maxResource, parentMax, clusterResource,
+            "Max resource configuration "
                 + maxResource + " is greater than parents max value:"
-                + parentMaxRes + " in queue:" + getQueuePath());
-          }
+                + parentMax + " in queue:" + getQueuePath());
 
-          // If child's max resource is not set, but its parent max resource is
-          // set, we must set child max resource to its parent's.
-          if (maxResource.equals(Resources.none())
-              && !minResource.equals(Resources.none())) {
-            maxResource = Resources.clone(parentMaxRes);
-          }
+        // If child's max resource is not set, but its parent max resource is
+        // set, we must set child max resource to its parent's.
+        if (maxResource.equals(Resources.none()) &&
+            !minResource.equals(Resources.none()) &&
+            !parentMax.equals(Resources.none())) {
+          maxResource = Resources.clone(parentMax);
         }
       }
 
+      validateMinResourceIsNotGreaterThanMaxResource(minResource, maxResource, clusterResource,
+          "Min resource configuration "
+              + minResource + " is greater than its max value:" + maxResource
+              + " in queue:" + getQueuePath());
+
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Updating absolute resource configuration for queue:"
-            + getQueuePath() + " as minResource=" + minResource
-            + " and maxResource=" + maxResource);
+        LOG.debug("Updating absolute resource configuration for queue:{} as"
+                + " minResource={} and maxResource={}", getQueuePath(), minResource,
+            maxResource);
       }
 
       queueResourceQuotas.setConfiguredMinResource(label, minResource);
       queueResourceQuotas.setConfiguredMaxResource(label, maxResource);
+    }
+  }
+
+  private void validateMinResourceIsNotGreaterThanMaxResource(Resource minResource,
+                                                              Resource maxResource,
+                                                              Resource clusterResource,
+                                                              String validationError) {
+    if (!maxResource.equals(Resources.none()) && Resources.greaterThan(
+        resourceCalculator, clusterResource, minResource, maxResource)) {
+      throw new IllegalArgumentException(validationError);
     }
   }
 
