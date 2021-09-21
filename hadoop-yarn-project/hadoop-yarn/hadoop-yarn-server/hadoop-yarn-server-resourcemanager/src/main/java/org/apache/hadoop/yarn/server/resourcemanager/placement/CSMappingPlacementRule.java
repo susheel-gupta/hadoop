@@ -1,4 +1,4 @@
-  /**
+/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,6 +35,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.Capacity
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerContext;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerQueueManager;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.LeafQueue;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.QueuePath;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -257,7 +258,7 @@ public class CSMappingPlacementRule extends PlacementRule {
 
   private String validateAndNormalizeQueue(
       String queueName, boolean allowCreate) throws YarnException {
-    MappingQueuePath path = new MappingQueuePath(queueName);
+    QueuePath path = new QueuePath(queueName);
 
     if (path.hasEmptyPart()) {
       throw new YarnException("Invalid path returned by rule: '" +
@@ -323,7 +324,6 @@ public class CSMappingPlacementRule extends PlacementRule {
       throw new YarnException("Unknown queue path validation result. '" +
           validity + "'.");
     }
-
 
     //at this point we either have a dynamic parent or the queue actually
     //exists, returning it
