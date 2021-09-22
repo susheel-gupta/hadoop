@@ -2221,6 +2221,14 @@
     This setting provides better performance compared to blob-specific saskeys.
   </description>
 </property>
+
+<property>
+  <name>fs.azure.buffer.dir</name>
+  <value>${hadoop.tmp.dir}/abfs</value>
+  <description>Directory path for buffer files needed to upload data blocks
+    in AbfsOutputStream.</description>
+</property>
+
 <property>
   <name>io.seqfile.compress.blocksize</name>
   <value>1000000</value>
