@@ -131,6 +131,7 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
     int lastReadBytes;
     int totalReadBytes = 0;
     streamStatistics.readOperationStarted(off, len);
+    incrementReadOps();
     do {
       if (nextReadPos >= fCursor - limit && nextReadPos <= fCursor) {
         // data can be read from buffer.
@@ -261,6 +262,7 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
       if (receivedBytes > 0) {
         LOG.debug("Received data from read ahead, not doing remote read");
         streamStatistics.bytesReadFromBuffer(receivedBytes);
+        incrementReadOps();
         return receivedBytes;
       }
 
@@ -301,6 +303,7 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
           position, b.length, offset, length);
       op = client.read(path, position, b, offset, length, tolerateOobAppends ? "*" : eTag);
       perfInfo.registerResult(op.getResult()).registerSuccess(true);
+      incrementReadOps();
     } catch (AzureBlobFileSystemException ex) {
       if (ex instanceof AbfsRestOperationException) {
         AbfsRestOperationException ere = (AbfsRestOperationException) ex;
@@ -316,6 +319,15 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
     }
     LOG.debug("HTTP request read bytes = {}", bytesRead);
     return (int) bytesRead;
+  }
+
+  /**
+   * Increment Read Operations.
+   */
+  private void incrementReadOps() {
+    if (statistics != null) {
+      statistics.incrementReadOps(1);
+    }
   }
 
   /**
