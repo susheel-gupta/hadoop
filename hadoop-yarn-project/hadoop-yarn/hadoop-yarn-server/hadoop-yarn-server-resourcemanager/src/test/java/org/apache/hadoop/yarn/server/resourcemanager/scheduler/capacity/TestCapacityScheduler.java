@@ -131,6 +131,8 @@ import org.apache.hadoop.yarn.server.resourcemanager.MockAM;
 import org.apache.hadoop.yarn.server.resourcemanager.MockNM;
 import org.apache.hadoop.yarn.server.resourcemanager.MockNodes;
 import org.apache.hadoop.yarn.server.resourcemanager.MockRM;
+import org.apache.hadoop.yarn.server.resourcemanager.MockRMAppSubmissionData;
+import org.apache.hadoop.yarn.server.resourcemanager.MockRMAppSubmitter;
 import org.apache.hadoop.yarn.server.resourcemanager.NodeManager;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContextImpl;
@@ -1502,6 +1504,46 @@ public class TestCapacityScheduler {
     MockRM rm = new MockRM(conf);
     rm.start();
     return rm;
+  }
+
+  @Test
+  public void testAppSubmission() throws Exception {
+    CapacitySchedulerConfiguration conf = new CapacitySchedulerConfiguration();
+    setupQueueConfiguration(conf);
+    conf.setClass(YarnConfiguration.RM_SCHEDULER, CapacityScheduler.class,
+        ResourceScheduler.class);
+    conf.setQueues(A, new String[] {"a1", "a2", "b"});
+    conf.setCapacity(A1, 20);
+    conf.setCapacity("root.a.b", 10);
+    MockRM rm = new MockRM(conf);
+    rm.start();
+
+    RMApp noParentQueueApp = submitAppAndWaitForState(rm, "q", RMAppState.FAILED);
+    Assert.assertEquals(RMAppState.FAILED, noParentQueueApp.getState());
+
+    RMApp ambiguousQueueApp = submitAppAndWaitForState(rm, "b", RMAppState.FAILED);
+    Assert.assertEquals(RMAppState.FAILED, ambiguousQueueApp.getState());
+
+    RMApp emptyPartQueueApp = submitAppAndWaitForState(rm, "root..a1", RMAppState.FAILED);
+    Assert.assertEquals(RMAppState.FAILED, emptyPartQueueApp.getState());
+
+    RMApp failedAutoQueue = submitAppAndWaitForState(rm, "root.a.b.c.d", RMAppState.FAILED);
+    Assert.assertEquals(RMAppState.FAILED, failedAutoQueue.getState());
+  }
+
+  private RMApp submitAppAndWaitForState(MockRM rm, String b, RMAppState state) throws Exception {
+    MockRMAppSubmissionData ambiguousQueueAppData =
+        MockRMAppSubmissionData.Builder.createWithMemory(GB, rm)
+            .withWaitForAppAcceptedState(false)
+            .withAppName("app")
+            .withUser("user")
+            .withAcls(null)
+            .withQueue(b)
+            .withUnmanagedAM(false)
+            .build();
+    RMApp app1 = MockRMAppSubmitter.submit(rm, ambiguousQueueAppData);
+    rm.waitForState(app1.getApplicationId(), state);
+    return app1;
   }
 
   @Test
