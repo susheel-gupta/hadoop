@@ -491,4 +491,9 @@ public class Groups {
     GROUPS = new Groups(conf);
     return GROUPS;
   }
+
+  @VisibleForTesting
+  public static void reset() {
+    GROUPS = null;
+  }
 }
