@@ -51,6 +51,8 @@ import org.apache.hadoop.yarn.factory.providers.RecordFactoryProvider;
 import org.apache.hadoop.yarn.nodelabels.CommonNodeLabelsManager;
 import org.apache.hadoop.yarn.server.resourcemanager.MockNM;
 import org.apache.hadoop.yarn.server.resourcemanager.MockRM;
+import org.apache.hadoop.yarn.server.resourcemanager.MockRMAppSubmissionData;
+import org.apache.hadoop.yarn.server.resourcemanager.MockRMAppSubmitter;
 import org.apache.hadoop.yarn.server.resourcemanager.RMContext;
 import org.apache.hadoop.yarn.server.resourcemanager.nodelabels.NullRMNodeLabelsManager;
 import org.apache.hadoop.yarn.server.resourcemanager.nodelabels.RMNodeLabelsManager;
@@ -307,7 +309,7 @@ public class TestApplicationLimits {
     
     Resource amResourceLimit = Resource.newInstance(160 * GB, 1);
     assertEquals(queue.calculateAndGetAMResourceLimit(), amResourceLimit);
-    assertEquals(queue.getUserAMResourceLimit(), 
+    assertEquals(queue.getUserAMResourceLimit(),
       Resource.newInstance(80*GB, 1));
     
     // Assert in metrics
@@ -325,10 +327,10 @@ public class TestApplicationLimits {
     clusterResource = Resources.createResource(120 * 16 * GB);
     root.updateClusterResource(clusterResource, new ResourceLimits(
         clusterResource));
-    
+
     assertEquals(queue.calculateAndGetAMResourceLimit(),
         Resource.newInstance(192 * GB, 1));
-    assertEquals(queue.getUserAMResourceLimit(), 
+    assertEquals(queue.getUserAMResourceLimit(),
       Resource.newInstance(96*GB, 1));
     
     assertEquals(
@@ -376,10 +378,10 @@ public class TestApplicationLimits {
         (long) csConf.getMaximumApplicationMasterResourcePerQueuePercent(
           queue.getQueuePath())
         );
-    
+
     assertEquals(queue.calculateAndGetAMResourceLimit(),
         Resource.newInstance(800 * GB, 1));
-    assertEquals(queue.getUserAMResourceLimit(), 
+    assertEquals(queue.getUserAMResourceLimit(),
       Resource.newInstance(400*GB, 1));
 
     // Change the per-queue max applications.
@@ -841,25 +843,46 @@ public class TestApplicationLimits {
             + "submission of application: " + app3.getApplicationId(),
         app3.getDiagnostics().toString());
 
-    // based on Global limit of queue usert application is rejected
-    RMApp app11 = rm.submitApp(GB, "app", "user", null, "d", false);
-    rm.drainEvents();
-    rm.waitForState(app11.getApplicationId(), RMAppState.ACCEPTED);
-    assertEquals(RMAppState.ACCEPTED, app11.getState());
-    RMApp app12 = rm.submitApp(GB, "app", "user", null, "d", false);
-    rm.drainEvents();
-    rm.waitForState(app12.getApplicationId(), RMAppState.ACCEPTED);
-    assertEquals(RMAppState.ACCEPTED, app12.getState());
-    RMApp app13 = rm.submitApp(GB, "app", "user", null, "d", false);
+    // based on per user max app settings, app should be rejected instantly
+    RMApp app13 = MockRMAppSubmitter.submit(rm,
+        MockRMAppSubmissionData.Builder.createWithMemory(GB, rm)
+            .withAppName("app")
+            .withUser("user")
+            .withAcls(null)
+            .withQueue("d")
+            .withWaitForAppAcceptedState(false)
+            .build());
     rm.drainEvents();
     rm.waitForState(app13.getApplicationId(), RMAppState.FAILED);
     assertEquals(RMAppState.FAILED, app13.getState());
     assertEquals(
         "org.apache.hadoop.security.AccessControlException: Queue"
-            + " root.d already has 2 applications from user user cannot"
+            + " root.d already has 0 applications from user user cannot"
             + " accept submission of application: " + app13.getApplicationId(),
         app13.getDiagnostics().toString());
 
+    RMApp app11 = MockRMAppSubmitter.submit(rm,
+        MockRMAppSubmissionData.Builder.createWithMemory(GB, rm)
+            .withAppName("app")
+            .withUser("user2")
+            .withAcls(null)
+            .withQueue("a2")
+            .withWaitForAppAcceptedState(false)
+            .build());
+    rm.drainEvents();
+    rm.waitForState(app11.getApplicationId(), RMAppState.ACCEPTED);
+    assertEquals(RMAppState.ACCEPTED, app11.getState());
+    RMApp app12 = MockRMAppSubmitter.submit(rm,
+        MockRMAppSubmissionData.Builder.createWithMemory(GB, rm)
+            .withAppName("app")
+            .withUser("user2")
+            .withAcls(null)
+            .withQueue("a2")
+            .withWaitForAppAcceptedState(false)
+            .build());
+    rm.drainEvents();
+    rm.waitForState(app12.getApplicationId(), RMAppState.ACCEPTED);
+    assertEquals(RMAppState.ACCEPTED, app12.getState());
     // based on system max limit application is rejected
     RMApp app14 = rm.submitApp(GB, "app", "user2", null, "a2", false);
     rm.drainEvents();
@@ -874,7 +897,6 @@ public class TestApplicationLimits {
         app15.getDiagnostics().toString());
 
     rm.killApp(app2.getApplicationId());
-    rm.killApp(app11.getApplicationId());
     rm.killApp(app13.getApplicationId());
     rm.killApp(app14.getApplicationId());
     rm.stop();

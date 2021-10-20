@@ -4332,6 +4332,13 @@ public class TestLeafQueue {
       assertEquals(1.0, leafQueue.getAbsoluteMaximumCapacity(),
           EPSILON);
 
+      // limit maximum apps by max system apps
+      csConf.setMaximumSystemApplications(15);
+      leafQueue.updateClusterResource(Resource.newInstance(0, 0),
+          new ResourceLimits(Resource.newInstance(0, 0)));
+
+      assertEquals(15, leafQueue.getMaxApplications());
+
      } finally {
         //revert config changes
         csConf.setNodeLocalityDelay(
