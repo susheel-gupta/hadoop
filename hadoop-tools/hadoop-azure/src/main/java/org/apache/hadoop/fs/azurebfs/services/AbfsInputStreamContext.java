@@ -35,6 +35,8 @@ public class AbfsInputStreamContext extends AbfsStreamContext {
 
   private int readAheadRange;
 
+  private AbfsInputStreamStatistics streamStatistics;
+
   public AbfsInputStreamContext(final long sasTokenRenewPeriodForStreamsInSeconds) {
     super(sasTokenRenewPeriodForStreamsInSeconds);
   }
@@ -70,6 +72,12 @@ public class AbfsInputStreamContext extends AbfsStreamContext {
     return this;
   }
 
+  public AbfsInputStreamContext withStreamStatistics(
+      final AbfsInputStreamStatistics streamStatistics) {
+    this.streamStatistics = streamStatistics;
+    return this;
+  }
+
   public AbfsInputStreamContext build() {
     // Validation of parameters to be done here.
     Preconditions.checkArgument(readAheadRange > 0,
@@ -95,5 +103,10 @@ public class AbfsInputStreamContext extends AbfsStreamContext {
 
   public int getReadAheadRange() {
     return readAheadRange;
+  }
+
+  public AbfsInputStreamStatistics getStreamStatistics() {
+    return streamStatistics;
+
   }
 }

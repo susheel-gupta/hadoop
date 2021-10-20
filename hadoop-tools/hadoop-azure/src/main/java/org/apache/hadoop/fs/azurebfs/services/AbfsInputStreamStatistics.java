@@ -43,31 +43,46 @@ public interface AbfsInputStreamStatistics {
   /**
    * Record a forward or backward seek, adding a seek operation, a forward or
    * a backward seek operation, and number of bytes skipped.
-   * @param seekTo seek to the position
-   * @param currentPos current position
+   * @param seekTo seek to the position.
+   * @param currentPos current position.
    */
   void seek(long seekTo, long currentPos);
 
   /**
    * Increment the bytes read counter by the number of bytes;
    * no-op if the argument is negative.
-   * @param bytes number of bytes read
+   * @param bytes number of bytes read.
    */
   void bytesRead(long bytes);
 
+  /**
+   * Record the total bytes read from buffer.
+   *
+   * @param bytes number of bytes that are read from buffer.
+   */
   void bytesReadFromBuffer(long bytes);
 
+  /**
+   * Records the total number of seeks done in the buffer.
+   */
   void seekInBuffer();
 
   /**
    * A {@code read(byte[] buf, int off, int len)} operation has started.
-   * @param pos starting position of the read
-   * @param len length of bytes to read
+   * @param pos starting position of the read.
+   * @param len length of bytes to read.
    */
   void readOperationStarted(long pos, long len);
 
+  /**
+   * Records a successful remote read operation.
+   */
   void remoteReadOperation();
 
+  /**
+   * Makes the string of all the AbfsInputStream statistics.
+   * @return the string with all the statistics.
+   */
   @Override
   @InterfaceStability.Unstable
   String toString();

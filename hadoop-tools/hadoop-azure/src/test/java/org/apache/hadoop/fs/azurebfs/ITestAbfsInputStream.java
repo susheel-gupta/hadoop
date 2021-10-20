@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.azurebfs.services.AbfsInputStream;
+import org.apache.hadoop.fs.azurebfs.services.AbfsInputStreamStatisticsImpl;
 
 import static org.apache.hadoop.fs.azurebfs.constants.ConfigurationKeys.FS_AZURE_ENABLE_READAHEAD;
 import static org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations.DEFAULT_READ_BUFFER_SIZE;
@@ -150,16 +151,20 @@ public class ITestAbfsInputStream extends AbstractAbfsIntegrationTest {
       abfsInputStream.read(readBuffer, 0, (DEFAULT_READ_BUFFER_SIZE));
       abfsInputStream.read(readBuffer, DEFAULT_READ_BUFFER_SIZE,
           DEFAULT_READ_BUFFER_SIZE);
+      AbfsInputStreamStatisticsImpl abfsInputStreamStatistics =
+          (AbfsInputStreamStatisticsImpl) abfsInputStream.getStreamStatistics();
       assertTrue(
           "If the buffer is enabled there should be read from the buffer.",
-          0 < abfsInputStream.getStreamStatistics().bytesReadFromBuffer);
+          0 < abfsInputStreamStatistics.getBytesReadFromBuffer());
     }
   }
 
   private void assertBufferStatsAreZero(AbfsInputStream abfsInputStream) {
+    AbfsInputStreamStatisticsImpl abfsInputStreamStatistics =
+        (AbfsInputStreamStatisticsImpl) abfsInputStream.getStreamStatistics();
     assertEquals("Unexpected seekInBuffer stats count", 0,
-              abfsInputStream.getStreamStatistics().seekInBuffer);
+              abfsInputStreamStatistics.getSeekInBuffer());
     assertEquals("Unexpected bytesReadFromBuffer stats count", 0,
-              abfsInputStream.getStreamStatistics().bytesReadFromBuffer);
+              abfsInputStreamStatistics.getBytesReadFromBuffer());
   }
 }

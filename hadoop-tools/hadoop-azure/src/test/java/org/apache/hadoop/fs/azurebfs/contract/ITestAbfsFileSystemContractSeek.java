@@ -84,11 +84,12 @@ public class ITestAbfsFileSystemContractSeek extends AbstractContractSeekTest{
     createDataSet(testSeekFile);
     try (FSDataInputStream in = getFileSystem().open(testSeekFile)) {
       AbfsInputStream inStream = ((AbfsInputStream) in.getWrappedStream());
-      AbfsInputStreamStatisticsImpl streamStatistics = inStream.getStreamStatistics();
+      AbfsInputStreamStatisticsImpl streamStatistics =
+          (AbfsInputStreamStatisticsImpl) inStream.getStreamStatistics();
       assertEquals(String.format("Value of %s is not set correctly", AZURE_READ_AHEAD_RANGE),
               MIN_BUFFER_SIZE, inStream.getReadAheadRange());
 
-      long remoteReadOperationsOldVal = streamStatistics.remoteReadOperations;
+      long remoteReadOperationsOldVal = streamStatistics.getRemoteReadOperations();
       assertEquals("Number of remote read ops should be 0 " +
               "before any read call is made", 0, remoteReadOperationsOldVal);
 
@@ -96,8 +97,8 @@ public class ITestAbfsFileSystemContractSeek extends AbstractContractSeekTest{
       assertEquals("First call to getPos() should return 0",
               0, inStream.getPos());
       assertDataAtPos(0,  (byte) in.read());
-      assertSeekBufferStats(0, streamStatistics.seekInBuffer);
-      long remoteReadOperationsNewVal = streamStatistics.remoteReadOperations;
+      assertSeekBufferStats(0, streamStatistics.getSeekInBuffer());
+      long remoteReadOperationsNewVal = streamStatistics.getRemoteReadOperations();
       assertIncrementInRemoteReadOps(remoteReadOperationsOldVal,
               remoteReadOperationsNewVal);
       remoteReadOperationsOldVal = remoteReadOperationsNewVal;
@@ -107,8 +108,8 @@ public class ITestAbfsFileSystemContractSeek extends AbstractContractSeekTest{
       in.seek(newSeek);
       assertGetPosition(newSeek, in.getPos());
       assertDataAtPos(newSeek, (byte) in.read());
-      assertSeekBufferStats(1, streamStatistics.seekInBuffer);
-      remoteReadOperationsNewVal = streamStatistics.remoteReadOperations;
+      assertSeekBufferStats(1, streamStatistics.getSeekInBuffer());
+      remoteReadOperationsNewVal = streamStatistics.getRemoteReadOperations();
       assertNoIncrementInRemoteReadOps(remoteReadOperationsOldVal,
               remoteReadOperationsNewVal);
       remoteReadOperationsOldVal = remoteReadOperationsNewVal;
@@ -118,8 +119,8 @@ public class ITestAbfsFileSystemContractSeek extends AbstractContractSeekTest{
       inStream.seek(newSeek);
       assertGetPosition(newSeek, in.getPos());
       assertDataAtPos(newSeek, (byte) in.read());
-      assertSeekBufferStats(1, streamStatistics.seekInBuffer);
-      remoteReadOperationsNewVal = streamStatistics.remoteReadOperations;
+      assertSeekBufferStats(1, streamStatistics.getSeekInBuffer());
+      remoteReadOperationsNewVal = streamStatistics.getRemoteReadOperations();
       assertNoIncrementInRemoteReadOps(remoteReadOperationsOldVal,
               remoteReadOperationsNewVal);
       remoteReadOperationsOldVal = remoteReadOperationsNewVal;
@@ -129,8 +130,8 @@ public class ITestAbfsFileSystemContractSeek extends AbstractContractSeekTest{
       in.seek(newSeek);
       assertGetPosition(newSeek, in.getPos());
       assertDataAtPos(newSeek, (byte) in.read());
-      assertSeekBufferStats(2, streamStatistics.seekInBuffer);
-      remoteReadOperationsNewVal = streamStatistics.remoteReadOperations;
+      assertSeekBufferStats(2, streamStatistics.getSeekInBuffer());
+      remoteReadOperationsNewVal = streamStatistics.getRemoteReadOperations();
       assertNoIncrementInRemoteReadOps(remoteReadOperationsOldVal,
               remoteReadOperationsNewVal);
       remoteReadOperationsOldVal = remoteReadOperationsNewVal;
@@ -140,8 +141,8 @@ public class ITestAbfsFileSystemContractSeek extends AbstractContractSeekTest{
       in.seek(newSeek);
       assertGetPosition(newSeek, in.getPos());
       assertDataAtPos(newSeek, (byte) in.read());
-      assertSeekBufferStats(3, streamStatistics.seekInBuffer);
-      remoteReadOperationsNewVal = streamStatistics.remoteReadOperations;
+      assertSeekBufferStats(3, streamStatistics.getSeekInBuffer());
+      remoteReadOperationsNewVal = streamStatistics.getRemoteReadOperations();
       assertNoIncrementInRemoteReadOps(remoteReadOperationsOldVal,
               remoteReadOperationsNewVal);
       remoteReadOperationsOldVal = remoteReadOperationsNewVal;
@@ -151,8 +152,8 @@ public class ITestAbfsFileSystemContractSeek extends AbstractContractSeekTest{
       in.seek(newSeek);
       assertGetPosition(newSeek, in.getPos());
       assertDataAtPos(newSeek, (byte) in.read());
-      assertSeekBufferStats(3, streamStatistics.seekInBuffer);
-      remoteReadOperationsNewVal = streamStatistics.remoteReadOperations;
+      assertSeekBufferStats(3, streamStatistics.getSeekInBuffer());
+      remoteReadOperationsNewVal = streamStatistics.getRemoteReadOperations();
       assertIncrementInRemoteReadOps(remoteReadOperationsOldVal,
               remoteReadOperationsNewVal);
       remoteReadOperationsOldVal = remoteReadOperationsNewVal;
@@ -162,8 +163,8 @@ public class ITestAbfsFileSystemContractSeek extends AbstractContractSeekTest{
       in.seek(newSeek);
       assertGetPosition(newSeek, in.getPos());
       assertDataAtPos(newSeek, (byte) in.read());
-      assertSeekBufferStats(4, streamStatistics.seekInBuffer);
-      remoteReadOperationsNewVal = streamStatistics.remoteReadOperations;
+      assertSeekBufferStats(4, streamStatistics.getSeekInBuffer());
+      remoteReadOperationsNewVal = streamStatistics.getRemoteReadOperations();
       assertNoIncrementInRemoteReadOps(remoteReadOperationsOldVal,
               remoteReadOperationsNewVal);
       remoteReadOperationsOldVal = remoteReadOperationsNewVal;
@@ -177,10 +178,10 @@ public class ITestAbfsFileSystemContractSeek extends AbstractContractSeekTest{
       // Adding one as one byte is already read
       // after the last seek is done.
       assertGetPosition(oldSeek + 1, in.getPos());
-      assertSeekBufferStats(4, streamStatistics.seekInBuffer);
+      assertSeekBufferStats(4, streamStatistics.getSeekInBuffer());
       assertDatasetEquals(newSeek, "Read across read ahead ",
               bytes, bytes.length);
-      remoteReadOperationsNewVal = streamStatistics.remoteReadOperations;
+      remoteReadOperationsNewVal = streamStatistics.getRemoteReadOperations();
       assertIncrementInRemoteReadOps(remoteReadOperationsOldVal,
               remoteReadOperationsNewVal);
     }
@@ -202,18 +203,20 @@ public class ITestAbfsFileSystemContractSeek extends AbstractContractSeekTest{
                     .build();
     try (FSDataInputStream inputStream = awaitFuture(future)) {
       AbfsInputStream abfsInputStream = (AbfsInputStream) inputStream.getWrappedStream();
-      AbfsInputStreamStatisticsImpl streamStatistics = abfsInputStream.getStreamStatistics();
+      AbfsInputStreamStatisticsImpl streamStatistics =
+          (AbfsInputStreamStatisticsImpl) abfsInputStream.getStreamStatistics();
       int readAheadRange = abfsInputStream.getReadAheadRange();
       long seekPos = readAheadRange;
       inputStream.seek(seekPos);
       assertDataAtPos(readAheadRange, (byte) inputStream.read());
-      long currentRemoteReadOps = streamStatistics.remoteReadOperations;
+      long currentRemoteReadOps = streamStatistics.getRemoteReadOperations();
       assertIncrementInRemoteReadOps(0, currentRemoteReadOps);
       inputStream.unbuffer();
       seekPos -= 10;
       inputStream.seek(seekPos);
       // Seek backwards shouldn't do any IO
-      assertNoIncrementInRemoteReadOps(currentRemoteReadOps, streamStatistics.remoteReadOperations);
+      assertNoIncrementInRemoteReadOps(currentRemoteReadOps,
+          streamStatistics.getRemoteReadOperations());
       assertGetPosition(seekPos, inputStream.getPos());
     }
   }

@@ -25,16 +25,17 @@ import org.apache.hadoop.classification.InterfaceStability;
  */
 public class AbfsInputStreamStatisticsImpl
     implements AbfsInputStreamStatistics {
-  public volatile long seekOperations;
-  public volatile long forwardSeekOperations;
-  public volatile long backwardSeekOperations;
-  public volatile long bytesRead;
-  public volatile long bytesSkippedOnSeek;
-  public volatile long bytesBackwardsOnSeek;
-  public volatile long seekInBuffer;
-  public volatile long readOperations;
-  public volatile long bytesReadFromBuffer;
-  public volatile long remoteReadOperations;
+
+  private long seekOperations;
+  private long forwardSeekOperations;
+  private long backwardSeekOperations;
+  private long bytesRead;
+  private long bytesSkippedOnSeek;
+  private long bytesBackwardsOnSeek;
+  private long seekInBuffer;
+  private long readOperations;
+  private long bytesReadFromBuffer;
+  private long remoteReadOperations;
 
   /**
    * Seek backwards, incrementing the seek and backward seek counters.
@@ -67,8 +68,8 @@ public class AbfsInputStreamStatisticsImpl
    * Record a forward or backward seek, adding a seek operation, a forward or
    * a backward seek operation, and number of bytes skipped.
    * The seek direction will be calculated based on the parameters.
-   * @param seekTo seek to the position
-   * @param currentPos current position
+   * @param seekTo seek to the position.
+   * @param currentPos current position.
    */
   @Override
   public void seek(long seekTo, long currentPos) {
@@ -82,7 +83,7 @@ public class AbfsInputStreamStatisticsImpl
   /**
    * Increment the bytes read counter by the number of bytes;
    * no-op if the argument is negative.
-   * @param bytes number of bytes read
+   * @param bytes number of bytes read.
    */
   @Override
   public void bytesRead(long bytes) {
@@ -91,6 +92,13 @@ public class AbfsInputStreamStatisticsImpl
     }
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * Total bytes read from the buffer.
+   *
+   * @param bytes number of bytes that are read from buffer.
+   */
   @Override
   public void bytesReadFromBuffer(long bytes) {
     if (bytes > 0) {
@@ -98,6 +106,11 @@ public class AbfsInputStreamStatisticsImpl
     }
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * Increment the number of seeks in the buffer.
+   */
   @Override
   public void seekInBuffer() {
     seekInBuffer++;
@@ -105,17 +118,62 @@ public class AbfsInputStreamStatisticsImpl
 
   /**
    * A {@code read(byte[] buf, int off, int len)} operation has started.
-   * @param pos starting position of the read
-   * @param len length of bytes to read
+   * @param pos starting position of the read.
+   * @param len length of bytes to read.
    */
   @Override
   public void readOperationStarted(long pos, long len) {
     readOperations++;
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * Increment the counter when a remote read operation occurs.
+   */
   @Override
   public void remoteReadOperation() {
     remoteReadOperations++;
+  }
+
+  public long getSeekOperations() {
+    return seekOperations;
+  }
+
+  public long getForwardSeekOperations() {
+    return forwardSeekOperations;
+  }
+
+  public long getBackwardSeekOperations() {
+    return backwardSeekOperations;
+  }
+
+  public long getBytesRead() {
+    return bytesRead;
+  }
+
+  public long getBytesSkippedOnSeek() {
+    return bytesSkippedOnSeek;
+  }
+
+  public long getBytesBackwardsOnSeek() {
+    return bytesBackwardsOnSeek;
+  }
+
+  public long getSeekInBuffer() {
+    return seekInBuffer;
+  }
+
+  public long getReadOperations() {
+    return readOperations;
+  }
+
+  public long getBytesReadFromBuffer() {
+    return bytesReadFromBuffer;
+  }
+
+  public long getRemoteReadOperations() {
+    return remoteReadOperations;
   }
 
   /**
