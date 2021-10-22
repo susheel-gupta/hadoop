@@ -735,7 +735,7 @@ public abstract class AbstractCSQueue implements CSQueue {
       } else {
         if (configuredState == QueueState.RUNNING) {
           try {
-            activeQueue();
+            activateQueue();
           } catch (YarnException ex) {
             throw new IllegalArgumentException(ex.getMessage());
           }
@@ -1324,7 +1324,7 @@ public abstract class AbstractCSQueue implements CSQueue {
   }
 
   @Override
-  public void activeQueue() throws YarnException {
+  public void activateQueue() throws YarnException {
     this.writeLock.lock();
     try {
       if (getState() == QueueState.RUNNING) {
