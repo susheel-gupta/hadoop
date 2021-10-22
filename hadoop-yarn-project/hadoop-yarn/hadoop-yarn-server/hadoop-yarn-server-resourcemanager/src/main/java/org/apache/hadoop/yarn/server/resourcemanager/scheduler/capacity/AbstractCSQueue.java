@@ -115,6 +115,8 @@ public abstract class AbstractCSQueue implements CSQueue {
   protected CapacityConfigType capacityConfigType =
       CapacityConfigType.NONE;
 
+  protected Map<String, QueueCapacityVector> configuredCapacityVectors;
+
   private final RecordFactory recordFactory =
       RecordFactoryProvider.getRecordFactory(null);
   protected CapacitySchedulerQueueContext queueContext;
@@ -360,6 +362,9 @@ public abstract class AbstractCSQueue implements CSQueue {
 
       this.reservationsContinueLooking =
           configuration.getReservationContinueLook();
+      this.configuredCapacityVectors = configuration
+          .parseConfiguredResourceVector(queuePath.getFullPath(),
+              this.queueNodeLabelsSettings.getConfiguredNodeLabels());
 
       // Update metrics
       CSQueueUtils.updateQueueStatistics(resourceCalculator, clusterResource,
@@ -551,6 +556,12 @@ public abstract class AbstractCSQueue implements CSQueue {
     return Resources.normalizeDown(resourceCalculator,
         getQueueResourceQuotas().getEffectiveMaxResource(label),
         queueAllocationSettings.getMinimumAllocation());
+  }
+
+  @Override
+  public QueueCapacityVector getConfiguredCapacityVector(
+      String label) {
+    return configuredCapacityVectors.get(label);
   }
 
   protected QueueInfo getQueueInfo() {
