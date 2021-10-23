@@ -285,6 +285,7 @@ public abstract class AbstractCSQueue implements CSQueue {
    * Set maximum capacity - used only for testing.
    * @param maximumCapacity new max capacity
    */
+  @VisibleForTesting
   void setMaxCapacity(float maximumCapacity) {
     writeLock.lock();
     try {
@@ -1015,7 +1016,8 @@ public abstract class AbstractCSQueue implements CSQueue {
     return getEffectiveMaxCapacity(nodePartition);
   }
 
-  public boolean hasChildQueues() {
+  @VisibleForTesting
+  boolean hasChildQueues() {
     List<CSQueue> childQueues = getChildQueues();
     return childQueues != null && !childQueues.isEmpty();
   }
@@ -1600,7 +1602,7 @@ public abstract class AbstractCSQueue implements CSQueue {
             getAutoExpiredDeletionTime());
   }
 
-  public void updateLastSubmittedTimeStamp() {
+  void updateLastSubmittedTimeStamp() {
     writeLock.lock();
     try {
       usageTracker.setLastSubmittedTimestamp(Time.monotonicNow());
@@ -1609,7 +1611,8 @@ public abstract class AbstractCSQueue implements CSQueue {
     }
   }
 
-  public long getLastSubmittedTimestamp() {
+  @VisibleForTesting
+  long getLastSubmittedTimestamp() {
     readLock.lock();
 
     try {
@@ -1620,7 +1623,7 @@ public abstract class AbstractCSQueue implements CSQueue {
   }
 
   @VisibleForTesting
-  public void setLastSubmittedTimestamp(long lastSubmittedTimestamp) {
+  void setLastSubmittedTimestamp(long lastSubmittedTimestamp) {
     writeLock.lock();
     try {
       usageTracker.setLastSubmittedTimestamp(lastSubmittedTimestamp);
