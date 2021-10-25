@@ -127,6 +127,9 @@ public class StoreContext implements ActiveThreadSpanSource<AuditSpan> {
   /** Operation Auditor. */
   private final AuditSpanSource<AuditSpanS3A> auditor;
 
+  /** Is client side encryption enabled? */
+  private final boolean isCSEEnabled;
+
   /**
    * Instantiate.
    */
@@ -148,7 +151,8 @@ public class StoreContext implements ActiveThreadSpanSource<AuditSpan> {
       final boolean useListV1,
       final ContextAccessors contextAccessors,
       final ITtlTimeProvider timeProvider,
-      final AuditSpanSource<AuditSpanS3A> auditor) {
+      final AuditSpanSource<AuditSpanS3A> auditor,
+      final boolean isCSEEnabled) {
     this.fsURI = fsURI;
     this.bucket = bucket;
     this.configuration = configuration;
@@ -167,6 +171,7 @@ public class StoreContext implements ActiveThreadSpanSource<AuditSpan> {
     this.contextAccessors = contextAccessors;
     this.timeProvider = timeProvider;
     this.auditor = auditor;
+    this.isCSEEnabled = isCSEEnabled;
   }
 
   public URI getFsURI() {
@@ -423,5 +428,13 @@ public class StoreContext implements ActiveThreadSpanSource<AuditSpan> {
    */
   public RequestFactory getRequestFactory() {
     return contextAccessors.getRequestFactory();
+  }
+
+  /**
+   * return if the store context have client side encryption enabled.
+   * @return boolean indicating if CSE is enabled or not.
+   */
+  public boolean isCSEEnabled() {
+    return isCSEEnabled;
   }
 }

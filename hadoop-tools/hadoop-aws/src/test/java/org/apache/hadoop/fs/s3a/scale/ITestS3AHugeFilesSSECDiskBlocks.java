@@ -26,6 +26,8 @@ import org.apache.hadoop.fs.s3a.S3ATestUtils;
 import java.nio.file.AccessDeniedException;
 
 import static org.apache.hadoop.fs.contract.ContractTestUtils.skip;
+import static org.apache.hadoop.fs.s3a.Constants.S3_ENCRYPTION_ALGORITHM;
+import static org.apache.hadoop.fs.s3a.Constants.S3_ENCRYPTION_KEY;
 import static org.apache.hadoop.fs.s3a.Constants.SERVER_SIDE_ENCRYPTION_ALGORITHM;
 import static org.apache.hadoop.fs.s3a.Constants.SERVER_SIDE_ENCRYPTION_KEY;
 import static org.apache.hadoop.fs.s3a.S3ATestUtils.removeBaseAndBucketOverrides;
@@ -58,15 +60,17 @@ public class ITestS3AHugeFilesSSECDiskBlocks
     }
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   protected Configuration createScaleConfiguration() {
     Configuration conf = super.createScaleConfiguration();
-    removeBaseAndBucketOverrides(conf, SERVER_SIDE_ENCRYPTION_KEY,
-            SERVER_SIDE_ENCRYPTION_ALGORITHM);
+    removeBaseAndBucketOverrides(conf, S3_ENCRYPTION_KEY,
+        S3_ENCRYPTION_ALGORITHM, SERVER_SIDE_ENCRYPTION_ALGORITHM,
+        SERVER_SIDE_ENCRYPTION_KEY);
     S3ATestUtils.disableFilesystemCaching(conf);
-    conf.set(Constants.SERVER_SIDE_ENCRYPTION_ALGORITHM,
+    conf.set(Constants.S3_ENCRYPTION_ALGORITHM,
         getSSEAlgorithm().getMethod());
-    conf.set(Constants.SERVER_SIDE_ENCRYPTION_KEY, KEY_1);
+    conf.set(Constants.S3_ENCRYPTION_KEY, KEY_1);
     return conf;
   }
 
