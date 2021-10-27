@@ -170,10 +170,9 @@ public class ParentQueue extends AbstractCSQueue {
       }
 
       StringBuilder labelStrBuilder = new StringBuilder();
-      if (accessibleLabels != null) {
-        for (String s : accessibleLabels) {
-          labelStrBuilder.append(s);
-          labelStrBuilder.append(",");
+      if (queueNodeLabelsSettings.getAccessibleNodeLabels() != null) {
+        for (String nodeLabel : queueNodeLabelsSettings.getAccessibleNodeLabels()) {
+          labelStrBuilder.append(nodeLabel).append(",");
         }
       }
 
@@ -758,7 +757,7 @@ public class ParentQueue extends AbstractCSQueue {
       try {
         parent.submitApplication(applicationId, user, queue);
       } catch (AccessControlException ace) {
-        LOG.info("Failed to submit application to parent-queue: " + 
+        LOG.info("Failed to submit application to parent-queue: " +
             parent.getQueuePath(), ace);
         removeApplication(applicationId, user);
         throw ace;
@@ -847,7 +846,7 @@ public class ParentQueue extends AbstractCSQueue {
   }
 
   private String getParentName() {
-    return getParent() != null ? getParent().getQueuePath() : "";
+    return parent != null ? parent.getQueuePath() : "";
   }
 
   @Override
@@ -858,7 +857,7 @@ public class ParentQueue extends AbstractCSQueue {
 
     // if our queue cannot access this node, just return
     if (schedulingMode == SchedulingMode.RESPECT_PARTITION_EXCLUSIVITY
-        && !accessibleToPartition(candidates.getPartition())) {
+        && !queueNodeLabelsSettings.isAccessibleToPartition(candidates.getPartition())) {
       if (LOG.isDebugEnabled()) {
         long now = System.currentTimeMillis();
         // Do logging every 1 sec to avoid excessive logging.
@@ -1043,7 +1042,7 @@ public class ParentQueue extends AbstractCSQueue {
     boolean accept = node.getReservedContainer() == null && Resources
         .greaterThanOrEqual(resourceCalculator, clusterResource, Resources
             .add(node.getUnallocatedResource(),
-                node.getTotalKillableResources()), minimumAllocation);
+                node.getTotalKillableResources()), queueAllocationSettings.getMinimumAllocation());
     if (!accept) {
       ActivitiesLogger.QUEUE.recordQueueActivity(activitiesManager, node,
           getParentName(), getQueueName(), ActivityState.REJECTED,
@@ -1089,7 +1088,8 @@ public class ParentQueue extends AbstractCSQueue {
 
     // Normalize before return
     childLimit =
-        Resources.roundDown(resourceCalculator, childLimit, minimumAllocation);
+        Resources.roundDown(resourceCalculator, childLimit,
+            queueAllocationSettings.getMinimumAllocation());
 
     return new ResourceLimits(childLimit);
   }
@@ -1279,7 +1279,7 @@ public class ParentQueue extends AbstractCSQueue {
       }
 
       // Update effective capacity in all parent queue.
-      for (String label : configuredNodeLabels) {
+      for (String label : queueNodeLabelsSettings.getConfiguredNodeLabels()) {
         calculateEffectiveResourcesAndCapacity(label, clusterResource);
       }
 
