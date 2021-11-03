@@ -173,7 +173,6 @@ public class ITestCommitOperations extends AbstractCommitITest {
     Path destFile = methodPath(filename);
     Path pendingFilePath = makeMagic(destFile);
     touch(fs, pendingFilePath);
-    waitForConsistency();
     validateIntermediateAndFinalPaths(pendingFilePath, destFile);
     Path pendingDataPath = validatePendingCommitData(filename,
         pendingFilePath);

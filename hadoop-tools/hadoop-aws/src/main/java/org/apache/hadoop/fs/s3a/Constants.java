@@ -160,33 +160,14 @@ public final class Constants {
       DEFAULT_SSL_CHANNEL_MODE =
           DelegatingSSLSocketFactory.SSLChannelMode.Default_JSSE;
 
-  /**
-   * Endpoint. For v4 signing and/or better performance,
-   * this should be the specific endpoint of the region
-   * in which the bucket is hosted.
-   */
+  //use a custom endpoint?
   public static final String ENDPOINT = "fs.s3a.endpoint";
 
   /**
-   * Default value of s3 endpoint: {@value}.
-   * It tells the AWS client to work it out by asking the central
-   * endpoint where the bucket lives; caching that
-   * value in the client for the life of the process.
-   * <p>
-   * Note: previously this constant was defined as
-   * {@link #CENTRAL_ENDPOINT}, however the actual
-   * S3A client code used "" as the default when
-   * {@link #ENDPOINT} was unset.
-   * As core-default.xml also set the endpoint to "",
-   * the empty string has long been the <i>real</i>
-   * default value.
+   * Default value of s3 endpoint. If not set explicitly using
+   * {@code AmazonS3#setEndpoint()}, this is used.
    */
-  public static final String DEFAULT_ENDPOINT = "";
-
-  /**
-   * The central endpoint :{@value}.
-   */
-  public static final String CENTRAL_ENDPOINT = "s3.amazonaws.com";
+  public static final String DEFAULT_ENDPOINT = "s3.amazonaws.com";
 
   //Enable path style access? Overrides default virtual hosting
   public static final String PATH_STYLE_ACCESS = "fs.s3a.path.style.access";
