@@ -428,16 +428,23 @@ public class AzureBlobFileSystem extends FileSystem
       abfsStore.rename(qualifiedSrcPath, qualifiedDstPath, tracingContext);
       return true;
     } catch(AzureBlobFileSystemException ex) {
-      LOG.debug("Rename operation failed. ", ex);
-      checkException(
-              src,
-              ex,
-              AzureServiceErrorCode.PATH_ALREADY_EXISTS,
-              AzureServiceErrorCode.INVALID_RENAME_SOURCE_PATH,
-              AzureServiceErrorCode.SOURCE_PATH_NOT_FOUND,
-              AzureServiceErrorCode.INVALID_SOURCE_OR_DESTINATION_RESOURCE_TYPE,
-              AzureServiceErrorCode.RENAME_DESTINATION_PARENT_PATH_NOT_FOUND,
-              AzureServiceErrorCode.INTERNAL_OPERATION_ABORT);
+      LOG.debug("Rename({}, {}) operation failed.",
+          qualifiedSrcPath, qualifiedDstPath, ex);
+      if (!abfsStore.getAbfsConfiguration().getRenameRaisesExceptions()) {
+        // exceptions are downgraded to returning false.
+        checkException(
+            src,
+            ex,
+            AzureServiceErrorCode.PATH_ALREADY_EXISTS,
+            AzureServiceErrorCode.INVALID_RENAME_SOURCE_PATH,
+            AzureServiceErrorCode.SOURCE_PATH_NOT_FOUND,
+            AzureServiceErrorCode.INVALID_SOURCE_OR_DESTINATION_RESOURCE_TYPE,
+            AzureServiceErrorCode.RENAME_DESTINATION_PARENT_PATH_NOT_FOUND,
+            AzureServiceErrorCode.INTERNAL_OPERATION_ABORT);
+      } else {
+        // all exceptions are raised.
+        checkException(src, ex);
+      }
       return false;
     }
 
@@ -1490,6 +1497,8 @@ public class AzureBlobFileSystem extends FileSystem
     switch (validatePathCapabilityArgs(p, capability)) {
     case CommonPathCapabilities.FS_PERMISSIONS:
     case CommonPathCapabilities.FS_APPEND:
+    case CommonPathCapabilities.ETAGS_AVAILABLE:
+    case CommonPathCapabilities.ETAGS_PRESERVED_IN_RENAME:
       return true;
     case CommonPathCapabilities.FS_ACLS:
       return getIsNamespaceEnabled(
