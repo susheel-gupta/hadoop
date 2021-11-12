@@ -31,6 +31,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.UsersManager.User;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
@@ -518,8 +519,10 @@ public class FifoIntraQueuePreemptionPlugin
       String userName = app.getUser();
       TempUserPerPartition tmpUser = usersPerPartition.get(userName);
       if (tmpUser == null) {
-        ResourceUsage userResourceUsage = tq.leafQueue.getUser(userName)
-            .getResourceUsage();
+        // User might have already been removed, but preemption still accounts for this app,
+        // therefore reinserting the user will not cause a memory leak
+        User  user = tq.leafQueue.getOrCreateUser(userName);
+        ResourceUsage userResourceUsage = user.getResourceUsage();
 
         // perUserAMUsed was populated with running apps, now we are looping
         // through both running and pending apps.
@@ -527,8 +530,7 @@ public class FifoIntraQueuePreemptionPlugin
         amUsed = (userSpecificAmUsed == null)
             ? Resources.none() : userSpecificAmUsed;
 
-        tmpUser = new TempUserPerPartition(
-            tq.leafQueue.getUser(userName), tq.queueName,
+        tmpUser = new TempUserPerPartition(user, tq.queueName,
             Resources.clone(userResourceUsage.getUsed(partition)),
             Resources.clone(amUsed),
             Resources.clone(userResourceUsage.getReserved(partition)),
