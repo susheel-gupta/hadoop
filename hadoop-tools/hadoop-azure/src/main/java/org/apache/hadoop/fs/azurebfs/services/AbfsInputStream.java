@@ -39,9 +39,6 @@ import org.apache.hadoop.fs.azurebfs.contracts.exceptions.AzureBlobFileSystemExc
 import org.apache.hadoop.fs.azurebfs.utils.CachedSASToken;
 import org.apache.hadoop.fs.statistics.IOStatistics;
 import org.apache.hadoop.fs.statistics.IOStatisticsSource;
-import org.apache.hadoop.fs.statistics.StoreStatisticNames;
-import org.apache.hadoop.fs.statistics.impl.IOStatisticsBinding;
-import org.apache.hadoop.fs.statistics.impl.IOStatisticsStore;
 
 import static org.apache.hadoop.util.StringUtils.toLowerCase;
 
@@ -357,14 +354,13 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
       if (streamStatistics != null) {
         streamStatistics.remoteReadOperation();
       }
+      LOG.trace("Trigger client.read for path={} position={} offset={} length={}", path, position, offset, length);
+      op = client.read(path, position, b, offset, length,
+          tolerateOobAppends ? "*" : eTag, cachedSasToken.get());
+      cachedSasToken.update(op.getSasToken());
       LOG.debug(
           "issuing HTTP GET request params position = {} b.length = {} offset = {} length = {}",
           position, b.length, offset, length);
-      op = IOStatisticsBinding.trackDuration((IOStatisticsStore) ioStatistics,
-          StoreStatisticNames.ACTION_HTTP_GET_REQUEST,
-          () -> client.read(path, position, b, offset, length,
-              tolerateOobAppends ? "*" : eTag, cachedSasToken.get()));
-      cachedSasToken.update(op.getSasToken());
       perfInfo.registerResult(op.getResult()).registerSuccess(true);
       incrementReadOps();
     } catch (AzureBlobFileSystemException ex) {
