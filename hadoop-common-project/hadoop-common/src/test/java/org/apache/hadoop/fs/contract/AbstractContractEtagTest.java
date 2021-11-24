@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.EtagSource;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 
 import static org.apache.hadoop.fs.CommonPathCapabilities.ETAGS_AVAILABLE;
@@ -60,12 +61,8 @@ public abstract class AbstractContractEtagTest extends
 
     ContractTestUtils.touch(fs, path);
 
-
     final FileStatus st = fs.getFileStatus(path);
     final String etag = etagFromStatus(st);
-    Assertions.assertThat(etag)
-        .describedAs("Etag of %s", st)
-        .isNotBlank();
     LOG.info("etag of empty file is \"{}\"", etag);
 
     final FileStatus[] statuses = fs.listStatus(path);
@@ -144,6 +141,8 @@ public abstract class AbstractContractEtagTest extends
     ContractTestUtils.createFile(fs, src, true,
         "sample data".getBytes(StandardCharsets.UTF_8));
     final FileStatus srcStatus = fs.getFileStatus(src);
+    LOG.info("located file status string value " + srcStatus);
+
     final String srcTag = etagFromStatus(srcStatus);
     LOG.info("etag of short file is \"{}\"", srcTag);
 
@@ -158,8 +157,38 @@ public abstract class AbstractContractEtagTest extends
     FileStatus destStatus = fs.getFileStatus(dest);
     final String destTag = etagFromStatus(destStatus);
     Assertions.assertThat(destTag)
-        .describedAs("etag of list status (%s) compared to HEAD value of %s", destStatus, srcStatus)
+        .describedAs("etag of list status (%s) compared to HEAD value of %s",
+            destStatus, srcStatus)
         .isEqualTo(srcTag);
   }
 
+  /**
+   * For effective use of etags, listLocatedStatus SHOULD return status entries
+   * with consistent values.
+   * This ensures that listing during query planning can collect and use the etags.
+   */
+  @Test
+  public void testLocatedStatusAlsoHasEtag() throws Throwable {
+    describe("verify that listLocatedStatus() and listFiles() are etag sources");
+    final Path path = methodPath();
+    final FileSystem fs = getFileSystem();
+    Path src = new Path(path, "src");
+    ContractTestUtils.createFile(fs, src, true,
+        "sample data".getBytes(StandardCharsets.UTF_8));
+    final FileStatus srcStatus = fs.getFileStatus(src);
+    final String srcTag = etagFromStatus(srcStatus);
+    final LocatedFileStatus entry = fs.listLocatedStatus(path).next();
+    LOG.info("located file status string value " + entry);
+    final String listTag = etagFromStatus(entry);
+    Assertions.assertThat(listTag)
+        .describedAs("etag of listLocatedStatus (%s) compared to HEAD value of %s",
+            entry, srcStatus)
+        .isEqualTo(srcTag);
+
+    final LocatedFileStatus entry2 = fs.listFiles(path, false).next();
+    Assertions.assertThat(etagFromStatus(entry2))
+        .describedAs("etag of listFiles (%s) compared to HEAD value of %s",
+            entry, srcStatus)
+        .isEqualTo(srcTag);
+  }
 }
