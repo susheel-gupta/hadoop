@@ -5,3 +5,5 @@
 #  - my.package.???Excluded*Test   # Exclude based on the fully qualified name
 # Note that the test exclusion is based on files, no built-in way to exclude based on test method level.
 #
+# COMPX-6251 - skip this on the private cloud version:
+org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.TestCapacitySchedulerLayeredBinPackingPolicy
