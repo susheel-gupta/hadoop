@@ -18,13 +18,12 @@
 
 package org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 
 import static org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration.AUTO_QUEUE_CREATION_V2_PREFIX;
 import static org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration.ROOT;
@@ -49,7 +48,7 @@ public class AutoCreatedQueueTemplate {
   private final Map<String, String> parentOnlyProperties = new HashMap<>();
 
   public AutoCreatedQueueTemplate(CapacitySchedulerConfiguration configuration,
-                                  String queuePath) {
+                                  QueuePath queuePath) {
     setTemplateConfigEntries(configuration, queuePath);
   }
 
@@ -154,14 +153,13 @@ public class AutoCreatedQueueTemplate {
    * yarn.scheduler.capacity.root.*.auto-queue-creation-v2.template.capacity
    */
   private void setTemplateConfigEntries(CapacitySchedulerConfiguration configuration,
-                                        String queuePath) {
+                                        QueuePath queuePath) {
     ConfigurationProperties configurationProperties =
         configuration.getConfigurationProperties();
 
-    List<String> queuePathParts = new ArrayList<>(Arrays.asList(
-        queuePath.split("\\.")));
+    List<String> queuePathParts = Lists.newArrayList(queuePath.iterator());
 
-    if (queuePathParts.size() <= 1 && !queuePath.equals(ROOT)) {
+    if (queuePathParts.size() <= 1 && !queuePath.isRoot()) {
       // This is an invalid queue path
       return;
     }
@@ -174,7 +172,7 @@ public class AutoCreatedQueueTemplate {
     int supportedWildcardLevel = Math.min(queuePathMaxIndex - 1,
         MAX_WILDCARD_LEVEL);
     // Allow root to have template properties
-    if (queuePath.equals(ROOT)) {
+    if (queuePath.isRoot()) {
       supportedWildcardLevel = 0;
     }
 

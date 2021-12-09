@@ -210,7 +210,7 @@ public abstract class AbstractManagedParentQueue extends ParentQueue {
     if (!(newChildCap >= 0 && newChildCap < 1.0f + CSQueueUtils.EPSILON)) {
       throw new SchedulerDynamicEditException(
           "Sum of child queues should exceed 100% for auto creating parent "
-              + "queue : " + queueName);
+              + "queue : " + getQueueName());
     }
   }
 }
