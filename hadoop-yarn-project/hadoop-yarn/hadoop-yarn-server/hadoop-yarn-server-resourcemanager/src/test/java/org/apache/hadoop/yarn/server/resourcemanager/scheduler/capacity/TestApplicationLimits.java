@@ -104,19 +104,11 @@ public class TestApplicationLimits {
     rmContext = TestUtils.getMockRMContext();
     Resource clusterResource = Resources.createResource(10 * 16 * GB, 10 * 32);
 
-    CapacitySchedulerContext csContext = mock(CapacitySchedulerContext.class);
-    when(csContext.getConfiguration()).thenReturn(csConf);
-    when(csContext.getConf()).thenReturn(conf);
-    when(csContext.getMinimumResourceCapability()).
-        thenReturn(Resources.createResource(GB, 1));
-    when(csContext.getMaximumResourceCapability()).
-        thenReturn(Resources.createResource(16*GB, 32));
-    when(csContext.getClusterResource()).
-        thenReturn(clusterResource);
-    when(csContext.getResourceCalculator()).
-        thenReturn(resourceCalculator);
+    CapacitySchedulerContext csContext = createCSContext(csConf, resourceCalculator,
+        Resources.createResource(GB, 1), Resources.createResource(16*GB, 32),
+        clusterResource);
     when(csContext.getRMContext()).thenReturn(rmContext);
-    when(csContext.getPreemptionManager()).thenReturn(new PreemptionManager());
+    CapacitySchedulerQueueContext queueContext = new CapacitySchedulerQueueContext(csContext);
     
     RMContainerTokenSecretManager containerTokenSecretManager =
         new RMContainerTokenSecretManager(conf);
@@ -126,13 +118,13 @@ public class TestApplicationLimits {
 
     CSQueueStore queues = new CSQueueStore();
     root = CapacitySchedulerQueueManager
-        .parseQueue(csContext, csConf, null, "root",
+        .parseQueue(queueContext, csConf, null, "root",
             queues, queues,
             TestUtils.spyHook);
     root.updateClusterResource(clusterResource,
         new ResourceLimits(clusterResource));
 
-    queue = spy(new LeafQueue(csContext, A, root, null));
+    queue = spy(new LeafQueue(queueContext, A, root, null));
     QueueResourceQuotas queueResourceQuotas = ((LeafQueue) queues.get(A))
         .getQueueResourceQuotas();
     doReturn(queueResourceQuotas).when(queue).getQueueResourceQuotas();
@@ -275,28 +267,21 @@ public class TestApplicationLimits {
     CapacitySchedulerConfiguration csConf = 
         new CapacitySchedulerConfiguration();
     setupQueueConfiguration(csConf);
-    YarnConfiguration conf = new YarnConfiguration();
-    
-    CapacitySchedulerContext csContext = mock(CapacitySchedulerContext.class);
-    when(csContext.getConfiguration()).thenReturn(csConf);
-    when(csContext.getConf()).thenReturn(conf);
-    when(csContext.getMinimumResourceCapability()).
-        thenReturn(Resources.createResource(GB, 1));
-    when(csContext.getMaximumResourceCapability()).
-        thenReturn(Resources.createResource(16*GB, 16));
-    when(csContext.getResourceCalculator()).thenReturn(resourceCalculator);
-    when(csContext.getRMContext()).thenReturn(rmContext);
-    when(csContext.getPreemptionManager()).thenReturn(new PreemptionManager());
-    
+
     // Say cluster has 100 nodes of 16G each
     Resource clusterResource = 
       Resources.createResource(100 * 16 * GB, 100 * 16);
-    when(csContext.getClusterResource()).thenReturn(clusterResource);
+
+    CapacitySchedulerContext csContext = createCSContext(csConf, resourceCalculator, Resources.createResource(GB, 1),
+        Resources.createResource(16*GB, 16), clusterResource);
+    CapacitySchedulerQueueManager queueManager = csContext.getCapacitySchedulerQueueManager();
+    CapacitySchedulerQueueContext queueContext = new CapacitySchedulerQueueContext(csContext);
 
     CSQueueStore queues = new CSQueueStore();
     CSQueue root = 
-        CapacitySchedulerQueueManager.parseQueue(csContext, csConf, null,
+        CapacitySchedulerQueueManager.parseQueue(queueContext, csConf, null,
             "root", queues, queues, TestUtils.spyHook);
+    queueManager.setRootQueue(root);
     root.updateClusterResource(clusterResource,
         new ResourceLimits(clusterResource));
 
@@ -363,12 +348,14 @@ public class TestApplicationLimits {
     // Change the per-queue max AM resources percentage.
     csConf.setFloat(PREFIX + queue.getQueuePath()
         + ".maximum-am-resource-percent", 0.5f);
+    queueContext.reinitialize();
     // Re-create queues to get new configs.
     queues = new CSQueueStore();
     root = CapacitySchedulerQueueManager.parseQueue(
-        csContext, csConf, null, "root",
+        queueContext, csConf, null, "root",
         queues, queues, TestUtils.spyHook);
     clusterResource = Resources.createResource(100 * 16 * GB);
+    queueManager.setRootQueue(root);
     root.updateClusterResource(clusterResource, new ResourceLimits(
         clusterResource));
 
@@ -387,10 +374,11 @@ public class TestApplicationLimits {
     // Change the per-queue max applications.
     csConf.setInt(PREFIX + queue.getQueuePath() + ".maximum-applications",
         9999);
+    queueContext.reinitialize();
     // Re-create queues to get new configs.
     queues = new CSQueueStore();
     root = CapacitySchedulerQueueManager.parseQueue(
-        csContext, csConf, null, "root",
+        queueContext, csConf, null, "root",
         queues, queues, TestUtils.spyHook);
     root.updateClusterResource(clusterResource, new ResourceLimits(
         clusterResource));
@@ -583,26 +571,19 @@ public class TestApplicationLimits {
         new CapacitySchedulerConfiguration();
     csConf.setUserLimit(CapacitySchedulerConfiguration.ROOT + "." + A, 25);
     setupQueueConfiguration(csConf);
-    YarnConfiguration conf = new YarnConfiguration();
-    
-    CapacitySchedulerContext csContext = mock(CapacitySchedulerContext.class);
-    when(csContext.getConfiguration()).thenReturn(csConf);
-    when(csContext.getConf()).thenReturn(conf);
-    when(csContext.getMinimumResourceCapability()).
-        thenReturn(Resources.createResource(GB));
-    when(csContext.getMaximumResourceCapability()).
-        thenReturn(Resources.createResource(16*GB));
-    when(csContext.getResourceCalculator()).thenReturn(resourceCalculator);
-    when(csContext.getRMContext()).thenReturn(rmContext);
-    when(csContext.getPreemptionManager()).thenReturn(new PreemptionManager());
-    
+
     // Say cluster has 100 nodes of 16G each
     Resource clusterResource = Resources.createResource(100 * 16 * GB);
-    when(csContext.getClusterResource()).thenReturn(clusterResource);
+
+    CapacitySchedulerContext csContext = createCSContext(csConf, resourceCalculator, Resources.createResource(GB),
+            Resources.createResource(16*GB), clusterResource);
+    CapacitySchedulerQueueManager queueManager = csContext.getCapacitySchedulerQueueManager();
+    CapacitySchedulerQueueContext queueContext = new CapacitySchedulerQueueContext(csContext);
 
     CSQueueStore queues = new CSQueueStore();
-    CSQueue rootQueue = CapacitySchedulerQueueManager.parseQueue(csContext,
+    CSQueue rootQueue = CapacitySchedulerQueueManager.parseQueue(queueContext,
         csConf, null, "root", queues, queues, TestUtils.spyHook);
+    queueManager.setRootQueue(rootQueue);
     rootQueue.updateClusterResource(clusterResource,
         new ResourceLimits(clusterResource));
 
@@ -900,5 +881,32 @@ public class TestApplicationLimits {
     rm.killApp(app13.getApplicationId());
     rm.killApp(app14.getApplicationId());
     rm.stop();
+  }
+
+  private CapacitySchedulerContext createCSContext(CapacitySchedulerConfiguration csConf,
+      ResourceCalculator rc, Resource minResource, Resource maxResource, Resource clusterResource) {
+    YarnConfiguration conf = new YarnConfiguration();
+
+    CapacitySchedulerContext csContext = mock(CapacitySchedulerContext.class);
+    when(csContext.getConfiguration()).thenReturn(csConf);
+    when(csContext.getConf()).thenReturn(conf);
+    when(csContext.getMinimumResourceCapability()).
+        thenReturn(minResource);
+    when(csContext.getMaximumResourceCapability()).
+        thenReturn(maxResource);
+    when(csContext.getResourceCalculator()).
+        thenReturn(rc);
+    CapacitySchedulerQueueManager queueManager = new CapacitySchedulerQueueManager(conf,
+        rmContext.getNodeLabelManager(), null);
+    when(csContext.getPreemptionManager()).thenReturn(new PreemptionManager());
+    when(csContext.getCapacitySchedulerQueueManager()).thenReturn(queueManager);
+
+    when(csContext.getRMContext()).thenReturn(rmContext);
+    when(csContext.getPreemptionManager()).thenReturn(new PreemptionManager());
+
+    // Total cluster resources.
+    when(csContext.getClusterResource()).thenReturn(clusterResource);
+
+    return csContext;
   }
 }

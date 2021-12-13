@@ -125,6 +125,8 @@ public class TestLeafQueue {
   CapacityScheduler cs;
   CapacitySchedulerConfiguration csConf;
   CapacitySchedulerContext csContext;
+  CapacitySchedulerQueueContext queueContext;
+  private RMApp rmApp;
   
   CSQueue root;
   private CSQueueStore queues;
@@ -176,6 +178,7 @@ public class TestLeafQueue {
     csConf.setBoolean(CapacitySchedulerConfiguration.ENABLE_USER_METRICS, true);
     csConf.setBoolean(CapacitySchedulerConfiguration.RESERVE_CONT_LOOK_ALL_NODES,
         false);
+    csConf.setResourceComparator(rC.getClass());
     final String newRoot = "root" + System.currentTimeMillis();
     setupQueueConfiguration(csConf, newRoot);
     YarnConfiguration conf = new YarnConfiguration();
@@ -201,12 +204,20 @@ public class TestLeafQueue {
     containerTokenSecretManager.rollMasterKey();
     when(csContext.getContainerTokenSecretManager()).thenReturn(
         containerTokenSecretManager);
+    CapacitySchedulerQueueManager queueManager =
+        new CapacitySchedulerQueueManager(csConf, null, null);
+    when(csContext.getCapacitySchedulerQueueManager()).thenReturn(queueManager);
+
+    queueManager.reinitConfiguredNodeLabels(csConf);
+
+    queueContext = new CapacitySchedulerQueueContext(csContext);
 
     root = 
-        CapacitySchedulerQueueManager.parseQueue(csContext, csConf, null,
+        CapacitySchedulerQueueManager.parseQueue(queueContext, csConf, null,
             ROOT,
             queues, queues, 
             TestUtils.spyHook);
+    queueManager.setRootQueue(root);
     root.updateClusterResource(Resources.createResource(100 * 16 * GB, 100 * 32),
         new ResourceLimits(Resources.createResource(100 * 16 * GB, 100 * 32)));
 
@@ -215,8 +226,8 @@ public class TestLeafQueue {
         .thenReturn(queueResUsage);
 
     cs.setRMContext(spyRMContext);
-    cs.init(csConf);
     cs.setResourceCalculator(rC);
+    cs.init(csConf);
 
     when(spyRMContext.getScheduler()).thenReturn(cs);
     when(spyRMContext.getYarnConfiguration())
@@ -1048,7 +1059,7 @@ public class TestLeafQueue {
     /**
      * Start testing...
      */
-    
+
     // Set user-limit
     a.setUserLimit(50);
     a.setUserLimitFactor(2);
@@ -1217,6 +1228,7 @@ public class TestLeafQueue {
         + CapacitySchedulerConfiguration.USER_WEIGHT,
         0.7f);
     csConf.reinitializeConfigurationProperties();
+    queueContext.reinitialize();
 
     when(csContext.getClusterResource())
         .thenReturn(Resources.createResource(16 * GB, 32));
@@ -2513,10 +2525,12 @@ public class TestLeafQueue {
     csConf.setInt(CapacitySchedulerConfiguration.NODE_LOCALITY_DELAY, 2);
     csConf.setInt(
         CapacitySchedulerConfiguration.RACK_LOCALITY_ADDITIONAL_DELAY, 1);
+    queueContext.reinitialize();
     CSQueueStore newQueues = new CSQueueStore();
-    CSQueue newRoot = CapacitySchedulerQueueManager.parseQueue(csContext,
+    CSQueue newRoot = CapacitySchedulerQueueManager.parseQueue(queueContext,
         csConf, null, ROOT, newQueues, queues,
         TestUtils.spyHook);
+    csContext.getCapacitySchedulerQueueManager().setRootQueue(newRoot);
     root.reinitialize(newRoot, cs.getClusterResource());
 
     // Manipulate queue 'b'
@@ -2949,9 +2963,10 @@ public class TestLeafQueue {
         CapacitySchedulerConfiguration.MAXIMUM_APPLICATION_MASTERS_RESOURCE_PERCENT,
         CapacitySchedulerConfiguration.DEFAULT_MAXIMUM_APPLICATIONMASTERS_RESOURCE_PERCENT
             * 2);
+    queueContext.reinitialize();
     CSQueueStore newQueues = new CSQueueStore();
     CSQueue newRoot =
-        CapacitySchedulerQueueManager.parseQueue(csContext, csConf, null,
+        CapacitySchedulerQueueManager.parseQueue(queueContext, csConf, null,
             ROOT,
             newQueues, queues,
             TestUtils.spyHook);
@@ -2980,12 +2995,14 @@ public class TestLeafQueue {
     csConf.setInt(CapacitySchedulerConfiguration.NODE_LOCALITY_DELAY, 60);
     csConf.setInt(
         CapacitySchedulerConfiguration.RACK_LOCALITY_ADDITIONAL_DELAY, 600);
+    queueContext.reinitialize();
     CSQueueStore newQueues = new CSQueueStore();
     CSQueue newRoot =
-        CapacitySchedulerQueueManager.parseQueue(csContext, csConf, null,
+        CapacitySchedulerQueueManager.parseQueue(queueContext, csConf, null,
             ROOT,
             newQueues, queues,
             TestUtils.spyHook);
+    csContext.getCapacitySchedulerQueueManager().setRootQueue(newRoot);
     root.reinitialize(newRoot, cs.getClusterResource());
 
     // after reinitialization
@@ -3340,8 +3357,14 @@ public class TestLeafQueue {
         CapacitySchedulerConfiguration.MAXIMUM_APPLICATION_MASTERS_RESOURCE_PERCENT,
         0.1f);
 
+    CapacitySchedulerQueueManager queueManager = new CapacitySchedulerQueueManager(csConf,
+        rmContext.getNodeLabelManager(), null);
+    when(csContext.getCapacitySchedulerQueueManager()).thenReturn(queueManager);
+
+    CapacitySchedulerQueueContext newQueueContext = new CapacitySchedulerQueueContext(csContext);
+
     CSQueue root;
-    root = CapacitySchedulerQueueManager.parseQueue(csContext, csConf, null,
+    root = CapacitySchedulerQueueManager.parseQueue(newQueueContext, csConf, null,
         CapacitySchedulerConfiguration.ROOT, queues, queues, TestUtils.spyHook);
     root.updateClusterResource(clusterResource,
         new ResourceLimits(clusterResource));
@@ -3357,9 +3380,10 @@ public class TestLeafQueue {
     csConf.setFloat(
         CapacitySchedulerConfiguration.MAXIMUM_APPLICATION_MASTERS_RESOURCE_PERCENT,
         0.2f);
+    newQueueContext.reinitialize();
     clusterResource = Resources.createResource(100 * 20 * GB, 100 * 32);
     CSQueueStore newQueues = new CSQueueStore();
-    CSQueue newRoot = CapacitySchedulerQueueManager.parseQueue(csContext,
+    CSQueue newRoot = CapacitySchedulerQueueManager.parseQueue(newQueueContext,
         csConf, null, CapacitySchedulerConfiguration.ROOT, newQueues, queues,
         TestUtils.spyHook);
     root.reinitialize(newRoot, clusterResource);
@@ -4298,15 +4322,15 @@ public class TestLeafQueue {
 
       assertEquals(0, conf.size());
       conf.setNodeLocalityDelay(60);
-      conf.setCapacity(ROOT + DOT + leafQueueName, 10);
-      conf.setMaximumCapacity(ROOT + DOT + leafQueueName, 100);
-      conf.setUserLimitFactor(ROOT + DOT +leafQueueName, 0.1f);
+      csConf.setCapacity(ROOT + DOT + leafQueueName, 10);
+      csConf.setMaximumCapacity(ROOT + DOT + leafQueueName, 100);
+      csConf.setUserLimitFactor(ROOT + DOT +leafQueueName, 0.1f);
 
       csConf.setNodeLocalityDelay(30);
       csConf.setGlobalMaximumApplicationsPerQueue(20);
+      queueContext.reinitialize();
 
-      LeafQueue leafQueue = new LeafQueue(csContext, conf,
-          leafQueueName, cs.getRootQueue(),
+      LeafQueue leafQueue = new LeafQueue(queueContext, leafQueueName, cs.getRootQueue(),
           null);
 
       leafQueue.updateClusterResource(Resource.newInstance(0, 0),
@@ -4334,6 +4358,7 @@ public class TestLeafQueue {
 
       // limit maximum apps by max system apps
       csConf.setMaximumSystemApplications(15);
+      queueContext.reinitialize();
       leafQueue.updateClusterResource(Resource.newInstance(0, 0),
           new ResourceLimits(Resource.newInstance(0, 0)));
 

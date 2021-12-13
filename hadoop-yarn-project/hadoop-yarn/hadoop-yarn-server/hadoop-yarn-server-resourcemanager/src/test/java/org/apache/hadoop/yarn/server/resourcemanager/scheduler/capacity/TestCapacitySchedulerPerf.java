@@ -119,7 +119,7 @@ public class TestCapacitySchedulerPerf {
 
     // For now make user limit large so we can activate all applications
     qb.setUserLimitFactor((float)100.0);
-    qb.setupConfigurableCapacities();
+    qb.setupConfigurableCapacities(cs.getConfiguration());
 
     SchedulerEvent addAppEvent;
     SchedulerEvent addAttemptEvent;
