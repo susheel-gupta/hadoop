@@ -26,7 +26,7 @@ import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.server.resourcemanager.monitor.capacity.ProportionalCapacityPreemptionPolicy.IntraQueuePreemptionOrderPolicy;
 import org.apache.hadoop.yarn.server.resourcemanager.nodelabels.RMNodeLabelsManager;
 import org.apache.hadoop.yarn.server.resourcemanager.rmcontainer.RMContainer;
-import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.LeafQueue;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.AbstractLeafQueue;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.fica.FiCaSchedulerApp;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.policy.AbstractComparatorOrderingPolicy;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.policy.FairOrderingPolicy;
@@ -147,7 +147,7 @@ public class IntraQueueCandidatesSelector extends PreemptionCandidatesSelector {
 
       // 4. Iterate from most under-served queue in order.
       for (String queueName : queueNames) {
-        LeafQueue leafQueue = preemptionContext.getQueueByPartition(queueName,
+        AbstractLeafQueue leafQueue = preemptionContext.getQueueByPartition(queueName,
             RMNodeLabelsManager.NO_LABEL).leafQueue;
 
         // skip if not a leafqueue
@@ -196,7 +196,7 @@ public class IntraQueueCandidatesSelector extends PreemptionCandidatesSelector {
   }
 
   private void initializeUsageAndUserLimitForCompute(Resource clusterResource,
-      String partition, LeafQueue leafQueue,
+      String partition, AbstractLeafQueue leafQueue,
       Map<String, Resource> rollingResourceUsagePerUser) {
     for (String user : leafQueue.getAllUsers()) {
       // Initialize used resource of a given user for rolling computation.
@@ -209,7 +209,7 @@ public class IntraQueueCandidatesSelector extends PreemptionCandidatesSelector {
     }
   }
 
-  private void preemptFromLeastStarvedApp(LeafQueue leafQueue,
+  private void preemptFromLeastStarvedApp(AbstractLeafQueue leafQueue,
       FiCaSchedulerApp app,
       Map<ApplicationAttemptId, Set<RMContainer>> selectedCandidates,
       Map<ApplicationAttemptId, Set<RMContainer>> curCandidates,
@@ -314,7 +314,7 @@ public class IntraQueueCandidatesSelector extends PreemptionCandidatesSelector {
       for (String queueName : queueNames) {
         TempQueuePerPartition tq = context.getQueueByPartition(queueName,
             partition);
-        LeafQueue leafQueue = tq.leafQueue;
+        AbstractLeafQueue leafQueue = tq.leafQueue;
 
         // skip if its parent queue
         if (null == leafQueue) {

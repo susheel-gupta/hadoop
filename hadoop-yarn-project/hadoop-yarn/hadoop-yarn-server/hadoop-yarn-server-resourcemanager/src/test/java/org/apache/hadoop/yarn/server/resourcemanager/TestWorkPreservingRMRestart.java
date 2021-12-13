@@ -64,6 +64,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerApplicat
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerApplicationAttempt;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerNode;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.YarnScheduler;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.AbstractLeafQueue;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.LeafQueue;
@@ -438,7 +439,7 @@ public class TestWorkPreservingRMRestart extends ParameterizedSchedulerTestBase 
     checkCSLeafQueue(rm, app, clusterResource, queueResource, usedResource,
         numContainers);
 
-    LeafQueue queue = (LeafQueue) app.getQueue();
+    AbstractLeafQueue queue = (AbstractLeafQueue) app.getQueue();
     Resource availableResources =
         Resources.subtract(queueResource, usedResource);
     // ************ check app headroom ****************
@@ -463,7 +464,7 @@ public class TestWorkPreservingRMRestart extends ParameterizedSchedulerTestBase 
       SchedulerApplication<SchedulerApplicationAttempt> app,
       Resource clusterResource, Resource queueResource, Resource usedResource,
       int numContainers) {
-    LeafQueue leafQueue = (LeafQueue) app.getQueue();
+    AbstractLeafQueue leafQueue = (AbstractLeafQueue) app.getQueue();
     // assert queue used resources.
     assertEquals(usedResource, leafQueue.getUsedResources());
     assertEquals(numContainers, leafQueue.getNumContainers());

@@ -34,7 +34,7 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.Capacity
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerContext;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerQueueManager;
-import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.LeafQueue;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.AbstractLeafQueue;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.QueuePath;
 
 import java.io.IOException;
@@ -277,7 +277,7 @@ public class CSMappingPlacementRule extends PlacementRule {
     }
 
     CSQueue queue = queueManager.getQueueByFullName(normalizedName);
-    if (queue != null && !(queue instanceof LeafQueue)) {
+    if (queue != null && !(queue instanceof AbstractLeafQueue)) {
       throw new YarnException("Mapping rule returned a non-leaf queue '" +
           normalizedName + "', cannot place application in it.");
     }

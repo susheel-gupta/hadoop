@@ -21,7 +21,7 @@ package org.apache.hadoop.yarn.server.resourcemanager.placement;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.AutoCreatedLeafQueue;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CSQueue;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerQueueManager;
-import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.LeafQueue;
+import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.AbstractLeafQueue;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.ManagedParentQueue;
 
 import java.io.IOException;
@@ -87,7 +87,7 @@ public final class QueuePlacementRuleUtils {
   public static QueueMapping validateAndGetQueueMapping(
       CapacitySchedulerQueueManager queueManager, CSQueue queue,
       QueueMapping mapping, QueuePath queuePath) throws IOException {
-    if (!(queue instanceof LeafQueue)) {
+    if (!(queue instanceof AbstractLeafQueue)) {
       throw new IOException(
           "mapping contains invalid or non-leaf queue : " +
           mapping.getFullPath());

@@ -846,7 +846,7 @@ public class CapacityScheduler extends
           throw new QueueInvalidException(queueErrorMsg);
         }
       }
-      if (!(queue instanceof LeafQueue)) {
+      if (!(queue instanceof AbstractLeafQueue)) {
         // During RM restart, this means leaf queue was converted to a parent
         // queue, which is not supported for running apps.
         if (!appShouldFailFast) {
@@ -871,7 +871,7 @@ public class CapacityScheduler extends
       // that means its previous state was DRAINING. So we auto transit
       // the state to DRAINING for recovery.
       if (queue.getState() == QueueState.STOPPED) {
-        ((LeafQueue) queue).recoverDrainingState();
+        ((AbstractLeafQueue) queue).recoverDrainingState();
       }
       // Submit to the queue
       try {
@@ -1013,7 +1013,7 @@ public class CapacityScheduler extends
         return;
       }
 
-      if (!(queue instanceof LeafQueue)) {
+      if (!(queue instanceof AbstractLeafQueue)) {
         String message =
             "Application " + applicationId + " submitted by user : " + user
                 + " to non-leaf queue : " + queueName;
@@ -1166,7 +1166,7 @@ public class CapacityScheduler extends
         return;
       }
       CSQueue queue = (CSQueue) application.getQueue();
-      if (!(queue instanceof LeafQueue)) {
+      if (!(queue instanceof AbstractLeafQueue)) {
         LOG.error("Cannot finish application " + "from non-leaf queue: " + queue
             .getQueuePath());
       } else{
@@ -1225,7 +1225,7 @@ public class CapacityScheduler extends
       // Inform the queue
       Queue  queue = attempt.getQueue();
       CSQueue csQueue = (CSQueue) queue;
-      if (!(csQueue instanceof LeafQueue)) {
+      if (!(csQueue instanceof AbstractLeafQueue)) {
         LOG.error(
             "Cannot finish application " + "from non-leaf queue: "
             + csQueue.getQueuePath());
@@ -1291,7 +1291,7 @@ public class CapacityScheduler extends
     // Release containers
     releaseContainers(release, application);
 
-    LeafQueue updateDemandForQueue = null;
+    AbstractLeafQueue updateDemandForQueue = null;
 
     // Sanity check for new allocation requests
     normalizeResourceRequests(ask);
@@ -1322,7 +1322,7 @@ public class CapacityScheduler extends
         // Update application requests
         if (application.updateResourceRequests(ask) || application
             .updateSchedulingRequests(schedulingRequests)) {
-          updateDemandForQueue = (LeafQueue) application.getQueue();
+          updateDemandForQueue = (AbstractLeafQueue) application.getQueue();
         }
 
         if (LOG.isDebugEnabled()) {
@@ -1705,7 +1705,7 @@ public class CapacityScheduler extends
             .getNodeID());
       }
 
-    LeafQueue queue = ((LeafQueue) reservedApplication.getQueue());
+    AbstractLeafQueue queue = ((AbstractLeafQueue) reservedApplication.getQueue());
     CSAssignment assignment = queue.assignContainers(getClusterResource(),
         new SimpleCandidateNodeSet<>(node),
         // TODO, now we only consider limits for parent for non-labeled
@@ -2286,7 +2286,7 @@ public class CapacityScheduler extends
     }
 
     // Inform the queue
-    LeafQueue queue = (LeafQueue) application.getQueue();
+    AbstractLeafQueue queue = (AbstractLeafQueue) application.getQueue();
     queue.completedContainer(getClusterResource(), application, node,
         rmContainer, containerStatus, event, null, true);
   }
@@ -2584,7 +2584,7 @@ public class CapacityScheduler extends
       throws YarnException {
     writeLock.lock();
     try {
-      LeafQueue queue = this.queueManager.getAndCheckLeafQueue(inQueue);
+      AbstractLeafQueue queue = this.queueManager.getAndCheckLeafQueue(inQueue);
       AbstractManagedParentQueue parent =
           (AbstractManagedParentQueue) queue.getParent();
 
@@ -2627,10 +2627,10 @@ public class CapacityScheduler extends
         throw new YarnException("App to be moved " + appId + " not found.");
       }
       String sourceQueueName = application.getQueue().getQueueName();
-      LeafQueue source =
+      AbstractLeafQueue source =
           this.queueManager.getAndCheckLeafQueue(sourceQueueName);
       String destQueueName = handleMoveToPlanQueue(targetQueueName);
-      LeafQueue dest = this.queueManager.getAndCheckLeafQueue(destQueueName);
+      AbstractLeafQueue dest = this.queueManager.getAndCheckLeafQueue(destQueueName);
 
       String user = application.getUser();
       try {
@@ -2688,7 +2688,7 @@ public class CapacityScheduler extends
           ((CSQueue) queue).getQueuePath() : queue.getQueueName();
       this.queueManager.getAndCheckLeafQueue(sourceQueueName);
       String destQueueName = handleMoveToPlanQueue(newQueue);
-      LeafQueue dest = this.queueManager.getAndCheckLeafQueue(destQueueName);
+      AbstractLeafQueue dest = this.queueManager.getAndCheckLeafQueue(destQueueName);
       // Validation check - ACLs, submission limits for user & queue
       String user = application.getUser();
       // Check active partition only when attempt is available
@@ -2715,7 +2715,7 @@ public class CapacityScheduler extends
    * @param dest
    * @throws YarnException
    */
-  private void checkQueuePartition(FiCaSchedulerApp app, LeafQueue dest)
+  private void checkQueuePartition(FiCaSchedulerApp app, AbstractLeafQueue dest)
       throws YarnException {
     if (!YarnConfiguration.areNodeLabelsEnabled(conf)) {
       return;
@@ -2765,7 +2765,7 @@ public class CapacityScheduler extends
       }
       return getMaximumResourceCapability();
     }
-    if (!(queue instanceof LeafQueue)) {
+    if (!(queue instanceof AbstractLeafQueue)) {
       LOG.error("queue " + queueName + " is not an leaf queue");
       return getMaximumResourceCapability();
     }
@@ -2774,7 +2774,7 @@ public class CapacityScheduler extends
     // getMaximumResourceCapability() returns maximum allocation considers
     // per-node maximum resources. So return (component-wise) min of the two.
 
-    Resource queueMaxAllocation = ((LeafQueue)queue).getMaximumAllocation();
+    Resource queueMaxAllocation = queue.getMaximumAllocation();
     Resource clusterMaxAllocationConsiderNodeMax =
         getMaximumResourceCapability();
 
@@ -2900,7 +2900,7 @@ public class CapacityScheduler extends
 
       // As we use iterator over a TreeSet for OrderingPolicy, once we change
       // priority then reinsert back to make order correct.
-      LeafQueue queue = (LeafQueue) getQueue(rmApp.getQueue());
+      AbstractLeafQueue queue = (AbstractLeafQueue) getQueue(rmApp.getQueue());
       queue.updateApplicationPriority(application, appPriority);
 
       LOG.info("Priority '" + appPriority + "' is updated in queue :"
@@ -3332,14 +3332,14 @@ public class CapacityScheduler extends
     readLock.lock();
     try {
       CSQueue queue = getQueue(queueName);
-      if (queue == null || !(queue instanceof LeafQueue)) {
+      if (!(queue instanceof AbstractLeafQueue)) {
         return lifetimeRequestedByApp;
       }
 
       long defaultApplicationLifetime =
-          ((LeafQueue) queue).getDefaultApplicationLifetime();
+          queue.getDefaultApplicationLifetime();
       long maximumApplicationLifetime =
-          ((LeafQueue) queue).getMaximumApplicationLifetime();
+          queue.getMaximumApplicationLifetime();
 
       // check only for maximum, that's enough because default can't
       // exceed maximum
@@ -3362,7 +3362,7 @@ public class CapacityScheduler extends
   @Override
   public long getMaximumApplicationLifetime(String queueName) {
     CSQueue queue = getQueue(queueName);
-    if (queue == null || !(queue instanceof LeafQueue)) {
+    if (!(queue instanceof AbstractLeafQueue)) {
       if (isAmbiguous(queueName)) {
         LOG.error("Ambiguous queue reference: " + queueName
             + " please use full queue path instead.");
@@ -3372,7 +3372,7 @@ public class CapacityScheduler extends
       return -1;
     }
     // In seconds
-    return ((LeafQueue) queue).getMaximumApplicationLifetime();
+    return queue.getMaximumApplicationLifetime();
   }
 
   @Override
