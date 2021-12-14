@@ -441,8 +441,7 @@ public class AbstractLeafQueue extends AbstractCSQueue {
   }
 
   @Override
-  public List<QueueUserACLInfo>
-  getQueueUserAclInfo(UserGroupInformation user) {
+  public List<QueueUserACLInfo> getQueueUserAclInfo(UserGroupInformation user) {
     readLock.lock();
     try {
       QueueUserACLInfo userAclInfo = recordFactory.newRecordInstance(
@@ -515,8 +514,8 @@ public class AbstractLeafQueue extends AbstractCSQueue {
   }
 
   @Override
-  public void reinitialize(CSQueue newlyParsedQueue, Resource clusterResource) throws
-      IOException {
+  public void reinitialize(CSQueue newlyParsedQueue, Resource clusterResource)
+      throws IOException {
 
     writeLock.lock();
     try {
@@ -620,7 +619,8 @@ public class AbstractLeafQueue extends AbstractCSQueue {
 
       // Check submission limits for queues
       //TODO recalculate max applications because they can depend on capacity
-      if (getNumApplications() >= getMaxApplications() && !(this instanceof AutoCreatedLeafQueue)) {
+      if (getNumApplications() >= getMaxApplications() &&
+          !(this instanceof AutoCreatedLeafQueue)) {
         String msg =
             "Queue " + getQueuePath() + " already has " + getNumApplications()
                 + " applications,"
@@ -632,7 +632,8 @@ public class AbstractLeafQueue extends AbstractCSQueue {
       // Check submission limits for the user on this queue
       User user = usersManager.getUserAndAddIfAbsent(userName);
       //TODO recalculate max applications because they can depend on capacity
-      if (user.getTotalApplications() >= getMaxApplicationsPerUser() &&  !(this instanceof AutoCreatedLeafQueue)) {
+      if (user.getTotalApplications() >= getMaxApplicationsPerUser() &&
+          !(this instanceof AutoCreatedLeafQueue)) {
         String msg = "Queue " + getQueuePath() + " already has " + user
             .getTotalApplications() + " applications from user " + userName
             + " cannot accept submission of application: " + applicationId;
@@ -819,9 +820,8 @@ public class AbstractLeafQueue extends AbstractCSQueue {
         calculateAndGetAMResourceLimitPerPartition(nodePartition);
       }
 
-      for (Iterator<FiCaSchedulerApp> fsApp =
-           getPendingAppsOrderingPolicy().getAssignmentIterator();
-           fsApp.hasNext(); ) {
+      for (Iterator<FiCaSchedulerApp> fsApp = getPendingAppsOrderingPolicy().getAssignmentIterator();
+           fsApp.hasNext();) {
         FiCaSchedulerApp application = fsApp.next();
         ApplicationId applicationId = application.getApplicationId();
 
@@ -857,7 +857,8 @@ public class AbstractLeafQueue extends AbstractCSQueue {
                 + " skipping enforcement to allow at least one application"
                 + " to start");
           } else{
-            application.updateAMContainerDiagnostics(AMState.INACTIVATED,
+            application.updateAMContainerDiagnostics(
+                AMState.INACTIVATED,
                 CSAMContainerLaunchDiagnosticsConstants.QUEUE_AM_RESOURCE_LIMIT_EXCEED);
             if (LOG.isDebugEnabled()) {
               LOG.debug("Not activating application " + applicationId
@@ -1144,9 +1145,8 @@ public class AbstractLeafQueue extends AbstractCSQueue {
 
     Map<String, CachedUserLimit> userLimits = new HashMap<>();
     boolean needAssignToQueueCheck = true;
-    for (Iterator<FiCaSchedulerApp> assignmentIterator =
-         orderingPolicy.getAssignmentIterator();
-         assignmentIterator.hasNext(); ) {
+    for (Iterator<FiCaSchedulerApp> assignmentIterator = orderingPolicy.getAssignmentIterator();
+         assignmentIterator.hasNext();) {
       FiCaSchedulerApp application = assignmentIterator.next();
 
       ActivitiesLogger.APP.startAppAllocationRecording(activitiesManager,
@@ -1774,13 +1774,8 @@ public class AbstractLeafQueue extends AbstractCSQueue {
       if (null != rmContainer && rmContainer.getNodeLabelExpression().equals(
           RMNodeLabelsManager.NO_LABEL) && !nodePartition.equals(
           RMNodeLabelsManager.NO_LABEL)) {
-        TreeSet<RMContainer> rmContainers = null;
-        if (null == (rmContainers = ignorePartitionExclusivityRMContainers.get(
-            nodePartition))) {
-          rmContainers = new TreeSet<>();
-          ignorePartitionExclusivityRMContainers.put(nodePartition,
-              rmContainers);
-        }
+        TreeSet<RMContainer> rmContainers = ignorePartitionExclusivityRMContainers.computeIfAbsent(
+            nodePartition, k -> new TreeSet<>());
         rmContainers.add(rmContainer);
       }
 

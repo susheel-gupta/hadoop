@@ -144,7 +144,8 @@ public abstract class AbstractCSQueue implements CSQueue {
     CSQueueMetrics metrics = old != null ?
         (CSQueueMetrics) old.getMetrics() :
         CSQueueMetrics.forQueue(getQueuePath(), parent,
-            queueContext.getConfiguration().getEnableUserMetrics(), queueContext.getConfiguration());
+            queueContext.getConfiguration().getEnableUserMetrics(),
+            queueContext.getConfiguration());
     this.usageTracker = new CSQueueUsageTracker(metrics);
 
     this.queueCapacities = new QueueCapacities(parent == null);
