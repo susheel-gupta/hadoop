@@ -182,9 +182,6 @@ public class CapacityScheduler extends
 
   private WorkflowPriorityMappingsManager workflowPriorityMappingsMgr;
 
-  // timeout to join when we stop this service
-  protected final long THREAD_JOIN_TIMEOUT_MS = 1000;
-
   private PreemptionManager preemptionManager = new PreemptionManager();
 
   private volatile boolean isLazyPreemptionEnabled = false;
@@ -220,25 +217,13 @@ public class CapacityScheduler extends
   private ResourceCalculator calculator;
   private boolean usePortForNodeName;
 
-  private boolean scheduleAsynchronously;
-  private List<AsyncScheduleThread> asyncSchedulerThreads;
-  private ResourceCommitterService resourceCommitterService;
+  private AsyncSchedulingConfiguration asyncSchedulingConf;
   private RMNodeLabelsManager labelManager;
   private AppPriorityACLsManager appPriorityACLManager;
   private boolean multiNodePlacementEnabled;
 
   private boolean printedVerboseLoggingForAsyncScheduling;
   private boolean appShouldFailFast;
-
-  /**
-   * EXPERT
-   */
-  private long asyncScheduleInterval;
-  private static final String ASYNC_SCHEDULER_INTERVAL =
-      CapacitySchedulerConfiguration.SCHEDULE_ASYNCHRONOUSLY_PREFIX
-          + ".scheduling-interval-ms";
-  private static final long DEFAULT_ASYNC_SCHEDULER_INTERVAL = 5;
-  private long asyncMaxPendingBacklogs;
 
   private CSMaxRunningAppsEnforcer maxRunningEnforcer;
 
@@ -368,27 +353,7 @@ public class CapacityScheduler extends
   }
 
   private void initAsyncSchedulingProperties() {
-    scheduleAsynchronously = this.conf.getScheduleAynschronously();
-    asyncScheduleInterval = this.conf.getLong(ASYNC_SCHEDULER_INTERVAL,
-        DEFAULT_ASYNC_SCHEDULER_INTERVAL);
-
-    // number of threads for async scheduling
-    int maxAsyncSchedulingThreads = this.conf.getInt(
-        CapacitySchedulerConfiguration.SCHEDULE_ASYNCHRONOUSLY_MAXIMUM_THREAD, 1);
-    maxAsyncSchedulingThreads = Math.max(maxAsyncSchedulingThreads, 1);
-
-    if (scheduleAsynchronously) {
-      asyncSchedulerThreads = new ArrayList<>();
-      for (int i = 0; i < maxAsyncSchedulingThreads; i++) {
-        asyncSchedulerThreads.add(new AsyncScheduleThread(this));
-      }
-      resourceCommitterService = new ResourceCommitterService(this);
-      asyncMaxPendingBacklogs = this.conf.getInt(
-          CapacitySchedulerConfiguration.
-              SCHEDULE_ASYNCHRONOUSLY_MAXIMUM_PENDING_BACKLOGS,
-          CapacitySchedulerConfiguration.
-              DEFAULT_SCHEDULE_ASYNCHRONOUSLY_MAXIMUM_PENDING_BACKLOGS);
-    }
+    this.asyncSchedulingConf = new AsyncSchedulingConfiguration(conf, this);
   }
 
   private void initMultiNodePlacement() {
@@ -408,8 +373,8 @@ public class CapacityScheduler extends
         + getResourceCalculator().getClass() + ", " + "minimumAllocation=<"
         + getMinimumResourceCapability() + ">, " + "maximumAllocation=<"
         + getMaximumResourceCapability() + ">, " + "asynchronousScheduling="
-        + scheduleAsynchronously + ", " + "asyncScheduleInterval="
-        + asyncScheduleInterval + " ms" + ",multiNodePlacementEnabled="
+        + asyncSchedulingConf.isScheduleAsynchronously() + ", " + "asyncScheduleInterval="
+        + asyncSchedulingConf.getAsyncScheduleInterval() + " ms" + ",multiNodePlacementEnabled="
         + multiNodePlacementEnabled + ", " + "assignMultipleEnabled="
         + assignMultipleEnabled + ", " + "maxAssignPerHeartbeat="
         + maxAssignPerHeartbeat + ", " + "offswitchPerHeartbeatLimit="
@@ -420,15 +385,7 @@ public class CapacityScheduler extends
     writeLock.lock();
     try {
       activitiesManager.start();
-      if (scheduleAsynchronously) {
-        Preconditions.checkNotNull(asyncSchedulerThreads,
-            "asyncSchedulerThreads is null");
-        for (Thread t : asyncSchedulerThreads) {
-          t.start();
-        }
-
-        resourceCommitterService.start();
-      }
+      asyncSchedulingConf.startThreads();
     } finally {
       writeLock.unlock();
     }
@@ -454,14 +411,7 @@ public class CapacityScheduler extends
     writeLock.lock();
     try {
       this.activitiesManager.stop();
-      if (scheduleAsynchronously && asyncSchedulerThreads != null) {
-        for (Thread t : asyncSchedulerThreads) {
-          t.interrupt();
-          t.join(THREAD_JOIN_TIMEOUT_MS);
-        }
-        resourceCommitterService.interrupt();
-        resourceCommitterService.join(THREAD_JOIN_TIMEOUT_MS);
-      }
+      asyncSchedulingConf.serviceStopInvoked();
     } finally {
       writeLock.unlock();
     }
@@ -522,7 +472,7 @@ public class CapacityScheduler extends
   }
 
   long getAsyncScheduleInterval() {
-    return asyncScheduleInterval;
+    return asyncSchedulingConf.getAsyncScheduleInterval();
   }
 
   private final static Random random = new Random(System.currentTimeMillis());
@@ -606,6 +556,11 @@ public class CapacityScheduler extends
     Thread.sleep(cs.getAsyncScheduleInterval());
   }
 
+  @VisibleForTesting
+  public void setAsyncSchedulingConf(AsyncSchedulingConfiguration conf) {
+    this.asyncSchedulingConf = conf;
+  }
+
   static class AsyncScheduleThread extends Thread {
 
     private final CapacityScheduler cs;
@@ -626,7 +581,7 @@ public class CapacityScheduler extends
           } else {
             // Don't run schedule if we have some pending backlogs already
             if (cs.getAsyncSchedulingPendingBacklogs()
-                > cs.asyncMaxPendingBacklogs) {
+                > cs.asyncSchedulingConf.getAsyncMaxPendingBacklogs()) {
               Thread.sleep(1);
             } else{
               schedule(cs);
@@ -1405,7 +1360,7 @@ public class CapacityScheduler extends
     }
 
     // Try to do scheduling
-    if (!scheduleAsynchronously) {
+    if (!asyncSchedulingConf.isScheduleAsynchronously()) {
       writeLock.lock();
       try {
 
@@ -2204,8 +2159,8 @@ public class CapacityScheduler extends
           "Added node " + nodeManager.getNodeAddress() + " clusterResource: "
               + clusterResource);
 
-      if (scheduleAsynchronously && getNumClusterNodes() == 1) {
-        for (AsyncScheduleThread t : asyncSchedulerThreads) {
+      if (asyncSchedulingConf.isScheduleAsynchronously() && getNumClusterNodes() == 1) {
+        for (AsyncScheduleThread t : asyncSchedulingConf.asyncSchedulerThreads) {
           t.beginSchedule();
         }
       }
@@ -2253,11 +2208,7 @@ public class CapacityScheduler extends
           new ResourceLimits(clusterResource));
       int numNodes = nodeTracker.nodeCount();
 
-      if (scheduleAsynchronously && numNodes == 0) {
-        for (AsyncScheduleThread t : asyncSchedulerThreads) {
-          t.suspendSchedule();
-        }
-      }
+      asyncSchedulingConf.nodeRemoved(numNodes);
 
       LOG.info(
           "Removed node " + nodeInfo.getNodeAddress() + " clusterResource: "
@@ -3003,9 +2954,9 @@ public class CapacityScheduler extends
       return;
     }
 
-    if (scheduleAsynchronously) {
+    if (asyncSchedulingConf.isScheduleAsynchronously()) {
       // Submit to a commit thread and commit it async-ly
-      resourceCommitterService.addNewCommitRequest(request);
+      asyncSchedulingConf.resourceCommitterService.addNewCommitRequest(request);
     } else{
       // Otherwise do it sync-ly.
       tryCommit(cluster, request, true);
@@ -3256,10 +3207,7 @@ public class CapacityScheduler extends
   }
 
   public int getAsyncSchedulingPendingBacklogs() {
-    if (scheduleAsynchronously) {
-      return resourceCommitterService.getPendingBacklogs();
-    }
-    return 0;
+    return asyncSchedulingConf.getPendingBacklogs();
   }
 
   @Override
@@ -3411,7 +3359,7 @@ public class CapacityScheduler extends
   }
 
   public int getNumAsyncSchedulerThreads() {
-    return asyncSchedulerThreads == null ? 0 : asyncSchedulerThreads.size();
+    return asyncSchedulingConf.getNumAsyncSchedulerThreads();
   }
 
   @VisibleForTesting
@@ -3422,5 +3370,110 @@ public class CapacityScheduler extends
   @VisibleForTesting
   public void setQueueManager(CapacitySchedulerQueueManager qm) {
     this.queueManager = qm;
+  }
+
+  @VisibleForTesting
+  public List<AsyncScheduleThread> getAsyncSchedulerThreads() {
+    return asyncSchedulingConf.getAsyncSchedulerThreads();
+  }
+
+  static class AsyncSchedulingConfiguration {
+    // timeout to join when we stop this service
+    private static final long THREAD_JOIN_TIMEOUT_MS = 1000;
+
+    @VisibleForTesting
+    protected List<AsyncScheduleThread> asyncSchedulerThreads;
+    private ResourceCommitterService resourceCommitterService;
+
+    private long asyncScheduleInterval;
+    private static final String ASYNC_SCHEDULER_INTERVAL =
+        CapacitySchedulerConfiguration.SCHEDULE_ASYNCHRONOUSLY_PREFIX
+            + ".scheduling-interval-ms";
+    private static final long DEFAULT_ASYNC_SCHEDULER_INTERVAL = 5;
+    private long asyncMaxPendingBacklogs;
+
+    private final boolean scheduleAsynchronously;
+
+    AsyncSchedulingConfiguration(CapacitySchedulerConfiguration conf,
+        CapacityScheduler cs) {
+      this.scheduleAsynchronously = conf.getScheduleAynschronously();
+      if (this.scheduleAsynchronously) {
+        this.asyncScheduleInterval = conf.getLong(
+            CapacitySchedulerConfiguration.SCHEDULE_ASYNCHRONOUSLY_INTERVAL,
+            CapacitySchedulerConfiguration.DEFAULT_SCHEDULE_ASYNCHRONOUSLY_INTERVAL);
+        // number of threads for async scheduling
+        int maxAsyncSchedulingThreads = conf.getInt(
+            CapacitySchedulerConfiguration.SCHEDULE_ASYNCHRONOUSLY_MAXIMUM_THREAD,
+            1);
+        maxAsyncSchedulingThreads = Math.max(maxAsyncSchedulingThreads, 1);
+        this.asyncMaxPendingBacklogs = conf.getInt(
+            CapacitySchedulerConfiguration.
+                SCHEDULE_ASYNCHRONOUSLY_MAXIMUM_PENDING_BACKLOGS,
+            CapacitySchedulerConfiguration.
+                DEFAULT_SCHEDULE_ASYNCHRONOUSLY_MAXIMUM_PENDING_BACKLOGS);
+
+        this.asyncSchedulerThreads = new ArrayList<>();
+        for (int i = 0; i < maxAsyncSchedulingThreads; i++) {
+          asyncSchedulerThreads.add(new AsyncScheduleThread(cs));
+        }
+        this.resourceCommitterService = new ResourceCommitterService(cs);
+      }
+    }
+    public boolean isScheduleAsynchronously() {
+      return scheduleAsynchronously;
+    }
+    public long getAsyncScheduleInterval() {
+      return asyncScheduleInterval;
+    }
+    public long getAsyncMaxPendingBacklogs() {
+      return asyncMaxPendingBacklogs;
+    }
+
+    public void startThreads() {
+      if (scheduleAsynchronously) {
+        Preconditions.checkNotNull(asyncSchedulerThreads,
+            "asyncSchedulerThreads is null");
+        for (Thread t : asyncSchedulerThreads) {
+          t.start();
+        }
+
+        resourceCommitterService.start();
+      }
+    }
+
+    public void serviceStopInvoked() throws InterruptedException {
+      if (scheduleAsynchronously && asyncSchedulerThreads != null) {
+        for (Thread t : asyncSchedulerThreads) {
+          t.interrupt();
+          t.join(THREAD_JOIN_TIMEOUT_MS);
+        }
+        resourceCommitterService.interrupt();
+        resourceCommitterService.join(THREAD_JOIN_TIMEOUT_MS);
+      }
+    }
+
+    public void nodeRemoved(int numNodes) {
+      if (scheduleAsynchronously && numNodes == 0) {
+        for (AsyncScheduleThread t : asyncSchedulerThreads) {
+          t.suspendSchedule();
+        }
+      }
+    }
+
+    public int getPendingBacklogs() {
+      if (scheduleAsynchronously) {
+        return resourceCommitterService.getPendingBacklogs();
+      }
+      return 0;
+    }
+
+    public int getNumAsyncSchedulerThreads() {
+      return asyncSchedulerThreads == null ? 0 : asyncSchedulerThreads.size();
+    }
+
+    @VisibleForTesting
+    public List<AsyncScheduleThread> getAsyncSchedulerThreads() {
+      return asyncSchedulerThreads;
+    }
   }
 }
