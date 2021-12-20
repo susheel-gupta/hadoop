@@ -19,6 +19,8 @@
 
 package org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity;
 
+import static org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerTestUtilities.GB;
+import static org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerTestUtilities.waitforNMRegistered;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -27,16 +29,12 @@ import static org.junit.Assert.assertTrue;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.yarn.api.records.ApplicationId;
-import org.apache.hadoop.yarn.api.records.ContainerId;
-import org.apache.hadoop.yarn.api.records.ContainerState;
 import org.apache.hadoop.yarn.api.records.NodeId;
-import org.apache.hadoop.yarn.api.records.Resource;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.server.resourcemanager.MockAM;
 import org.apache.hadoop.yarn.server.resourcemanager.MockNM;
 import org.apache.hadoop.yarn.server.resourcemanager.MockRM;
 import org.apache.hadoop.yarn.server.resourcemanager.rmapp.RMApp;
-import org.apache.hadoop.yarn.server.resourcemanager.rmapp.attempt.RMAppAttemptState;
 import org.apache.hadoop.yarn.server.resourcemanager.rmnode.RMNode;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.ResourceScheduler;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerNode;
@@ -48,7 +46,6 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.placement.MultiNo
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.placement.MultiNodeSortingManager;
 import org.apache.hadoop.yarn.server.resourcemanager.monitor.capacity.ProportionalCapacityPreemptionPolicy;
 import org.apache.hadoop.yarn.util.resource.DominantResourceCalculator;
-import org.apache.hadoop.yarn.util.resource.Resources;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,8 +63,7 @@ public class TestCapacitySchedulerLayeredBinPackingPolicy {
 
   /* This testclass validates Multi Node Placement Feature.
    */
-  public static class TestBinPackingAlgorithm
-      extends CapacitySchedulerTestBase {
+  public static class TestBinPackingAlgorithm {
 
     private static final Log LOG = LogFactory
         .getLog(TestBinPackingAlgorithm.class);
@@ -674,8 +670,7 @@ public class TestCapacitySchedulerLayeredBinPackingPolicy {
   /**
    * Single node look-up in the global scheduling.
    * */
-  public static class TestGlobalSchedulingReservationSingleNode
-      extends CapacitySchedulerTestBase {
+  public static class TestGlobalSchedulingReservationSingleNode {
     private static final Log LOG = LogFactory
         .getLog(TestGlobalSchedulingReservationSingleNode.class);
     private CapacitySchedulerConfiguration conf;
