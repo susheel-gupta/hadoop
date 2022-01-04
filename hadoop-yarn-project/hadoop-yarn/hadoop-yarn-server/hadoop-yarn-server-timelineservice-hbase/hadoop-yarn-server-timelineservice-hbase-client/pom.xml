@@ -186,6 +186,12 @@
           <groupId>org.eclipse.jetty</groupId>
           <artifactId>jetty-http</artifactId>
         </exclusion>
+        <!-- hbase-common brings in its own error_prone_annotations. Exclude this one to
+        avoid a dependency-convergence issue. -->
+        <exclusion>
+          <groupId>com.google.errorprone</groupId>
+          <artifactId>error_prone_annotations</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
