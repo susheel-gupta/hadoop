@@ -83,7 +83,7 @@ import static org.apache.hadoop.fs.s3a.commit.InternalCommitterConstants.SPARK_W
 import static org.apache.hadoop.fs.s3a.Statistic.COMMITTER_TASKS_SUCCEEDED;
 import static org.apache.hadoop.fs.statistics.IOStatisticAssertions.assertThatStatisticCounter;
 import static org.apache.hadoop.fs.statistics.IOStatisticsLogging.ioStatisticsSourceToString;
-import static org.apache.hadoop.test.LambdaTestUtils.*;
+import static org.apache.hadoop.test.LambdaTestUtils.intercept;
 
 /**
  * Test the job/task commit actions of an S3A Committer, including trying to
@@ -94,7 +94,7 @@ import static org.apache.hadoop.test.LambdaTestUtils.*;
  * This is a complex test suite as it tries to explore the full lifecycle
  * of committers, and is designed for subclassing.
  */
-@SuppressWarnings({"unchecked", "ThrowableNotThrown", "unused"})
+@SuppressWarnings({"unchecked", "unused"})
 public abstract class AbstractITCommitProtocol extends AbstractCommitITest {
   private Path outDir;
 
@@ -606,7 +606,7 @@ public abstract class AbstractITCommitProtocol extends AbstractCommitITest {
   @Test
   @SuppressWarnings("deprecation")
   public void testRecoveryAndCleanup() throws Exception {
-    describe("Test (unsupported) task recovery.");
+    describe("Test (Unsupported) task recovery.");
     JobData jobData = startJob(true);
     TaskAttemptContext tContext = jobData.tContext;
     AbstractS3ACommitter committer = jobData.committer;
@@ -698,8 +698,7 @@ public abstract class AbstractITCommitProtocol extends AbstractCommitITest {
 
   /**
    * Identify any path under the directory which begins with the
-   * {@code "part-m-00000"} sequence. There's some compensation for
-   * eventual consistency here.
+   * {@code "part-m-00000"} sequence.
    * @param dir directory to scan
    * @return the full path
    * @throws FileNotFoundException the path is missing.
@@ -707,22 +706,6 @@ public abstract class AbstractITCommitProtocol extends AbstractCommitITest {
    */
   protected Path getPart0000(final Path dir) throws Exception {
     final FileSystem fs = dir.getFileSystem(getConfiguration());
-    return eventually(CONSISTENCY_WAIT, CONSISTENCY_PROBE_INTERVAL,
-        () -> getPart0000Immediately(fs, dir));
-  }
-
-  /**
-   * Identify any path under the directory which begins with the
-   * {@code "part-m-00000"} sequence. There's some compensation for
-   * eventual consistency here.
-   * @param fs FS to probe
-   * @param dir directory to scan
-   * @return the full path
-   * @throws FileNotFoundException the path is missing.
-   * @throws IOException failure.
-   */
-  private Path getPart0000Immediately(FileSystem fs, Path dir)
-      throws IOException {
     FileStatus[] statuses = fs.listStatus(dir,
         path -> path.getName().startsWith(PART_00000));
     if (statuses.length != 1) {
@@ -792,7 +775,7 @@ public abstract class AbstractITCommitProtocol extends AbstractCommitITest {
     commitTask(committer, tContext);
 
     // this is only task commit; there MUST be no part- files in the dest dir
-    waitForConsistency();
+
     try {
       applyLocatedFiles(getFileSystem().listFiles(outDir, false),
           (status) ->
@@ -1021,7 +1004,7 @@ public abstract class AbstractITCommitProtocol extends AbstractCommitITest {
     // do commit
     commit(committer, jContext, tContext);
     S3AFileSystem fs = getFileSystem();
-    waitForConsistency();
+
     lsR(fs, outDir, true);
     String ls = ls(outDir);
     describe("\nvalidating");
