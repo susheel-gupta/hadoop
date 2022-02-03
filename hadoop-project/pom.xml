@@ -122,6 +122,7 @@
     <hikari.version>2.4.12</hikari.version>
     <mssql.version>6.2.1.jre7</mssql.version>
     <okhttp.version>2.7.5</okhttp.version>
+    <jdom2.version>2.0.6.1</jdom2.version>
     <jna.version>5.2.0</jna.version>
     <jdom.version>1.1</jdom.version>
     <grizzly.version>2.2.21</grizzly.version>
@@ -1161,8 +1162,8 @@
       </dependency>
       <dependency>
         <groupId>org.jdom</groupId>
-        <artifactId>jdom</artifactId>
-        <version>${jdom.version}</version>
+        <artifactId>jdom2</artifactId>
+        <version>${jdom2.version}</version>
       </dependency>
       <dependency>
         <groupId>com.googlecode.json-simple</groupId>
@@ -1342,7 +1343,7 @@
       <dependency>
         <groupId>com.aliyun.oss</groupId>
         <artifactId>aliyun-sdk-oss</artifactId>
-        <version>3.4.1</version>
+        <version>3.13.2</version>
         <exclusions>
           <exclusion>
             <groupId>org.apache.httpcomponents</groupId>
