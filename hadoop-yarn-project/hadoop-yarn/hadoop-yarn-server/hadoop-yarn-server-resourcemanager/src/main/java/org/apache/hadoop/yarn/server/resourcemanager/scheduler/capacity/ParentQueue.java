@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -104,11 +105,11 @@ public class ParentQueue extends AbstractCSQueue {
 
   private AutoCreatedQueueTemplate autoCreatedQueueTemplate;
 
-  // effective min ratio per resource, it is used during updateClusterResource,
-  // leaf queue can use this to calculate effective resources.
-  // This field will not be edited, reference will point to a new immutable map
-  // after every time recalculation
-  private volatile Map<String, Float> effectiveMinRatioPerResource;
+  // A ratio of the queue's effective minimum resource and the summary of the configured
+  // minimum resource of its children grouped by labels and calculated for each resource names
+  // distinctively.
+  private final Map<String, Map<String, Float>> effectiveMinResourceRatio =
+      new ConcurrentHashMap<>();
 
   public ParentQueue(CapacitySchedulerQueueContext queueContext,
       String queueName, CSQueue parent, CSQueue old) throws IOException {
@@ -1349,8 +1350,8 @@ public class ParentQueue extends AbstractCSQueue {
       }
     }
 
-    effectiveMinRatioPerResource = getEffectiveMinRatioPerResource(
-        configuredMinResources, numeratorForMinRatio);
+    effectiveMinResourceRatio.put(label, getEffectiveMinRatio(
+        configuredMinResources, numeratorForMinRatio));
 
     // Update effective resources for my self;
     if (rootQueue) {
@@ -1361,7 +1362,7 @@ public class ParentQueue extends AbstractCSQueue {
     }
   }
 
-  private Map<String, Float> getEffectiveMinRatioPerResource(
+  private Map<String, Float> getEffectiveMinRatio(
       Resource configuredMinResources, Resource numeratorForMinRatio) {
     Map<String, Float> effectiveMinRatioPerResource = new HashMap<>();
     if (numeratorForMinRatio != null) {
@@ -1658,9 +1659,8 @@ public class ParentQueue extends AbstractCSQueue {
     }
   }
 
-  // This is a locking free method
-  Map<String, Float> getEffectiveMinRatioPerResource() {
-    return effectiveMinRatioPerResource;
+  Map<String, Float> getEffectiveMinRatio(String label) {
+    return effectiveMinResourceRatio.get(label);
   }
 
   @Override
