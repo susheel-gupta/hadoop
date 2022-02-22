@@ -592,8 +592,7 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
 
         for (String nodeLabel : updatedQueueTemplate.getQueueCapacities()
             .getExistingNodeLabels()) {
-          if (updatedQueueTemplate.getQueueCapacities().
-              getCapacity(nodeLabel) > 0) {
+          if (updatedQueueTemplate.getQueueCapacities().getCapacity(nodeLabel) > 0) {
             if (isActive(leafQueue, nodeLabel)) {
               if (LOG.isDebugEnabled()) {
                 LOG.debug("Queue is already active." + " Skipping activation : "
@@ -608,7 +607,7 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
                 LOG.debug("Queue is already de-activated. Skipping "
                     + "de-activation : " + leafQueue.getQueuePath());
               }
-            } else{
+            } else {
               /**
                * While deactivating queues of type ABSOLUTE_RESOURCE, configured
                * min resource has to be set based on updated capacity (which is
@@ -617,7 +616,7 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
                * leads to incorrect results.
                */
               leafQueue
-                  .mergeCapacities(updatedQueueTemplate.getQueueCapacities());
+                  .mergeCapacities(updatedQueueTemplate.getQueueCapacities(), leafQueueTemplate.getResourceQuotas());
               leafQueue.getQueueResourceQuotas()
                   .setConfiguredMinResource(Resources.multiply(
                       managedParentQueue.getQueueContext().getClusterResource(),
@@ -791,6 +790,7 @@ public class GuaranteedOrZeroCapacityOverTimePolicy
     AutoCreatedLeafQueueConfig.Builder templateBuilder =
         new AutoCreatedLeafQueueConfig.Builder();
     templateBuilder.capacities(capacities);
+    templateBuilder.resourceQuotas(managedParentQueue.getLeafQueueTemplate().getResourceQuotas());
     return new AutoCreatedLeafQueueConfig(templateBuilder);
   }
 }
