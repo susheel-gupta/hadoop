@@ -52,7 +52,6 @@ public class TestMaxRunningAppsEnforcer {
     rmContext = mock(RMContext.class);
     when(rmContext.getQueuePlacementManager()).thenReturn(placementManager);
     when(rmContext.getEpoch()).thenReturn(0L);
-    when(rmContext.getYarnConfiguration()).thenReturn(conf);
     clock = new ControlledClock();
     scheduler = mock(FairScheduler.class);
     when(scheduler.getConf()).thenReturn(conf);

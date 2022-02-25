@@ -969,7 +969,7 @@ public class FairScheduler extends
         updatedNMTokens, null, null,
         application.pullNewlyPromotedContainers(),
         application.pullNewlyDemotedContainers(),
-        previousAttemptContainers, null);
+        previousAttemptContainers);
   }
 
   private List<MaxResourceValidationResult> validateResourceRequests(

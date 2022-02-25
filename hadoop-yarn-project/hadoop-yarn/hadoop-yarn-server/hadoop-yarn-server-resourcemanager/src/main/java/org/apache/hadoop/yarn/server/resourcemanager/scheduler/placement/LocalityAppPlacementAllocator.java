@@ -441,9 +441,4 @@ public class LocalityAppPlacementAllocator <N extends SchedulerNode>
       writeLock.unlock();
     }
   }
-
-  @Override
-  public SchedulingRequest getSchedulingRequest() {
-    return null;
-  }
 }

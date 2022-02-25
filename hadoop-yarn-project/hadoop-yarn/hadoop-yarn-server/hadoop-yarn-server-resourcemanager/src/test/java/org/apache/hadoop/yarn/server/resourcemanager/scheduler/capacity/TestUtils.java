@@ -129,7 +129,6 @@ public class TestUtils {
           }
         });
 
-    rmContext.setYarnConfiguration(conf);
     rmContext.setNodeLabelManager(nlm);
     rmContext.setSystemMetricsPublisher(mock(SystemMetricsPublisher.class));
     rmContext.setRMApplicationHistoryWriter(mock(RMApplicationHistoryWriter.class));
