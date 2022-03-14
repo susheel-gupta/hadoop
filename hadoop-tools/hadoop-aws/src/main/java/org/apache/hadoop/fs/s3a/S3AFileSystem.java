@@ -85,6 +85,7 @@ import org.apache.hadoop.fs.statistics.impl.IOStatisticsStore;
 import org.apache.hadoop.fs.store.audit.ActiveThreadSpanSource;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -230,6 +231,7 @@ import static org.apache.hadoop.fs.statistics.impl.IOStatisticsBinding.trackDura
 import static org.apache.hadoop.fs.statistics.impl.IOStatisticsBinding.trackDurationOfOperation;
 import static org.apache.hadoop.fs.statistics.impl.IOStatisticsBinding.trackDurationOfSupplier;
 import static org.apache.hadoop.io.IOUtils.cleanupWithLogger;
+import static org.apache.hadoop.util.Preconditions.checkArgument;
 import static org.apache.hadoop.util.functional.RemoteIterators.typeCastingRemoteIterator;
 
 /**
@@ -556,6 +558,8 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
 
       pageSize = intOption(getConf(), BULK_DELETE_PAGE_SIZE,
           BULK_DELETE_PAGE_SIZE_DEFAULT, 0);
+      checkArgument(pageSize <= InternalConstants.MAX_ENTRIES_TO_DELETE,
+              "page size out of range: %s", pageSize);
       listing = new Listing(listingOperationCallbacks, createStoreContext());
     } catch (AmazonClientException e) {
       // amazon client exception: stop all services then throw the translation
@@ -1999,7 +2003,7 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
     }
 
     @Override
-    public DeleteObjectsResult removeKeys(
+    public void removeKeys(
         final List<DeleteObjectsRequest.KeyVersion> keysToDelete,
         final boolean deleteFakeDir,
         final List<Path> undeletedObjectsOnFailure,
@@ -2007,7 +2011,7 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
         final boolean quiet)
         throws MultiObjectDeleteException, AmazonClientException, IOException {
       auditSpan.activate();
-      return S3AFileSystem.this.removeKeys(keysToDelete, deleteFakeDir,
+      S3AFileSystem.this.removeKeys(keysToDelete, deleteFakeDir,
           undeletedObjectsOnFailure, operationState, quiet);
     }
 
@@ -2908,7 +2912,7 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
    * @throws AmazonClientException other amazon-layer failure.
    */
   @Retries.RetryRaw
-  private DeleteObjectsResult removeKeysS3(
+  private void removeKeysS3(
       List<DeleteObjectsRequest.KeyVersion> keysToDelete,
       boolean deleteFakeDir,
       boolean quiet)
@@ -2922,18 +2926,30 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
             key.getVersion() != null ? key.getVersion() : "");
       }
     }
-    DeleteObjectsResult result = null;
     if (keysToDelete.isEmpty()) {
       // exit fast if there are no keys to delete
-      return result;
+      return;
     }
     for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {
       blockRootDelete(keyVersion.getKey());
     }
     try {
       if (enableMultiObjectsDelete) {
-        result = deleteObjects(
-            getRequestFactory().newBulkDeleteRequest(keysToDelete, quiet));
+        if (keysToDelete.size() <= pageSize) {
+          deleteObjects(getRequestFactory()
+                  .newBulkDeleteRequest(keysToDelete, true));
+        } else {
+          // Multi object deletion of more than 1000 keys is not supported
+          // by s3. So we are paging the keys by page size.
+          LOG.debug("Partitioning the keys to delete as it is more than " +
+                          "page size. Number of keys: {}, Page size: {}",
+                  keysToDelete.size(), pageSize);
+          for (List<DeleteObjectsRequest.KeyVersion> batchOfKeysToDelete :
+                  Lists.partition(keysToDelete, pageSize)) {
+            deleteObjects(getRequestFactory()
+                    .newBulkDeleteRequest(batchOfKeysToDelete, true));
+          }
+        }
       } else {
         for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {
           deleteObject(keyVersion.getKey());
@@ -2949,7 +2965,6 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
       throw ex;
     }
     noteDeleted(keysToDelete.size(), deleteFakeDir);
-    return result;
   }
 
   /**
@@ -3021,7 +3036,7 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
    * @throws IOException other IO Exception.
    */
   @Retries.RetryMixed
-  private DeleteObjectsResult removeKeys(
+  private void removeKeys(
       final List<DeleteObjectsRequest.KeyVersion> keysToDelete,
       final boolean deleteFakeDir,
       final List<Path> undeletedObjectsOnFailure,
@@ -3031,7 +3046,7 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
     undeletedObjectsOnFailure.clear();
     try (DurationInfo ignored = new DurationInfo(LOG, false,
         "Deleting %d keys", keysToDelete.size())) {
-      return removeKeysS3(keysToDelete, deleteFakeDir, quiet);
+      removeKeysS3(keysToDelete, deleteFakeDir, quiet);
     } catch (MultiObjectDeleteException ex) {
       LOG.debug("Partial delete failure");
       // what to do if an IOE was raised? Given an exception was being

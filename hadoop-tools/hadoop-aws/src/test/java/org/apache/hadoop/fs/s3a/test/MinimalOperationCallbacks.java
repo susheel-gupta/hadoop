@@ -102,7 +102,7 @@ public class MinimalOperationCallbacks
   }
 
   @Override
-  public DeleteObjectsResult removeKeys(
+  public void removeKeys(
       List<DeleteObjectsRequest.KeyVersion> keysToDelete,
       boolean deleteFakeDir,
       List<Path> undeletedObjectsOnFailure,
@@ -110,7 +110,6 @@ public class MinimalOperationCallbacks
       boolean quiet)
       throws MultiObjectDeleteException, AmazonClientException,
              IOException {
-    return null;
   }
 
   @Override

@@ -163,7 +163,7 @@ public interface OperationCallbacks {
    * @throws IOException other IO Exception.
    */
   @Retries.RetryMixed
-  DeleteObjectsResult removeKeys(
+  void removeKeys(
       List<DeleteObjectsRequest.KeyVersion> keysToDelete,
       boolean deleteFakeDir,
       List<Path> undeletedObjectsOnFailure,

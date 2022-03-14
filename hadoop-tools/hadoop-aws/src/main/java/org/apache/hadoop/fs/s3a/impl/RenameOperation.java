@@ -46,8 +46,9 @@ import org.apache.hadoop.fs.s3a.s3guard.RenameTracker;
 import org.apache.hadoop.util.DurationInfo;
 import org.apache.hadoop.util.OperationDuration;
 
-import static org.apache.hadoop.fs.store.audit.AuditingFunctions.callableWithinAuditSpan;
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.apache.hadoop.fs.store.audit.AuditingFunctions.callableWithinAuditSpan;
 import static org.apache.hadoop.fs.s3a.Constants.FS_S3A_BLOCK_SIZE;
 import static org.apache.hadoop.fs.s3a.S3AUtils.objectRepresentsDirectory;
 import static org.apache.hadoop.fs.s3a.impl.CallableSupplier.submit;
@@ -179,6 +180,9 @@ public class RenameOperation extends ExecutingStoreOperation<Long> {
     this.callbacks = callbacks;
     blocksize = storeContext.getConfiguration()
         .getLongBytes(FS_S3A_BLOCK_SIZE, DEFAULT_BLOCKSIZE);
+    checkArgument(pageSize > 0
+                    && pageSize <= InternalConstants.MAX_ENTRIES_TO_DELETE,
+            "page size out of range: %s", pageSize);
     this.pageSize = pageSize;
   }
 

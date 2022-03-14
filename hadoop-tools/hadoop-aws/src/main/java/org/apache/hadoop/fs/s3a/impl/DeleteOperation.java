@@ -545,7 +545,7 @@ public class DeleteOperation extends ExecutingStoreOperation<Boolean> {
             .map(e -> e.keyVersion)
             .collect(Collectors.toList());
         LOG.debug("Deleting of {} file objects", files.size());
-        result = Invoker.once("Remove S3 Files",
+        Invoker.once("Remove S3 Files",
             status.getPath().toString(),
             () -> callbacks.removeKeys(
                 files,
@@ -564,7 +564,7 @@ public class DeleteOperation extends ExecutingStoreOperation<Boolean> {
         LOG.debug("Deleting of {} directory markers", dirs.size());
         // This is invoked with deleteFakeDir = true, so
         // S3Guard is not updated.
-        result = Invoker.once("Remove S3 Dir Markers",
+        Invoker.once("Remove S3 Dir Markers",
             status.getPath().toString(),
             () -> callbacks.removeKeys(
                 dirs,
