@@ -50,6 +50,7 @@ public class CapacitySchedulerInfo extends SchedulerInfo {
   protected String queueName;
   private String queuePath;
   protected int maxParallelApps;
+  private boolean isAbsoluteResource;
   protected CapacitySchedulerQueueInfoList queues;
   protected QueueCapacitiesInfo capacities;
   protected CapacitySchedulerHealthInfo health;
@@ -90,6 +91,9 @@ public class CapacitySchedulerInfo extends SchedulerInfo {
     queues = getQueues(cs, parent);
     health = new CapacitySchedulerHealthInfo(cs);
     maximumAllocation = new ResourceInfo(parent.getMaximumAllocation());
+
+    isAbsoluteResource = parent.getCapacityConfigType() ==
+        AbstractCSQueue.CapacityConfigType.ABSOLUTE_RESOURCE;
 
     CapacitySchedulerConfiguration conf = cs.getConfiguration();
     queueAcls = new QueueAclsInfo();
