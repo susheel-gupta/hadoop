@@ -139,7 +139,6 @@ Apache HBase Relocated (Shaded) Third-party Miscellaneous Libs 3.5.0.7.2.14.0-14
 Apache HttpClient 4.5.13 : Apache License 2.0
 Apache HttpComponents Core 4.4.13 : Apache License 2.0
 Apache Kafka 0.8.2.1 : Apache License 2.0
-Apache Log4j 1.2.17 : Apache License 2.0
 Apache Log4j 2.17.1 : Apache License 2.0
 Apache Log4J API 2.17.1 : Apache License 2.0
 Apache Log4j Spring Boot Support 2.14.0 : Apache License 2.0
@@ -347,6 +346,7 @@ Protokt 0.7.3 : Apache License 2.0
 Ranger Remote Authorization Hook - ABFS driver 2.1.0.1.15.7214.0-5 : Apache License 2.0
 Ranger Remote Authorization Integration 2.1.0.7.2.15.0-147 : Apache License 2.0
 re2j 1.2 : BSD 3-clause "New" or "Revised" License
+reload4j 1.2.18.3 : Apache License 2.0
 SLF4J API Module 1.7.30 : MIT License
 SLF4J LOG4J-12 Binding 1.7.30 : MIT License
 SnakeYAML 1.26 : Apache License 2.0
