@@ -324,8 +324,11 @@ public abstract class AbstractCSQueue implements CSQueue {
     writeLock.lock();
     try {
       CapacitySchedulerConfiguration configuration = queueContext.getConfiguration();
+      this.acls = configuration.getAcls(getQueuePath());
+
       if (isDynamicQueue() || this instanceof AbstractAutoCreatedLeafQueue) {
         setDynamicQueueProperties();
+        setDynamicQueueACLProperties();
       }
 
       // Collect and set the Node label configuration
@@ -351,8 +354,6 @@ public abstract class AbstractCSQueue implements CSQueue {
       QueueStateHelper.setQueueState(this);
 
       authorizer = YarnAuthorizationProvider.getInstance(configuration);
-
-      this.acls = configuration.getAcls(getQueuePath());
 
       this.userWeights = getUserWeightsFromHierarchy();
 
@@ -403,6 +404,9 @@ public abstract class AbstractCSQueue implements CSQueue {
             .setLabelsByQueue(getQueuePath(), new HashSet<>(parentNodeLabels));
       }
     }
+  }
+
+  protected void setDynamicQueueACLProperties() {
   }
 
   private UserWeights getUserWeightsFromHierarchy() {

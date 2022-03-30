@@ -597,9 +597,7 @@ support other pre-configured queues to co-exist along with auto-created queues. 
 
 The parent queue which has been enabled for auto leaf queue creation,supports
  the configuration of template parameters for automatic configuration of the auto-created leaf queues. The auto-created queues support all of the
- leaf queue configuration parameters except for **Queue ACL**, **Absolute
- Resource** configurations. Queue ACLs are
- currently inherited from the parent queue i.e they are not configurable on the leaf queue template
+ leaf queue configuration parameters except for **Absolute Resource** configurations.
 
 | Property | Description |
 |:---- |:---- |

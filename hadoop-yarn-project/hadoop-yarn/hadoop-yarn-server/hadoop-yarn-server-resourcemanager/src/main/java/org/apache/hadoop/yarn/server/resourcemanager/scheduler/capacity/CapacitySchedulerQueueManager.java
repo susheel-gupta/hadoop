@@ -23,16 +23,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.yarn.server.resourcemanager.placement.ApplicationPlacementContext;
+import org.apache.hadoop.yarn.security.PrivilegedEntity;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.conf.Configuration;
@@ -52,8 +49,13 @@ import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerDynamicE
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.SchedulerQueueManager;
 import org.apache.hadoop.yarn.server.resourcemanager.scheduler.common.QueueEntitlement;
 import org.apache.hadoop.yarn.server.resourcemanager.security.AppPriorityACLsManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
+
+import static org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration.getACLsForFlexibleAutoCreatedLeafQueue;
+import static org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacitySchedulerConfiguration.getACLsForFlexibleAutoCreatedParentQueue;
 
 /**
  *
@@ -65,7 +67,7 @@ import com.google.common.annotations.VisibleForTesting;
 public class CapacitySchedulerQueueManager implements SchedulerQueueManager<
     CSQueue, CapacitySchedulerConfiguration>{
 
-  private static final Log LOG = LogFactory.getLog(
+  private static final Logger LOG = LoggerFactory.getLogger(
       CapacitySchedulerQueueManager.class);
 
   static class QueueHook {
@@ -634,6 +636,44 @@ public class CapacitySchedulerQueueManager implements SchedulerQueueManager<
     }
 
     return parentsToCreate;
+  }
+
+  public List<Permission> getPermissionsForDynamicQueue(
+      QueuePath queuePath,
+      CapacitySchedulerConfiguration csConf) {
+    List<Permission> permissions = new ArrayList<>();
+
+    try {
+      PrivilegedEntity privilegedEntity = new PrivilegedEntity(queuePath.getFullPath());
+
+      CSQueue parentQueue = getQueueByFullName(queuePath.getParent());
+      if (parentQueue == null) {
+        for (String missingParent : determineMissingParents(queuePath)) {
+          String parentOfMissingParent = new QueuePath(missingParent).getParent();
+          permissions.add(new Permission(new PrivilegedEntity(missingParent),
+              getACLsForFlexibleAutoCreatedParentQueue(
+                  new AutoCreatedQueueTemplate(csConf,
+                      new QueuePath(parentOfMissingParent)))));
+        }
+      }
+
+      if (parentQueue instanceof AbstractManagedParentQueue) {
+        // An AbstractManagedParentQueue must have been found for Legacy AQC
+        permissions.add(new Permission(privilegedEntity,
+            csConf.getACLsForLegacyAutoCreatedLeafQueue(queuePath.getParent())));
+      } else {
+        // Every other case must be a Flexible Leaf Queue
+        permissions.add(new Permission(privilegedEntity,
+            getACLsForFlexibleAutoCreatedLeafQueue(
+                new AutoCreatedQueueTemplate(csConf, new QueuePath(queuePath.getParent())))));
+      }
+
+    } catch (SchedulerDynamicEditException e) {
+      LOG.debug("Could not determine missing parents for queue {} reason {}",
+          queuePath.getFullPath(), e.getMessage());
+    }
+
+    return permissions;
   }
 
   /**
