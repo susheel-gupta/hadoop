@@ -1997,5 +1997,11 @@ public class DatanodeManager {
     return slowDiskTracker != null ?
         slowDiskTracker.getSlowDiskReportAsJsonString() : null;
   }
+
+  @VisibleForTesting
+  public Map<String, DatanodeDescriptor> getDatanodeMap() {
+    return datanodeMap;
+  }
+
 }
 
