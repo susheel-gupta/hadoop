@@ -26,9 +26,11 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Sets;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceAudience.Private;
 import org.apache.hadoop.conf.Configuration;
@@ -158,8 +160,8 @@ public class QueueMetrics implements MetricsSource {
 
   protected final MetricsRegistry registry;
   protected final String queueName;
-  protected Queue parentQueue;
-  protected QueueMetrics parent;
+  private QueueMetrics parent;
+  private Queue parentQueue;
   protected final MetricsSystem metricsSystem;
   protected final Map<String, QueueMetrics> users;
   protected final Configuration conf;
@@ -202,7 +204,8 @@ public class QueueMetrics implements MetricsSource {
   private static final String AGGREGATE_PREEMPTED_SECONDS_METRIC_PREFIX =
       "AggregatePreemptedSeconds.";
   private static final String AGGREGATE_PREEMPTED_SECONDS_METRIC_DESC =
-      "Aggregate Preempted Seconds for NAME";
+    "Aggregate Preempted Seconds for NAME";
+  protected Set<String> storedPartitionMetrics = Sets.newConcurrentHashSet();
 
   public QueueMetrics(MetricsSystem ms, String queueName, Queue parent,
                       boolean enableUserMetrics, Configuration conf) {
@@ -359,6 +362,7 @@ public class QueueMetrics implements MetricsSource {
           queueMetrics.tag(PARTITION_INFO, partitionJMXStr).tag(QUEUE_INFO,
               this.queueName));
       getQueueMetrics().put(metricName, queueMetrics);
+      registerPartitionMetricsCreation(metricName);
       return queueMetrics;
     } else {
       return metrics;
@@ -401,6 +405,7 @@ public class QueueMetrics implements MetricsSource {
                 partitionJMXStr));
       }
       getQueueMetrics().put(metricName, metrics);
+      registerPartitionMetricsCreation(metricName);
     }
     return metrics;
   }
@@ -1287,5 +1292,27 @@ public class QueueMetrics implements MetricsSource {
 
   public Queue getParentQueue() {
     return parentQueue;
+  }
+
+  protected void registerPartitionMetricsCreation(String metricName) {
+    if (storedPartitionMetrics != null) {
+      storedPartitionMetrics.add(metricName);
+    }
+  }
+
+  public void setParentQueue(Queue parentQueue) {
+    this.parentQueue = parentQueue;
+
+    if (storedPartitionMetrics == null) {
+      return;
+    }
+
+    for (String partitionMetric : storedPartitionMetrics) {
+      QueueMetrics metric = getQueueMetrics().get(partitionMetric);
+
+      if (metric != null && metric.parentQueue != null) {
+        metric.parentQueue = parentQueue;
+      }
+    }
   }
 }
