@@ -354,7 +354,7 @@ public class BlockPlacementPolicyDefault extends BlockPlacementPolicy {
       totalNumOfReplicas = clusterSize;
     }
     // No calculation needed when there is only one rack or picking one node.
-    int numOfRacks = clusterMap.getNumOfRacks();
+    int numOfRacks = clusterMap.getNumOfNonEmptyRacks();
     // HDFS-14527 return default when numOfRacks = 0 to avoid
     // ArithmeticException when calc maxNodesPerRack at following logic.
     if (numOfRacks <= 1 || totalNumOfReplicas <= 1) {
@@ -1116,7 +1116,7 @@ public class BlockPlacementPolicyDefault extends BlockPlacementPolicy {
         .map(dn -> dn.getNetworkLocation()).distinct().count();
 
     return new BlockPlacementStatusDefault(Math.toIntExact(rackCount),
-        minRacks, clusterMap.getNumOfRacks());
+        minRacks, clusterMap.getNumOfNonEmptyRacks());
   }
 
   /**
@@ -1304,4 +1304,3 @@ public class BlockPlacementPolicyDefault extends BlockPlacementPolicy {
     this.preferLocalNode = prefer;
   }
 }
-
