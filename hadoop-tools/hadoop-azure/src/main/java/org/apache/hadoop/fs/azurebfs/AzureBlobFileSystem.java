@@ -1575,7 +1575,7 @@ public class AzureBlobFileSystem extends FileSystem
   }
 
   @VisibleForTesting
-  AzureBlobFileSystemStore getAbfsStore() {
+  public AzureBlobFileSystemStore getAbfsStore() {
     return abfsStore;
   }
 
