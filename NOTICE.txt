@@ -7,14 +7,14 @@ Copyright 2022 Apache Software Foundation.  All Rights Reserved.
 Components: 
 
 [ini4j] 0.5.4 : Apache License 2.0
-ahas-sentinel-client 1.10.5 : Apache License 2.0
 Aliyun OSS SDK for Java 3.13.2 : Apache License 2.0
 aliyun-java-sdk-core 4.5.10 : Apache License 2.0
 aliyun-java-sdk-kms 2.11.0 : Apache License 2.0
 aliyun-java-sdk-ram 3.1.0 : Apache License 2.0
 Animal Sniffer Annotations 1.18 : MIT License
 AOP Alliance (Java/J2EE AOP standard) 1.0 : Public Domain
-Apache Avro 1.8.2.7.2.12.0-291 : Apache License 2.0
+Apache Avro 1.8.2.7.2.15.0-147 : Apache License 2.0
+Apache Avro Tools 1.8.2.7.1.7.1000-141 : Apache License 2.0
 Apache Commons BeanUtils 1.9.4 : Apache License 2.0
 Apache Commons CLI 1.2 : Apache License 2.0
 Apache Commons Collections 3.2.2 : Apache License 2.0
@@ -29,128 +29,149 @@ Apache Commons Lang 3.8.1 : Apache License 2.0
 Apache Commons Logging 1.1.3 : Apache License 2.0
 Apache Commons Math 3.1.1 : Apache License 2.0
 Apache Commons Net 3.6 : Apache License 2.0
+Apache Directory LDAP API Client All 2.0.0.AM2 : Apache License 2.0
 Apache Geronimo JCache Spec 1.0 1.0-alpha-1 : Apache License 2.0
 Apache Groovy 3.0.7 : Apache License 2.0
-Apache Hadoop 3.1.1.7.1.7.0-551 : Apache License 2.0
-Apache Hadoop 3.1.1.7.1.7.54-4 : Apache License 2.0
+Apache Hadoop 20181206-snapshot-5d4a4326 : Apache License 2.0
+Apache Hadoop 3.1.1.7.1.6.11-1 : Apache License 2.0
+Apache Hadoop 3.1.1.7.1.6.85-1 : Apache License 2.0
+Apache Hadoop 3.1.1.7.1.6.97-1 : Apache License 2.0
+Apache Hadoop 3.1.1.7.1.7.1000-141 : Apache License 2.0
 Apache Hadoop 3.1.1.7.1.7.64-1 : Apache License 2.0
 Apache Hadoop 3.1.1.7.1.7.67-1 : Apache License 2.0
-Apache Hadoop 3.1.1.7.2.7.1-1 : Apache License 2.0
-Apache Hadoop 3.1.1.7.2.8.0-228 : Apache License 2.0
-Apache Hadoop submarine-0.2.0-RC0 : Apache License 2.0
-Apache Hadoop Amazon Web Services support 3.1.1.7.2.10.0-148 : Apache License 2.0
-Apache Hadoop Amazon Web Services support 3.1.1.7.2.9.0-203 : Apache License 2.0
-Apache Hadoop Amazon Web Services support 3.1.1.7.2.9.6-3 : Apache License 2.0
-Apache Hadoop Annotations 3.1.1.7.1.7.0-551 : Apache License 2.0
+Apache Hadoop 3.1.1.7.1.7.74-6 : Apache License 2.0
+Apache Hadoop 3.1.1.7.2.11.0-233 : Apache License 2.0
+Apache Hadoop 3.1.1.7.2.11.4-3 : Apache License 2.0
+Apache Hadoop 3.1.1.7.2.12.0-291 : Apache License 2.0
+Apache Hadoop 3.1.1.7.2.12.2-5 : Apache License 2.0
+Apache Hadoop 3.1.1.7.2.14.0-149 : Apache License 2.0
+Apache Hadoop 3.1.1.7.2.15.0-147 : Apache License 2.0
+Apache Hadoop release-3.1.2-RC1 : Apache License 2.0
+Apache Hadoop Aliyun OSS support 3.1.1.7.1.7.0-551 : Apache License 2.0
+Apache Hadoop Aliyun OSS support 3.1.1.7.1.7.1000-141 : Apache License 2.0
+Apache Hadoop Amazon Web Services support 3.1.1.7.2.11.4-3 : Apache License 2.0
+Apache Hadoop Amazon Web Services support 3.1.1.7.2.15.0-147 : Apache License 2.0
+Apache Hadoop Annotations 3.1.1.7.1.7.1000-141 : Apache License 2.0
+Apache Hadoop Annotations 3.1.1.7.2.15.0-147 : Apache License 2.0
 Apache Hadoop Archive Logs 3.1.1.7.1.7.0-551 : Apache License 2.0
-Apache Hadoop Archive Logs 3.1.1.7.1.7.64-1 : Apache License 2.0
-Apache Hadoop Archive Logs 3.1.1.7.2.7.11-4 : Apache License 2.0
-Apache Hadoop Archives 3.1.1.7.1.6.96-1 : Apache License 2.0
-Apache Hadoop Archives 3.1.1.7.1.7.64-1 : Apache License 2.0
-Apache Hadoop Auth 3.1.1.7.1.7.0-551 : Apache License 2.0
-Apache Hadoop Auth 3.1.1.7.1.7.54-4 : Apache License 2.0
-Apache Hadoop Azure Data Lake support 3.1.1.7.1.7.0-551 : Apache License 2.0
-Apache Hadoop Azure Data Lake support 3.1.1.7.1.7.54-4 : Apache License 2.0
-Apache Hadoop Azure support 3.1.1.7.1.5.61-1 : Apache License 2.0
+Apache Hadoop Archive Logs 3.1.1.7.1.7.1000-141 : Apache License 2.0
+Apache Hadoop Archives 3.1.1.7.1.7.1000-141 : Apache License 2.0
+Apache Hadoop Archives 3.1.1.7.2.14.0-149 : Apache License 2.0
+Apache Hadoop Auth 3.1.1.7.2.15.0-147 : Apache License 2.0
+Apache Hadoop Azure Data Lake support 3.1.1.7.2.15.0-147 : Apache License 2.0
+Apache Hadoop Azure support 3.1.1.7.1.7.1000-141 : Apache License 2.0
 Apache Hadoop Azure support 3.1.1.7.2.12.0-291 : Apache License 2.0
-Apache Hadoop Client API 3.1.1.7.1.7.54-4 : Apache License 2.0
-Apache Hadoop Client API 3.1.1.7.2.7.1-1 : Apache License 2.0
-Apache Hadoop Client Runtime 3.1.1.7.1.7.67-1 : Apache License 2.0
-Apache Hadoop Client Test Minicluster 3.1.1.7.1.7.67-1 : Apache License 2.0
-Apache Hadoop Client Test Minicluster 3.3.1 : Apache License 2.0
-Apache Hadoop Data Join 3.1.1.7.1.4.57-1 : Apache License 2.0
-Apache Hadoop Data Join 3.1.1.7.1.7.54-4 : Apache License 2.0
-Apache Hadoop Distributed Copy 3.1.1.7.1.7.64-1 : Apache License 2.0
-Apache Hadoop Extras 3.1.1.7.1.7.64-1 : Apache License 2.0
-Apache Hadoop Extras 3.1.1.7.2.12.2-5 : Apache License 2.0
-Apache Hadoop Gridmix 3.1.1.7.1.2.6-1 : Apache License 2.0
-Apache Hadoop Gridmix 3.1.1.7.1.7.54-4 : Apache License 2.0
-Apache Hadoop Gridmix 3.1.1.7.1.7.64-1 : Apache License 2.0
-Apache Hadoop Gridmix 3.1.1.7.1.7.67-1 : Apache License 2.0
+Apache Hadoop Client API 3.1.1.7.1.7.1000-141 : Apache License 2.0
+Apache Hadoop Client API 3.1.1.7.2.15.0-147 : Apache License 2.0
+Apache Hadoop Client Runtime 3.1.1.7.1.7.1000-141 : Apache License 2.0
+Apache Hadoop Client Runtime 3.1.1.7.2.15.0-147 : Apache License 2.0
+Apache Hadoop Client Runtime 3.3.3 : Apache License 2.0
+Apache Hadoop Client Test Minicluster 3.1.1.7.1.7.1000-141 : Apache License 2.0
+Apache Hadoop Client Test Minicluster 3.1.1.7.2.15.0-147 : Apache License 2.0
+Apache Hadoop Data Join 3.1.1.7.1.7.0-551 : Apache License 2.0
+Apache Hadoop Data Join 3.1.1.7.1.7.1000-141 : Apache License 2.0
+Apache Hadoop Distributed Copy 3.1.1.7.1.7.74-6 : Apache License 2.0
+Apache Hadoop Distributed Copy 3.1.1.7.2.10.0-148 : Apache License 2.0
+Apache Hadoop Extras 3.1.1.7.1.7.0-551 : Apache License 2.0
+Apache Hadoop Extras 3.1.1.7.1.7.1000-141 : Apache License 2.0
+Apache Hadoop Gridmix 3.1.1.7.1.7.0-551 : Apache License 2.0
+Apache Hadoop Gridmix 3.1.1.7.1.7.1000-141 : Apache License 2.0
 Apache Hadoop HDFS Client 3.1.1.7.1.7.0-551 : Apache License 2.0
-Apache Hadoop HDFS Client 3.1.1.7.2.10.0-148 : Apache License 2.0
-Apache Hadoop HDFS Client 3.1.1.7.2.11.0-233 : Apache License 2.0
+Apache Hadoop HDFS Client 3.1.1.7.1.7.1000-141 : Apache License 2.0
+Apache Hadoop HDFS Client 3.1.1.7.1.7.64-1 : Apache License 2.0
 Apache Hadoop HDFS Client 3.1.1.7.2.12.0-291 : Apache License 2.0
+Apache Hadoop HDFS Client 3.1.1.7.2.15.0-147 : Apache License 2.0
+Apache Hadoop HDFS Native Client 3.1.1.7.2.7.0-184 : Apache License 2.0
 Apache Hadoop HDFS-NFS 3.1.1.7.1.7.0-551 : Apache License 2.0
+Apache Hadoop HDFS-NFS 3.1.1.7.1.7.74-6 : Apache License 2.0
 Apache Hadoop HDFS-RBF 3.1.1.7.1.5.13-4 : Apache License 2.0
 Apache Hadoop HDFS-RBF 3.1.1.7.1.6.0-297 : Apache License 2.0
-Apache Hadoop HDFS-RBF 3.1.1.7.1.7.0-551 : Apache License 2.0
-Apache Hadoop HDFS-RBF 3.1.1.7.2.6.1-1 : Apache License 2.0
+Apache Hadoop HDFS-RBF 3.1.1.7.1.7.1000-141 : Apache License 2.0
 Apache Hadoop HDFS-RBF 3.1.1.7.2.6.3-1 : Apache License 2.0
 Apache Hadoop HttpFS 3.1.1.7.2.10.0-148 : Apache License 2.0
-Apache Hadoop HttpFS 3.1.1.7.2.9.6-3 : Apache License 2.0
+Apache Hadoop HttpFS 3.1.1.7.2.14.0-149 : Apache License 2.0
+Apache Hadoop HttpFS 3.1.1.7.2.15.0-147 : Apache License 2.0
 Apache Hadoop Image Generation Tool 3.1.1.7.1.7.0-551 : Apache License 2.0
 Apache Hadoop Kafka Library support 3.1.1.7.1.7.0-551 : Apache License 2.0
 Apache Hadoop KMS 3.1.1.7.1.7.0-551 : Apache License 2.0
+Apache Hadoop MapReduce Examples 3.1.1.7.1.7.1000-141 : Apache License 2.0
 Apache Hadoop MapReduce Examples 3.1.1.7.1.7.64-1 : Apache License 2.0
 Apache Hadoop MapReduce NativeTask 2.6.0-cdh5.15.97 : Apache License 2.0
-Apache Hadoop MapReduce NativeTask 3.1.1.7.1.7.54-4 : Apache License 2.0
-Apache Hadoop MapReduce NativeTask 3.1.1.7.1.7.67-1 : Apache License 2.0
-Apache Hadoop MapReduce Uploader 3.1.1.7.1.4.57-1 : Apache License 2.0
+Apache Hadoop MapReduce NativeTask 3.1.1.7.1.7.1000-141 : Apache License 2.0
 Apache Hadoop MapReduce Uploader 3.1.1.7.1.4.9-1 : Apache License 2.0
-Apache Hadoop NFS 3.1.1.7.2.11.0-233 : Apache License 2.0
+Apache Hadoop MapReduce Uploader 3.1.1.7.1.7.0-551 : Apache License 2.0
+Apache Hadoop MapReduce Uploader 3.1.1.7.1.7.1000-141 : Apache License 2.0
+Apache Hadoop NFS 3.1.1.7.1.7.0-551 : Apache License 2.0
 Apache Hadoop NFS 3.1.1.7.2.12.0-291 : Apache License 2.0
+Apache Hadoop NFS 3.1.1.7.2.15.0-147 : Apache License 2.0
 Apache Hadoop OpenStack support 3.1.1.7.1.7.0-551 : Apache License 2.0
 Apache Hadoop Registry 3.3.0 : Apache License 2.0
-Apache Hadoop Resource Estimator Service 3.1.1.7.1.7.67-1 : Apache License 2.0
+Apache Hadoop Registry 3.3.3 : Apache License 2.0
+Apache Hadoop Resource Estimator Service 3.1.1.7.1.7.0-551 : Apache License 2.0
+Apache Hadoop Resource Estimator Service 3.1.1.7.1.7.1000-141 : Apache License 2.0
 Apache Hadoop Rumen 3.1.1.7.1.7.0-551 : Apache License 2.0
-Apache Hadoop Rumen 3.1.1.7.1.7.54-4 : Apache License 2.0
+Apache Hadoop Rumen 3.1.1.7.1.7.1000-141 : Apache License 2.0
 Apache Hadoop Scheduler Load Simulator 3.1.1.7.1.7.0-551 : Apache License 2.0
+Apache Hadoop Scheduler Load Simulator 3.1.1.7.1.7.1000-141 : Apache License 2.0
 Apache Hadoop YARN Router 3.1.1.7.1.7.0-551 : Apache License 2.0
-Apache Hadoop YARN Services API 3.1.1.7.1.7.54-4 : Apache License 2.0
-Apache Hadoop YARN Services API 3.1.1.7.2.12.2-5 : Apache License 2.0
-Apache Hadoop YARN Services Core 3.1.1.7.1.4.4-1 : Apache License 2.0
-Apache Hadoop YARN Services Core 3.1.1.7.1.7.0-551 : Apache License 2.0
-Apache Hadoop YARN Services Core 3.1.1.7.2.6.7-2 : Apache License 2.0
-Apache Hadoop YARN Timeline Plugin Storage 3.1.1.7.1.7.0-551 : Apache License 2.0
-Apache Hadoop YARN Timeline Plugin Storage 3.1.1.7.1.7.54-4 : Apache License 2.0
+Apache Hadoop YARN Services API 3.1.1.7.1.0.0-714 : Apache License 2.0
+Apache Hadoop YARN Services API 3.1.1.7.1.7.1000-141 : Apache License 2.0
+Apache Hadoop YARN Services API 3.1.1.7.2.0.0-237 : Apache License 2.0
+Apache Hadoop YARN Services Core 3.1.1.7.1.7.1000-141 : Apache License 2.0
+Apache Hadoop YARN Services Core 3.1.1.7.2.15.0-147 : Apache License 2.0
+Apache Hadoop YARN Timeline Plugin Storage 3.1.1.7.2.15.0-147 : Apache License 2.0
 Apache Hadoop YARN Timeline Service 3.1.1.7.1.7.0-551 : Apache License 2.0
+Apache Hadoop YARN Timeline Service HBase tests 3.1.1.7.1.5.0-257 : Apache License 2.0
 Apache Hadoop YARN TimelineService HBase Client 3.1.1.7.1.7.0-551 : Apache License 2.0
+Apache Hadoop YARN TimelineService HBase Client 3.1.1.7.1.7.67-1 : Apache License 2.0
+Apache Hadoop YARN TimelineService HBase Client 3.1.1.7.1.7.74-6 : Apache License 2.0
 Apache Hadoop YARN TimelineService HBase Common 3.1.1.7.1.7.0-551 : Apache License 2.0
+Apache Hadoop YARN TimelineService HBase Server 1.2 3.2.1 : Apache License 2.0
 Apache Hadoop YARN TimelineService HBase Server 2.0 3.1.1.7.1.7.64-1 : Apache License 2.0
-Apache Hadoop YARN UI 3.1.1.7.1.7.0-551 : Apache License 2.0
 Apache HBase - Client 2.2.4 : Apache License 2.0
-Apache HBase - Common 2.2.4 : Apache License 2.0
-Apache HBase - Hadoop Compatibility 2.0.0 : Apache License 2.0
-Apache HBase - Hadoop Two Compatibility 2.2.4 : Apache License 2.0
-Apache HBase - Metrics API 2.0.0 : Apache License 2.0
-Apache HBase - Protocol 2.2.4_1 : Apache License 2.0
-Apache HBase - Shaded Protocol 2.2.3.7.1.7.0-551 : Apache License 2.0
-Apache HBase Patched & Relocated (Shaded) Protobuf 3.3.0.7.1.7.0-551 : Apache License 2.0
+Apache HBase - Logging 2.4.6.7.2.15.0-147 : Apache License 2.0
+Apache HBase - Metrics Implementation 2.4.6.7.2.14.0-149 : Apache License 2.0
+Apache HBase - Shaded Protocol 2.4.6.7.2.15.0-147 : Apache License 2.0
+Apache HBase Patched & Relocated (Shaded) Protobuf 3.5.0.7.2.14.0-149 : Apache License 2.0
+Apache HBase Relocated (Shaded) GSON Libs 3.3.0.7.2.3.0-199 : Apache License 2.0
+Apache HBase Relocated (Shaded) Netty Libs 3.3.0.7.1.7.1000-141 : Apache License 2.0
+Apache HBase Relocated (Shaded) Third-party Miscellaneous Libs 3.5.0.7.2.14.0-149 : Apache License 2.0
 Apache HttpClient 4.5.13 : Apache License 2.0
 Apache HttpComponents Core 4.4.13 : Apache License 2.0
 Apache Kafka 0.8.2.1 : Apache License 2.0
 Apache Log4j 1.2.17 : Apache License 2.0
 Apache Log4j 2.17.1 : Apache License 2.0
+Apache Log4J API 2.17.1 : Apache License 2.0
 Apache Log4j Spring Boot Support 2.14.0 : Apache License 2.0
 Apache ServiceMix :: Bundles :: hadoop-client 3.2.1_1 : Apache License 2.0
 Apache Yetus - Audience Annotations 0.5.0 : Apache License 2.0
-Apache ZooKeeper 3.5.5.7.2.12.0-291 : Apache License 2.0
-Apache ZooKeeper - Jute 3.5.5.7.2.12.0-291 : Apache License 2.0
+Apache ZooKeeper 3.5.5.7.2.14.0-149 : Apache License 2.0
+Apache ZooKeeper - Jute 3.5.5.7.1.7.0-551 : Apache License 2.0
 apache-hadoop-libexec 3.2.0 : BSD 3-clause "New" or "Revised" License
 Arcade Data 1.0.6 : Apache License 2.0
 ASM 5.0.4 : BSD 3-clause "New" or "Revised" License
-ASM based accessors helper used by json-smart 2.3.1 : Apache License 2.0
-Audit CDH6 Plugin 7.4.4 : Apache License 2.0
-AWS SDK for Java - Bundle 1.11.1024 : Apache License 2.0
-AWS SDK for Java - Bundle 1.11.1030 : Apache License 2.0
+ASM based accessors helper used by json-smart 2.4.7 : Apache License 2.0
+AWS SDK for Java - Bundle 1.12.132 : Apache License 2.0
+AWS/SNS Events 16.4.1 : Apache License 2.0
 azure-data-lake-store-java 2.3.6 : MIT License
 Bouncy Castle 1.60 : MIT License
 Bouncy Castle PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs 1.60 : MIT License
 BPMN Model 2.1 : Apache License 2.0
 Checker Qual 2.5.3 : MIT License
 Checker Qual 2.8.1 : MIT License
-clickhouse-jdbc 0.3.2-patch1 : Apache License 2.0
+clickhouse-jdbc 0.3.2-patch10 : Apache License 2.0
 com.sun.jersey.jersey-servlet 1.17 : Common Development and Distribution License 1.1
 Commons Core 1.0.4 : Eclipse Public License 2.0
 Commons IO 2.11.0 : Apache License 2.0
 commons-codec 1.14 : Apache License 2.0
-Coordination -- Module `tusow-service` 0.7.1 : Apache License 2.0
-Curator Client 4.3.0.7.2.12.0-291 : Apache License 2.0
-Curator Framework 4.3.0 : Apache License 2.0
-Curator Recipes 4.3.0.7.2.12.0-291 : Apache License 2.0
+Curator Client 4.3.0.7.1.7.0-551 : Apache License 2.0
+Curator Framework 4.3.0.7.1.7.0-551 : Apache License 2.0
+Curator Framework 4.3.0.7.1.7.1000-141 : Apache License 2.0
+Curator Recipes 4.3.0.7.1.7.0-551 : Apache License 2.0
 Data Mapper for Jackson 1.9.13-cloudera.1 : Apache License 2.0
-DataStax Java driver for Apache Cassandra(R) - core with netty shaded 4.13.0 : Apache License 2.0
+DataStax Java driver for Apache Cassandra(R) - core with netty shaded 4.14.1 : Apache License 2.0
+DataTables 1.10.13 : MIT License
+delta-standalone 0.4.1 : Apache License 2.0
 dnsjava 2.1.7 : BSD 3-clause "New" or "Revised" License
 Ehcache 3.3.1 : Apache License 2.0
 Ehcache 3 API module 3.4.0 : Apache License 2.0
@@ -159,95 +180,79 @@ Ehcache 3 XML Parsing module 3.2.2 : Apache License 2.0
 Ehcache SizeOf Engine 0.3.0 : Apache License 2.0
 Elastic JNA Distribution 5.5.0 : Apache License 2.0
 Elastic JNA Distribution 5.7.0 : Apache License 2.0
-error-prone annotations 2.3.4 : Apache License 2.0
+error-prone annotations 2.7.1 : Apache License 2.0
 fast-serialization 2.50 : Apache License 2.0
 FindBugs jsr305 3.0.0 : Apache License 2.0
 FindBugs-Annotations 3.0.0 : Apache License 2.0
 Flogger 0.5 : Apache License 2.0
 Flogger SLF4J Backend 0.5 : Apache License 2.0
 Flogger System Backend 0.5 : Apache License 2.0
-gateway-cloud-bindings 1.3.0.7.1.4.57-1 : Apache License 2.0
-gateway-shell 1.3.0.7.1.7.0-551 : Apache License 2.0
+gateway-cloud-bindings 1.3.0.7.1.7.1000-141 : Apache License 2.0
+gateway-i18n 1.3.0.7.1.7.0-551 : Apache License 2.0
+gateway-shell 1.3.0.7.1.7.1000-141 : Apache License 2.0
 gateway-util-common 1.3.0.7.1.7.0-551 : Apache License 2.0
-gcs-connector.jar 2.1.2.7.1.7.64-1 : Apache License 2.0
-gcs-connector.jar 2.1.2.7.2.12.2-5 : Apache License 2.0
+gcs-connector.jar 2.1.2.7.1.7.1000-141 : Apache License 2.0
 gelfclient 1.5.1 : Apache License 2.0
 Google Guice 4.0 : Apache License 2.0
 Google Logger 0.5 : Apache License 2.0
-google-gson 2.2.4 : Apache License 2.0
+google-gson 2.9.0 : Apache License 2.0
+Gradle 2.14.1 API 7.3.2 : Apache License 2.0
 Guava InternalFutureFailureAccess and InternalFutures 1.0.1 : Apache License 2.0
 Guava ListenableFuture only 9999.0-empty-to-avoid-conflict-with-guava : Apache License 2.0
 Guava: Google Core Libraries for Java v28.1 : Apache License 2.0
 hadoop-mapreduce-client-app 3.1.1.7.1.6.86-2 : Apache License 2.0
-hadoop-mapreduce-client-app 3.1.1.7.1.7.67-1 : Apache License 2.0
+hadoop-mapreduce-client-app 3.1.1.7.1.7.1000-141 : Apache License 2.0
 hadoop-mapreduce-client-common 3.1.1.7.1.7.0-551 : Apache License 2.0
-hadoop-mapreduce-client-common 3.1.1.7.1.7.54-4 : Apache License 2.0
-hadoop-mapreduce-client-core 3.1.1.7.1.6.86-2 : Apache License 2.0
-hadoop-mapreduce-client-core 3.1.1.7.1.6.97-1 : Apache License 2.0
-hadoop-mapreduce-client-core 3.1.1.7.1.7.64-1 : Apache License 2.0
-hadoop-mapreduce-client-core 3.1.1.7.1.7.67-1 : Apache License 2.0
-hadoop-mapreduce-client-core 3.3.1 : Apache License 2.0
-hadoop-mapreduce-client-hs 3.1.1.7.1.7.0-551 : Apache License 2.0
-hadoop-mapreduce-client-hs-plugins 3.1.1.7.1.7.0-551 : Apache License 2.0
-hadoop-mapreduce-client-jobclient 3.1.1.7.1.7.0-551 : Apache License 2.0
-hadoop-mapreduce-client-jobclient 3.1.1.7.1.7.54-4 : Apache License 2.0
-hadoop-mapreduce-client-jobclient 3.1.1.7.1.7.64-1 : Apache License 2.0
-hadoop-mapreduce-client-jobclient 3.1.1.7.2.12.2-5 : Apache License 2.0
+hadoop-mapreduce-client-common 3.1.1.7.1.7.1000-141 : Apache License 2.0
+hadoop-mapreduce-client-core 3.1.1.7.1.7.1000-141 : Apache License 2.0
+hadoop-mapreduce-client-hs 3.1.1.7.1.7.1000-141 : Apache License 2.0
+hadoop-mapreduce-client-hs 3.1.1.7.2.15.0-147 : Apache License 2.0
+hadoop-mapreduce-client-hs-plugins 3.1.1.7.1.7.1000-141 : Apache License 2.0
+hadoop-mapreduce-client-hs-plugins 3.1.1.7.2.1.0-321 : Apache License 2.0
+hadoop-mapreduce-client-jobclient 3.1.1.7.1.7.1000-141 : Apache License 2.0
+hadoop-mapreduce-client-jobclient 3.1.1.7.1.7.74-6 : Apache License 2.0
+hadoop-mapreduce-client-jobclient 3.1.1.7.2.15.0-147 : Apache License 2.0
 hadoop-mapreduce-client-shuffle 3.1.1.7.1.4.57-1 : Apache License 2.0
-hadoop-mapreduce-client-shuffle 3.1.1.7.1.7.0-551 : Apache License 2.0
-hadoop-mapreduce-client-shuffle 3.1.1.7.1.7.64-1 : Apache License 2.0
+hadoop-mapreduce-client-shuffle 3.1.1.7.1.7.1000-141 : Apache License 2.0
 hadoop-streaming 3.1.1.7.1.7.0-551 : Apache License 2.0
-hadoop-yarn-api 3.1.1.7.1.7.0-551 : Apache License 2.0
-hadoop-yarn-api 3.1.1.7.1.7.54-4 : Apache License 2.0
-hadoop-yarn-api 3.1.1.7.1.7.67-1 : Apache License 2.0
-hadoop-yarn-api 3.1.1.7.2.10.0-148 : Apache License 2.0
-hadoop-yarn-api 3.1.1.7.2.12.0-291 : Apache License 2.0
-hadoop-yarn-applications-distributedshell 3.1.1.7.1.7.54-4 : Apache License 2.0
-hadoop-yarn-applications-distributedshell 3.1.1.7.2.12.2-5 : Apache License 2.0
-hadoop-yarn-applications-unmanaged-am-launcher 3.1.1.7.1.2.6-1 : Apache License 2.0
+hadoop-streaming 3.1.1.7.1.7.1000-141 : Apache License 2.0
+hadoop-yarn-api 3.1.1.7.1.7.1000-141 : Apache License 2.0
+hadoop-yarn-api 3.1.1.7.2.15.0-147 : Apache License 2.0
+hadoop-yarn-applications-distributedshell 3.1.1.7.1.7.0-551 : Apache License 2.0
+hadoop-yarn-applications-distributedshell 3.1.1.7.1.7.1000-141 : Apache License 2.0
 hadoop-yarn-applications-unmanaged-am-launcher 3.1.1.7.1.7.0-551 : Apache License 2.0
-hadoop-yarn-applications-unmanaged-am-launcher 3.1.1.7.1.7.67-1 : Apache License 2.0
-hadoop-yarn-client 3.1.1.7.1.7.54-4 : Apache License 2.0
-hadoop-yarn-client 3.1.1.7.1.7.67-1 : Apache License 2.0
-hadoop-yarn-common 3.1.1.7.1.7.0-551 : Apache License 2.0
-hadoop-yarn-common 3.1.1.7.1.7.64-1 : Apache License 2.0
-hadoop-yarn-common 3.1.1.7.2.11.0-233 : Apache License 2.0
-hadoop-yarn-common 3.1.1.7.2.6.0-18 : Apache License 2.0
-hadoop-yarn-common 3.1.1.7.2.6.1-1 : Apache License 2.0
+hadoop-yarn-applications-unmanaged-am-launcher 3.1.1.7.1.7.1000-141 : Apache License 2.0
+hadoop-yarn-client 3.1.1.7.1.7.1000-141 : Apache License 2.0
+hadoop-yarn-client 3.1.1.7.2.15.0-147 : Apache License 2.0
+hadoop-yarn-common 3.1.1.7.1.7.1000-141 : Apache License 2.0
+hadoop-yarn-common 3.1.1.7.2.14.0-149 : Apache License 2.0
+hadoop-yarn-common 3.1.1.7.2.15.0-147 : Apache License 2.0
 hadoop-yarn-registry 3.1.1.7.1.7.0-551 : Apache License 2.0
+hadoop-yarn-registry 3.1.1.7.1.7.64-1 : Apache License 2.0
 hadoop-yarn-server-applicationhistoryservice 2.8.5 : Apache License 2.0
-hadoop-yarn-server-applicationhistoryservice 3.1.1.7.1.7.54-4 : Apache License 2.0
-hadoop-yarn-server-applicationhistoryservice 3.1.1.7.2.11.4-3 : Apache License 2.0
-hadoop-yarn-server-common 3.1.1.7.1.7.54-4 : Apache License 2.0
-hadoop-yarn-server-common 3.1.1.7.1.7.64-1 : Apache License 2.0
-hadoop-yarn-server-common 3.1.1.7.2.12.2-5 : Apache License 2.0
-hadoop-yarn-server-nodemanager 3.1.1.7.1.7.64-1 : Apache License 2.0
-hadoop-yarn-server-nodemanager 3.1.1.7.1.7.67-1 : Apache License 2.0
-hadoop-yarn-server-nodemanager 3.1.1.7.2.11.4-3 : Apache License 2.0
+hadoop-yarn-server-applicationhistoryservice 3.1.1.7.1.7.0-551 : Apache License 2.0
+hadoop-yarn-server-applicationhistoryservice 3.1.1.7.1.7.1000-141 : Apache License 2.0
+hadoop-yarn-server-common 3.1.1.7.1.7.1000-141 : Apache License 2.0
+hadoop-yarn-server-common 3.1.1.7.2.15.0-147 : Apache License 2.0
+hadoop-yarn-server-nodemanager 3.1.1.7.1.7.1000-141 : Apache License 2.0
+hadoop-yarn-server-resourcemanager 3.1.1.7.1.7.1000-141 : Apache License 2.0
 hadoop-yarn-server-resourcemanager 3.1.1.7.1.7.64-1 : Apache License 2.0
 hadoop-yarn-server-resourcemanager 3.1.1.7.1.7.67-1 : Apache License 2.0
-hadoop-yarn-server-resourcemanager 3.1.1.7.2.10.0-148 : Apache License 2.0
-hadoop-yarn-server-resourcemanager 3.1.1.7.2.9.0-203 : Apache License 2.0
-hadoop-yarn-server-sharedcachemanager 3.0.0-cdh6.0.0-beta1 : Apache License 2.0
+hadoop-yarn-server-resourcemanager 3.1.1.7.2.15.0-147 : Apache License 2.0
 hadoop-yarn-server-sharedcachemanager 3.1.1.7.1.4.57-1 : Apache License 2.0
-hadoop-yarn-server-tests 3.1.1.7.1.6.86-2 : Apache License 2.0
-hadoop-yarn-server-tests 3.1.1.7.1.7.0-551 : Apache License 2.0
-hadoop-yarn-server-web-proxy 3.3.1 : Apache License 2.0
-HawtJNI Runtime 1.10 : Apache License 2.0
-HBase - Client 2.2.3.7.1.6.23-1 : Apache License 2.0
-HBase - Common 2.2.3.7.1.7.0-551 : Apache License 2.0
-HBase - Hadoop Compatibility 2.2.3.7.1.7.0-551 : Apache License 2.0
-HBase - Hadoop Compatibility 2.2.3.7.1.7.67-1 : Apache License 2.0
-HBase - Hadoop Two Compatibility 2.2.3.7.1.7.0-551 : Apache License 2.0
-HBase - Protocol 2.2.3.7.1.7.0-551 : Apache License 2.0
+hadoop-yarn-server-tests 3.1.1.7.1.7.1000-141 : Apache License 2.0
+hadoop-yarn-server-web-proxy 3.1.1.7.1.7.1000-141 : Apache License 2.0
+HawtJNI Runtime 1.10 : (Apache License 2.0 AND Eclipse Public License 1.0)
+HBase - Client 2.4.6.7.2.14.0-149 : Apache License 2.0
+HBase - Common 2.4.6.7.2.15.0-147 : Apache License 2.0
+HBase - Hadoop Compatibility 2.4.12 : Apache License 2.0
+HBase - Hadoop Two Compatibility 2.4.6.7.2.14.0-149 : Apache License 2.0
+HBase - Protocol 2.4.6.7.2.15.0-147 : Apache License 2.0
 HikariCP 2.4.12 : Apache License 2.0
 HyperSQL Database Engine 2.3.4 : BSD 3-clause "New" or "Revised" License
-iam-jdbc-driver 0.1.0 : MIT License
 io.swagger:swagger-annotations 1.5.4 : Apache License 2.0
 J2ObjC Annotations 1.3 : Apache License 2.0
 jackson-annotations 2.10.5 : Apache License 2.0
-jackson-core 1.9.13-cloudera.2 : Apache License 2.0
-jackson-core 2.10.5 : Apache License 2.0
 jackson-databind 2.10.5.1 : Apache License 2.0
 jackson-dataformat-yaml 2.10.5 : Apache License 2.0
 Jackson-JAXRS-base 2.10.5 : Apache License 2.0
@@ -255,30 +260,30 @@ jackson-jaxrs-json-provider 2.10.5 : Apache License 2.0
 jackson-module-jaxb-annotations 1.9.13 : BSD 3-clause "New" or "Revised" License
 jackson-module-jaxb-annotations 2.10.5 : Apache License 2.0
 JaCoCo 0.8.5 : Eclipse Public License 2.0
+Jakarta Activation 1.2.0 : Common Development and Distribution License 1.1
+Jakarta Activation 1.2.1 : BSD 3-clause "New" or "Revised" License
 Java Architecture for XML Binding 2.2.11 : Common Development and Distribution License 1.1
 Java Architecture for XML Binding 2.3.2 : Eclipse Distribution License - v 1.0
 Java Native Access (JNA) 5.2.0 : Apache License 2.0
 Java Servlet API 2.1 : Common Development and Distribution License 1.0
 Java Servlet API 3.1.0 : Common Development and Distribution License 1.1
 java-util 1.9.0 : Apache License 2.0
-JavaBeans Activation Framework 1.2.0 : Common Development and Distribution License 1.0
-JavaBeans Activation Framework 1.2.1 : BSD 3-clause "New" or "Revised" License
 JavaBeans Activation Framework API jar 1.2.0 : Common Development and Distribution License 1.1
 JavaBeans Activation Framework API jar 1.2.1 : BSD 3-clause "New" or "Revised" License
-Javax Inject from the JSR-330 Expert Group 1.0.0-PRD : Apache License 2.0
+javax.inject:javax.inject 1 : Apache License 2.0
 JAX-RS provider for JSON content type 1.9.13 : Apache License 2.0
 JAXB XML Binding Code Generator Package 2.2.3-1 : Common Development and Distribution License 1.1
 JAXB XML Binding Code Generator Package 2.2.3-2 : (Common Development and Distribution License 1.1 OR Sun GPL With Classpath Exception v2.0)
 JCIP Annotations under Apache License 1.0-1 : Apache License 2.0
 jcodings 1.0.13 : MIT License
 JDOM 2.0.6.1 : Jdom License
-Jersey 1.19 : Common Development and Distribution License 1.1
+jersey's jersey 1.19 : Common Development and Distribution License 1.1
 jersey-json 1.19 : Common Development and Distribution License 1.1
 jersey-server 1.19 : Common Development and Distribution License 1.1
 jersey-servlet 1.19 : Common Development and Distribution License 1.1
 jerseyguice 1.19 : Common Development and Distribution License 1.1
 Jettison - Json Stax implementation 1.1 : Apache License 2.0
-Jetty: Java based HTTP/1.x, HTTP/2, Servlet, WebSocket Server 9.4.40.v20210413 : Apache License 2.0
+Jetty: Java based HTTP/1.x, HTTP/2, Servlet, WebSocket Server 9.4.43.v20210629 : (Apache License 2.0 OR Eclipse Public License 1.0)
 jmx_prometheus_javaagent 0.14.0 : Apache License 2.0
 Joda Time 2.8.1 : Apache License 2.0
 Joda Time v2.10.6 : Apache License 2.0
@@ -288,9 +293,8 @@ JRuby 2019c : Eclipse Public License 1.0
 JSch 0.1.54 : BSD 3-clause "New" or "Revised" License
 json-io 2.5.1 : Apache License 2.0
 json-simple 1.1.1 : Apache License 2.0
-json-smart 2.3.1 : Apache License 2.0
+json-smart 2.4.7 : Apache License 2.0
 jsr311-api 1.1.1 : Common Development and Distribution License 1.0
-jsr330-api 0.9 : Apache License 2.0
 JUL to SLF4J bridge 1.7.30 : MIT License
 Kerb Simple Kdc 1.1.1 : Apache License 2.0
 Kerby ASN1 Project 1.1.1 : Apache License 2.0
@@ -310,40 +314,38 @@ leveldb-api 0.6 : Apache License 2.0
 leveldbjni 1.7 : BSD 3-clause "New" or "Revised" License
 leveldbjni-all 1.8 : BSD 3-clause "New" or "Revised" License
 Log Redactor 2.0.8 : Apache License 2.0
-Log4J API 2.17.1 : Apache License 2.0
 Logspace Agent Controller 0.3.1 : Eclipse Public License 1.0
 LZ4 Java 1.2 : Apache License 2.0
 Metrics Core 3.2.4 : Apache License 2.0
 Microsoft Azure SDK for Key Vault 1.0.0 : MIT License
 Microsoft JDBC Driver for SQL Server 6.2.1.jre7 : MIT License
-Microsoft JDBC Driver for SQL Server v6.2.1 : MIT License
+Microsoft JDBC Driver for SQL Server v8.2.0 : MIT License
 Microsoft Windows Azure Storage Client SDK 7.0.1 : Apache License 2.0
 MongoDB replica set 0.4.3 : MIT License
 Netty Project 3.10.6.Final : Apache License 2.0
-Netty Project 4.1.62.Final : Apache License 2.0
 Netty Project 4.1.68.Final : Apache License 2.0
-Netty/Codec/Redis 4.1.72.Final : Apache License 2.0
+Netty/Codec/Redis 4.1.78.Final : Apache License 2.0
 Netty/Codec/SMTP 4.1.48.Final : Apache License 2.0
 Netty/Transport/Native/KQueue 4.1.68.Final-redhat-00002 : Apache License 2.0
 Netty/Transport/Native/Unix/Common 4.1.68.Final-redhat-00002 : Apache License 2.0
-Nimbus-JOSE-JWT 7.9 : Apache License 2.0
+Nimbus-JOSE-JWT 9.8.1 : Apache License 2.0
 objenesis 1.0 : MIT License
 ojAlgo 43.0 : MIT License
 OkHttp 2.7.5 : Apache License 2.0
 OkIO 1.6.0 : Apache License 2.0
-openrtb-model 1.4.0 : Apache License 2.0
-OpenTelemetry 0.12.0 : Apache License 2.0
+open-telemetry/opentelemetry-java 0.12.0 : Apache License 2.0
 OpenTelemetry Java 0.12.0 : Apache License 2.0
 OpenTracing API 0.33.0 : Apache License 2.0
 OpenTracing-noop 0.33.0 : Apache License 2.0
 OpenTracing-util 0.33.0 : Apache License 2.0
+org.codehaus.jackson:jackson-asl 1.9.13-cloudera.2 : Apache License 2.0
+org.codehaus.jackson:jackson-asl 2.10.5 : Apache License 2.0
 ParaNamer Core 2.8 : BSD 3-clause "New" or "Revised" License
 Policeman's Forbidden API Checker 2.7 : Apache License 2.0
 Protocol Buffer Java API 2.5.0 : BSD 3-clause "New" or "Revised" License
-Protocol Buffer Java Util Package 3.13.0 : BSD 3-clause "New" or "Revised" License
-Ranger Remote Authorization Hook - ABFS driver 2.1.0.7.2.6.0-6 : Apache License 2.0
-Ranger Remote Authorization Hook - ABFS driver 2.1.0.7.2.7.0-53 : Apache License 2.0
-Ranger Remote Authorization Integration 2.1.0.7.1.7.67-1 : Apache License 2.0
+Protokt 0.7.3 : Apache License 2.0
+Ranger Remote Authorization Hook - ABFS driver 2.1.0.1.15.7214.0-5 : Apache License 2.0
+Ranger Remote Authorization Integration 2.1.0.7.2.15.0-147 : Apache License 2.0
 re2j 1.2 : BSD 3-clause "New" or "Revised" License
 SLF4J API Module 1.7.30 : MIT License
 SLF4J LOG4J-12 Binding 1.7.30 : MIT License
@@ -352,19 +354,19 @@ snappy-java 1.1.7.7 : Apache License 2.0
 Stax2 API 3.1.4 : BSD 3-clause "New" or "Revised" License
 Token provider 1.1.1 : Apache License 2.0
 txw2 20110809 : Common Development and Distribution License 1.1
-TXW2 Runtime 2.3.3-b02 : Eclipse Distribution License - v 1.0
-unirest-java 4.0.0-RC1 : MIT License
+TXW2 Runtime 4.0.0-M2 : Eclipse Distribution License - v 1.0
 wildfly-openssl 1.0.7.Final : Apache License 2.0
 wildfly-openssl-java 1.0.8.Final : Apache License 2.0
 wildfly-openssl-windows-i386 1.0.7.Final : Apache License 2.0
 wildfly-openssl-windows-x86_64 1.0.7.Final : Apache License 2.0
 Woodstox 5.0.3 : Apache License 2.0
+WSO2 Siddhi Execution Extension - Device management Core functionality as Siddhi extension 4.1.17 : Apache License 2.0
 XZ for Java 1.8 : Public Domain
 
 Licenses: 
 
 Apache License 2.0
-([ini4j] 0.5.4, ahas-sentinel-client 1.10.5, Aliyun OSS SDK for Java 3.13.2, aliyun-java-sdk-core 4.5.10, aliyun-java-sdk-kms 2.11.0, aliyun-java-sdk-ram 3.1.0, Apache Avro 1.8.2.7.2.12.0-291, Apache Commons BeanUtils 1.9.4, Apache Commons CLI 1.2, Apache Commons Collections 3.2.2, Apache Commons Compress 1.21, Apache Commons Configuration 1.10, Apache Commons Configuration 2.1.1, Apache Commons Crypto 1.0.0, Apache Commons CSV 1.0, Apache Commons Daemon 1.0.13, Apache Commons Lang 2.6, Apache Commons Lang 3.8.1, Apache Commons Logging 1.1.3, Apache Commons Math 3.1.1, Apache Commons Net 3.6, Apache Geronimo JCache Spec 1.0 1.0-alpha-1, Apache Groovy 3.0.7, Apache Hadoop 3.1.1.7.1.7.0-551, Apache Hadoop 3.1.1.7.1.7.54-4, Apache Hadoop 3.1.1.7.1.7.64-1, Apache Hadoop 3.1.1.7.1.7.67-1, Apache Hadoop 3.1.1.7.2.7.1-1, Apache Hadoop 3.1.1.7.2.8.0-228, Apache Hadoop submarine-0.2.0-RC0, Apache Hadoop Amazon Web Services support 3.1.1.7.2.10.0-148, Apache Hadoop Amazon Web Services support 3.1.1.7.2.9.0-203, Apache Hadoop Amazon Web Services support 3.1.1.7.2.9.6-3, Apache Hadoop Annotations 3.1.1.7.1.7.0-551, Apache Hadoop Archive Logs 3.1.1.7.1.7.0-551, Apache Hadoop Archive Logs 3.1.1.7.1.7.64-1, Apache Hadoop Archive Logs 3.1.1.7.2.7.11-4, Apache Hadoop Archives 3.1.1.7.1.6.96-1, Apache Hadoop Archives 3.1.1.7.1.7.64-1, Apache Hadoop Auth 3.1.1.7.1.7.0-551, Apache Hadoop Auth 3.1.1.7.1.7.54-4, Apache Hadoop Azure Data Lake support 3.1.1.7.1.7.0-551, Apache Hadoop Azure Data Lake support 3.1.1.7.1.7.54-4, Apache Hadoop Azure support 3.1.1.7.1.5.61-1, Apache Hadoop Azure support 3.1.1.7.2.12.0-291, Apache Hadoop Client API 3.1.1.7.1.7.54-4, Apache Hadoop Client API 3.1.1.7.2.7.1-1, Apache Hadoop Client Runtime 3.1.1.7.1.7.67-1, Apache Hadoop Client Test Minicluster 3.1.1.7.1.7.67-1, Apache Hadoop Client Test Minicluster 3.3.1, Apache Hadoop Data Join 3.1.1.7.1.4.57-1, Apache Hadoop Data Join 3.1.1.7.1.7.54-4, Apache Hadoop Distributed Copy 3.1.1.7.1.7.64-1, Apache Hadoop Extras 3.1.1.7.1.7.64-1, Apache Hadoop Extras 3.1.1.7.2.12.2-5, Apache Hadoop Gridmix 3.1.1.7.1.2.6-1, Apache Hadoop Gridmix 3.1.1.7.1.7.54-4, Apache Hadoop Gridmix 3.1.1.7.1.7.64-1, Apache Hadoop Gridmix 3.1.1.7.1.7.67-1, Apache Hadoop HDFS Client 3.1.1.7.1.7.0-551, Apache Hadoop HDFS Client 3.1.1.7.2.10.0-148, Apache Hadoop HDFS Client 3.1.1.7.2.11.0-233, Apache Hadoop HDFS Client 3.1.1.7.2.12.0-291, Apache Hadoop HDFS-NFS 3.1.1.7.1.7.0-551, Apache Hadoop HDFS-RBF 3.1.1.7.1.5.13-4, Apache Hadoop HDFS-RBF 3.1.1.7.1.6.0-297, Apache Hadoop HDFS-RBF 3.1.1.7.1.7.0-551, Apache Hadoop HDFS-RBF 3.1.1.7.2.6.1-1, Apache Hadoop HDFS-RBF 3.1.1.7.2.6.3-1, Apache Hadoop HttpFS 3.1.1.7.2.10.0-148, Apache Hadoop HttpFS 3.1.1.7.2.9.6-3, Apache Hadoop Image Generation Tool 3.1.1.7.1.7.0-551, Apache Hadoop Kafka Library support 3.1.1.7.1.7.0-551, Apache Hadoop KMS 3.1.1.7.1.7.0-551, Apache Hadoop MapReduce Examples 3.1.1.7.1.7.64-1, Apache Hadoop MapReduce NativeTask 2.6.0-cdh5.15.97, Apache Hadoop MapReduce NativeTask 3.1.1.7.1.7.54-4, Apache Hadoop MapReduce NativeTask 3.1.1.7.1.7.67-1, Apache Hadoop MapReduce Uploader 3.1.1.7.1.4.57-1, Apache Hadoop MapReduce Uploader 3.1.1.7.1.4.9-1, Apache Hadoop NFS 3.1.1.7.2.11.0-233, Apache Hadoop NFS 3.1.1.7.2.12.0-291, Apache Hadoop OpenStack support 3.1.1.7.1.7.0-551, Apache Hadoop Registry 3.3.0, Apache Hadoop Resource Estimator Service 3.1.1.7.1.7.67-1, Apache Hadoop Rumen 3.1.1.7.1.7.0-551, Apache Hadoop Rumen 3.1.1.7.1.7.54-4, Apache Hadoop Scheduler Load Simulator 3.1.1.7.1.7.0-551, Apache Hadoop YARN Router 3.1.1.7.1.7.0-551, Apache Hadoop YARN Services API 3.1.1.7.1.7.54-4, Apache Hadoop YARN Services API 3.1.1.7.2.12.2-5, Apache Hadoop YARN Services Core 3.1.1.7.1.4.4-1, Apache Hadoop YARN Services Core 3.1.1.7.1.7.0-551, Apache Hadoop YARN Services Core 3.1.1.7.2.6.7-2, Apache Hadoop YARN Timeline Plugin Storage 3.1.1.7.1.7.0-551, Apache Hadoop YARN Timeline Plugin Storage 3.1.1.7.1.7.54-4, Apache Hadoop YARN Timeline Service 3.1.1.7.1.7.0-551, Apache Hadoop YARN TimelineService HBase Client 3.1.1.7.1.7.0-551, Apache Hadoop YARN TimelineService HBase Common 3.1.1.7.1.7.0-551, Apache Hadoop YARN TimelineService HBase Server 2.0 3.1.1.7.1.7.64-1, Apache Hadoop YARN UI 3.1.1.7.1.7.0-551, Apache HBase - Client 2.2.4, Apache HBase - Common 2.2.4, Apache HBase - Hadoop Compatibility 2.0.0, Apache HBase - Hadoop Two Compatibility 2.2.4, Apache HBase - Metrics API 2.0.0, Apache HBase - Protocol 2.2.4_1, Apache HBase - Shaded Protocol 2.2.3.7.1.7.0-551, Apache HBase Patched & Relocated (Shaded) Protobuf 3.3.0.7.1.7.0-551, Apache HttpClient 4.5.13, Apache HttpComponents Core 4.4.13, Apache Kafka 0.8.2.1, Apache Log4j 1.2.17, Apache Log4j 2.17.1, Apache Log4j Spring Boot Support 2.14.0, Apache ServiceMix :: Bundles :: hadoop-client 3.2.1_1, Apache Yetus - Audience Annotations 0.5.0, Apache ZooKeeper 3.5.5.7.2.12.0-291, Apache ZooKeeper - Jute 3.5.5.7.2.12.0-291, Arcade Data 1.0.6, ASM based accessors helper used by json-smart 2.3.1, Audit CDH6 Plugin 7.4.4, AWS SDK for Java - Bundle 1.11.1024, AWS SDK for Java - Bundle 1.11.1030, BPMN Model 2.1, clickhouse-jdbc 0.3.2-patch1, Commons IO 2.11.0, commons-codec 1.14, Coordination -- Module `tusow-service` 0.7.1, Curator Client 4.3.0.7.2.12.0-291, Curator Framework 4.3.0, Curator Recipes 4.3.0.7.2.12.0-291, Data Mapper for Jackson 1.9.13-cloudera.1, DataStax Java driver for Apache Cassandra(R) - core with netty shaded 4.13.0, Ehcache 3.3.1, Ehcache 3 API module 3.4.0, Ehcache 3 JSR-107 module 3.3.1, Ehcache 3 XML Parsing module 3.2.2, Ehcache SizeOf Engine 0.3.0, Elastic JNA Distribution 5.5.0, Elastic JNA Distribution 5.7.0, error-prone annotations 2.3.4, fast-serialization 2.50, FindBugs jsr305 3.0.0, FindBugs-Annotations 3.0.0, Flogger 0.5, Flogger SLF4J Backend 0.5, Flogger System Backend 0.5, gateway-cloud-bindings 1.3.0.7.1.4.57-1, gateway-shell 1.3.0.7.1.7.0-551, gateway-util-common 1.3.0.7.1.7.0-551, gcs-connector.jar 2.1.2.7.1.7.64-1, gcs-connector.jar 2.1.2.7.2.12.2-5, gelfclient 1.5.1, Google Guice 4.0, Google Logger 0.5, google-gson 2.2.4, Guava InternalFutureFailureAccess and InternalFutures 1.0.1, Guava ListenableFuture only 9999.0-empty-to-avoid-conflict-with-guava, Guava: Google Core Libraries for Java v28.1, hadoop-mapreduce-client-app 3.1.1.7.1.6.86-2, hadoop-mapreduce-client-app 3.1.1.7.1.7.67-1, hadoop-mapreduce-client-common 3.1.1.7.1.7.0-551, hadoop-mapreduce-client-common 3.1.1.7.1.7.54-4, hadoop-mapreduce-client-core 3.1.1.7.1.6.86-2, hadoop-mapreduce-client-core 3.1.1.7.1.6.97-1, hadoop-mapreduce-client-core 3.1.1.7.1.7.64-1, hadoop-mapreduce-client-core 3.1.1.7.1.7.67-1, hadoop-mapreduce-client-core 3.3.1, hadoop-mapreduce-client-hs 3.1.1.7.1.7.0-551, hadoop-mapreduce-client-hs-plugins 3.1.1.7.1.7.0-551, hadoop-mapreduce-client-jobclient 3.1.1.7.1.7.0-551, hadoop-mapreduce-client-jobclient 3.1.1.7.1.7.54-4, hadoop-mapreduce-client-jobclient 3.1.1.7.1.7.64-1, hadoop-mapreduce-client-jobclient 3.1.1.7.2.12.2-5, hadoop-mapreduce-client-shuffle 3.1.1.7.1.4.57-1, hadoop-mapreduce-client-shuffle 3.1.1.7.1.7.0-551, hadoop-mapreduce-client-shuffle 3.1.1.7.1.7.64-1, hadoop-streaming 3.1.1.7.1.7.0-551, hadoop-yarn-api 3.1.1.7.1.7.0-551, hadoop-yarn-api 3.1.1.7.1.7.54-4, hadoop-yarn-api 3.1.1.7.1.7.67-1, hadoop-yarn-api 3.1.1.7.2.10.0-148, hadoop-yarn-api 3.1.1.7.2.12.0-291, hadoop-yarn-applications-distributedshell 3.1.1.7.1.7.54-4, hadoop-yarn-applications-distributedshell 3.1.1.7.2.12.2-5, hadoop-yarn-applications-unmanaged-am-launcher 3.1.1.7.1.2.6-1, hadoop-yarn-applications-unmanaged-am-launcher 3.1.1.7.1.7.0-551, hadoop-yarn-applications-unmanaged-am-launcher 3.1.1.7.1.7.67-1, hadoop-yarn-client 3.1.1.7.1.7.54-4, hadoop-yarn-client 3.1.1.7.1.7.67-1, hadoop-yarn-common 3.1.1.7.1.7.0-551, hadoop-yarn-common 3.1.1.7.1.7.64-1, hadoop-yarn-common 3.1.1.7.2.11.0-233, hadoop-yarn-common 3.1.1.7.2.6.0-18, hadoop-yarn-common 3.1.1.7.2.6.1-1, hadoop-yarn-registry 3.1.1.7.1.7.0-551, hadoop-yarn-server-applicationhistoryservice 2.8.5, hadoop-yarn-server-applicationhistoryservice 3.1.1.7.1.7.54-4, hadoop-yarn-server-applicationhistoryservice 3.1.1.7.2.11.4-3, hadoop-yarn-server-common 3.1.1.7.1.7.54-4, hadoop-yarn-server-common 3.1.1.7.1.7.64-1, hadoop-yarn-server-common 3.1.1.7.2.12.2-5, hadoop-yarn-server-nodemanager 3.1.1.7.1.7.64-1, hadoop-yarn-server-nodemanager 3.1.1.7.1.7.67-1, hadoop-yarn-server-nodemanager 3.1.1.7.2.11.4-3, hadoop-yarn-server-resourcemanager 3.1.1.7.1.7.64-1, hadoop-yarn-server-resourcemanager 3.1.1.7.1.7.67-1, hadoop-yarn-server-resourcemanager 3.1.1.7.2.10.0-148, hadoop-yarn-server-resourcemanager 3.1.1.7.2.9.0-203, hadoop-yarn-server-sharedcachemanager 3.0.0-cdh6.0.0-beta1, hadoop-yarn-server-sharedcachemanager 3.1.1.7.1.4.57-1, hadoop-yarn-server-tests 3.1.1.7.1.6.86-2, hadoop-yarn-server-tests 3.1.1.7.1.7.0-551, hadoop-yarn-server-web-proxy 3.3.1, HawtJNI Runtime 1.10, HBase - Client 2.2.3.7.1.6.23-1, HBase - Common 2.2.3.7.1.7.0-551, HBase - Hadoop Compatibility 2.2.3.7.1.7.0-551, HBase - Hadoop Compatibility 2.2.3.7.1.7.67-1, HBase - Hadoop Two Compatibility 2.2.3.7.1.7.0-551, HBase - Protocol 2.2.3.7.1.7.0-551, HikariCP 2.4.12, io.swagger:swagger-annotations 1.5.4, J2ObjC Annotations 1.3, jackson-annotations 2.10.5, jackson-core 1.9.13-cloudera.2, jackson-core 2.10.5, jackson-databind 2.10.5.1, jackson-dataformat-yaml 2.10.5, Jackson-JAXRS-base 2.10.5, jackson-jaxrs-json-provider 2.10.5, jackson-module-jaxb-annotations 2.10.5, Java Native Access (JNA) 5.2.0, java-util 1.9.0, Javax Inject from the JSR-330 Expert Group 1.0.0-PRD, JAX-RS provider for JSON content type 1.9.13, JCIP Annotations under Apache License 1.0-1, Jettison - Json Stax implementation 1.1, Jetty: Java based HTTP/1.x, HTTP/2, Servlet, WebSocket Server 9.4.40.v20210413, jmx_prometheus_javaagent 0.14.0, Joda Time 2.8.1, Joda Time v2.10.6, json-io 2.5.1, json-simple 1.1.1, json-smart 2.3.1, jsr330-api 0.9, Kerb Simple Kdc 1.1.1, Kerby ASN1 Project 1.1.1, Kerby Config 1.1.1, Kerby PKIX Project 1.1.1, Kerby Util 1.1.1, Kerby XDR Project 1.1.1, Kerby-kerb Admin 1.1.1, Kerby-kerb Client 1.1.1, Kerby-kerb Common 1.1.1, Kerby-kerb core 1.1.1, Kerby-kerb Crypto 1.1.1, Kerby-kerb Identity 1.1.1, Kerby-kerb Server 1.1.1, Kerby-kerb Util 1.1.1, leveldb-api 0.6, Log Redactor 2.0.8, Log4J API 2.17.1, LZ4 Java 1.2, Metrics Core 3.2.4, Microsoft Windows Azure Storage Client SDK 7.0.1, Netty Project 3.10.6.Final, Netty Project 4.1.62.Final, Netty Project 4.1.68.Final, Netty/Codec/Redis 4.1.72.Final, Netty/Codec/SMTP 4.1.48.Final, Netty/Transport/Native/KQueue 4.1.68.Final-redhat-00002, Netty/Transport/Native/Unix/Common 4.1.68.Final-redhat-00002, Nimbus-JOSE-JWT 7.9, OkHttp 2.7.5, OkIO 1.6.0, openrtb-model 1.4.0, OpenTelemetry 0.12.0, OpenTelemetry Java 0.12.0, OpenTracing API 0.33.0, OpenTracing-noop 0.33.0, OpenTracing-util 0.33.0, Policeman's Forbidden API Checker 2.7, Ranger Remote Authorization Hook - ABFS driver 2.1.0.7.2.6.0-6, Ranger Remote Authorization Hook - ABFS driver 2.1.0.7.2.7.0-53, Ranger Remote Authorization Integration 2.1.0.7.1.7.67-1, SnakeYAML 1.26, snappy-java 1.1.7.7, Token provider 1.1.1, wildfly-openssl 1.0.7.Final, wildfly-openssl-java 1.0.8.Final, wildfly-openssl-windows-i386 1.0.7.Final, wildfly-openssl-windows-x86_64 1.0.7.Final, Woodstox 5.0.3)
+([ini4j] 0.5.4, Aliyun OSS SDK for Java 3.13.2, aliyun-java-sdk-core 4.5.10, aliyun-java-sdk-kms 2.11.0, aliyun-java-sdk-ram 3.1.0, Apache Avro 1.8.2.7.2.15.0-147, Apache Avro Tools 1.8.2.7.1.7.1000-141, Apache Commons BeanUtils 1.9.4, Apache Commons CLI 1.2, Apache Commons Collections 3.2.2, Apache Commons Compress 1.21, Apache Commons Configuration 1.10, Apache Commons Configuration 2.1.1, Apache Commons Crypto 1.0.0, Apache Commons CSV 1.0, Apache Commons Daemon 1.0.13, Apache Commons Lang 2.6, Apache Commons Lang 3.8.1, Apache Commons Logging 1.1.3, Apache Commons Math 3.1.1, Apache Commons Net 3.6, Apache Directory LDAP API Client All 2.0.0.AM2, Apache Geronimo JCache Spec 1.0 1.0-alpha-1, Apache Groovy 3.0.7, Apache Hadoop 20181206-snapshot-5d4a4326, Apache Hadoop 3.1.1.7.1.6.11-1, Apache Hadoop 3.1.1.7.1.6.85-1, Apache Hadoop 3.1.1.7.1.6.97-1, Apache Hadoop 3.1.1.7.1.7.1000-141, Apache Hadoop 3.1.1.7.1.7.64-1, Apache Hadoop 3.1.1.7.1.7.67-1, Apache Hadoop 3.1.1.7.1.7.74-6, Apache Hadoop 3.1.1.7.2.11.0-233, Apache Hadoop 3.1.1.7.2.11.4-3, Apache Hadoop 3.1.1.7.2.12.0-291, Apache Hadoop 3.1.1.7.2.12.2-5, Apache Hadoop 3.1.1.7.2.14.0-149, Apache Hadoop 3.1.1.7.2.15.0-147, Apache Hadoop release-3.1.2-RC1, Apache Hadoop Aliyun OSS support 3.1.1.7.1.7.0-551, Apache Hadoop Aliyun OSS support 3.1.1.7.1.7.1000-141, Apache Hadoop Amazon Web Services support 3.1.1.7.2.11.4-3, Apache Hadoop Amazon Web Services support 3.1.1.7.2.15.0-147, Apache Hadoop Annotations 3.1.1.7.1.7.1000-141, Apache Hadoop Annotations 3.1.1.7.2.15.0-147, Apache Hadoop Archive Logs 3.1.1.7.1.7.0-551, Apache Hadoop Archive Logs 3.1.1.7.1.7.1000-141, Apache Hadoop Archives 3.1.1.7.1.7.1000-141, Apache Hadoop Archives 3.1.1.7.2.14.0-149, Apache Hadoop Auth 3.1.1.7.2.15.0-147, Apache Hadoop Azure Data Lake support 3.1.1.7.2.15.0-147, Apache Hadoop Azure support 3.1.1.7.1.7.1000-141, Apache Hadoop Azure support 3.1.1.7.2.12.0-291, Apache Hadoop Client API 3.1.1.7.1.7.1000-141, Apache Hadoop Client API 3.1.1.7.2.15.0-147, Apache Hadoop Client Runtime 3.1.1.7.1.7.1000-141, Apache Hadoop Client Runtime 3.1.1.7.2.15.0-147, Apache Hadoop Client Runtime 3.3.3, Apache Hadoop Client Test Minicluster 3.1.1.7.1.7.1000-141, Apache Hadoop Client Test Minicluster 3.1.1.7.2.15.0-147, Apache Hadoop Data Join 3.1.1.7.1.7.0-551, Apache Hadoop Data Join 3.1.1.7.1.7.1000-141, Apache Hadoop Distributed Copy 3.1.1.7.1.7.74-6, Apache Hadoop Distributed Copy 3.1.1.7.2.10.0-148, Apache Hadoop Extras 3.1.1.7.1.7.0-551, Apache Hadoop Extras 3.1.1.7.1.7.1000-141, Apache Hadoop Gridmix 3.1.1.7.1.7.0-551, Apache Hadoop Gridmix 3.1.1.7.1.7.1000-141, Apache Hadoop HDFS Client 3.1.1.7.1.7.0-551, Apache Hadoop HDFS Client 3.1.1.7.1.7.1000-141, Apache Hadoop HDFS Client 3.1.1.7.1.7.64-1, Apache Hadoop HDFS Client 3.1.1.7.2.12.0-291, Apache Hadoop HDFS Client 3.1.1.7.2.15.0-147, Apache Hadoop HDFS Native Client 3.1.1.7.2.7.0-184, Apache Hadoop HDFS-NFS 3.1.1.7.1.7.0-551, Apache Hadoop HDFS-NFS 3.1.1.7.1.7.74-6, Apache Hadoop HDFS-RBF 3.1.1.7.1.5.13-4, Apache Hadoop HDFS-RBF 3.1.1.7.1.6.0-297, Apache Hadoop HDFS-RBF 3.1.1.7.1.7.1000-141, Apache Hadoop HDFS-RBF 3.1.1.7.2.6.3-1, Apache Hadoop HttpFS 3.1.1.7.2.10.0-148, Apache Hadoop HttpFS 3.1.1.7.2.14.0-149, Apache Hadoop HttpFS 3.1.1.7.2.15.0-147, Apache Hadoop Image Generation Tool 3.1.1.7.1.7.0-551, Apache Hadoop Kafka Library support 3.1.1.7.1.7.0-551, Apache Hadoop KMS 3.1.1.7.1.7.0-551, Apache Hadoop MapReduce Examples 3.1.1.7.1.7.1000-141, Apache Hadoop MapReduce Examples 3.1.1.7.1.7.64-1, Apache Hadoop MapReduce NativeTask 2.6.0-cdh5.15.97, Apache Hadoop MapReduce NativeTask 3.1.1.7.1.7.1000-141, Apache Hadoop MapReduce Uploader 3.1.1.7.1.4.9-1, Apache Hadoop MapReduce Uploader 3.1.1.7.1.7.0-551, Apache Hadoop MapReduce Uploader 3.1.1.7.1.7.1000-141, Apache Hadoop NFS 3.1.1.7.1.7.0-551, Apache Hadoop NFS 3.1.1.7.2.12.0-291, Apache Hadoop NFS 3.1.1.7.2.15.0-147, Apache Hadoop OpenStack support 3.1.1.7.1.7.0-551, Apache Hadoop Registry 3.3.0, Apache Hadoop Registry 3.3.3, Apache Hadoop Resource Estimator Service 3.1.1.7.1.7.0-551, Apache Hadoop Resource Estimator Service 3.1.1.7.1.7.1000-141, Apache Hadoop Rumen 3.1.1.7.1.7.0-551, Apache Hadoop Rumen 3.1.1.7.1.7.1000-141, Apache Hadoop Scheduler Load Simulator 3.1.1.7.1.7.0-551, Apache Hadoop Scheduler Load Simulator 3.1.1.7.1.7.1000-141, Apache Hadoop YARN Router 3.1.1.7.1.7.0-551, Apache Hadoop YARN Services API 3.1.1.7.1.0.0-714, Apache Hadoop YARN Services API 3.1.1.7.1.7.1000-141, Apache Hadoop YARN Services API 3.1.1.7.2.0.0-237, Apache Hadoop YARN Services Core 3.1.1.7.1.7.1000-141, Apache Hadoop YARN Services Core 3.1.1.7.2.15.0-147, Apache Hadoop YARN Timeline Plugin Storage 3.1.1.7.2.15.0-147, Apache Hadoop YARN Timeline Service 3.1.1.7.1.7.0-551, Apache Hadoop YARN Timeline Service HBase tests 3.1.1.7.1.5.0-257, Apache Hadoop YARN TimelineService HBase Client 3.1.1.7.1.7.0-551, Apache Hadoop YARN TimelineService HBase Client 3.1.1.7.1.7.67-1, Apache Hadoop YARN TimelineService HBase Client 3.1.1.7.1.7.74-6, Apache Hadoop YARN TimelineService HBase Common 3.1.1.7.1.7.0-551, Apache Hadoop YARN TimelineService HBase Server 1.2 3.2.1, Apache Hadoop YARN TimelineService HBase Server 2.0 3.1.1.7.1.7.64-1, Apache HBase - Client 2.2.4, Apache HBase - Logging 2.4.6.7.2.15.0-147, Apache HBase - Metrics Implementation 2.4.6.7.2.14.0-149, Apache HBase - Shaded Protocol 2.4.6.7.2.15.0-147, Apache HBase Patched & Relocated (Shaded) Protobuf 3.5.0.7.2.14.0-149, Apache HBase Relocated (Shaded) GSON Libs 3.3.0.7.2.3.0-199, Apache HBase Relocated (Shaded) Netty Libs 3.3.0.7.1.7.1000-141, Apache HBase Relocated (Shaded) Third-party Miscellaneous Libs 3.5.0.7.2.14.0-149, Apache HttpClient 4.5.13, Apache HttpComponents Core 4.4.13, Apache Kafka 0.8.2.1, Apache Log4j 1.2.17, Apache Log4j 2.17.1, Apache Log4J API 2.17.1, Apache Log4j Spring Boot Support 2.14.0, Apache ServiceMix :: Bundles :: hadoop-client 3.2.1_1, Apache Yetus - Audience Annotations 0.5.0, Apache ZooKeeper 3.5.5.7.2.14.0-149, Apache ZooKeeper - Jute 3.5.5.7.1.7.0-551, Arcade Data 1.0.6, ASM based accessors helper used by json-smart 2.4.7, AWS SDK for Java - Bundle 1.12.132, AWS/SNS Events 16.4.1, BPMN Model 2.1, clickhouse-jdbc 0.3.2-patch10, Commons IO 2.11.0, commons-codec 1.14, Curator Client 4.3.0.7.1.7.0-551, Curator Framework 4.3.0.7.1.7.0-551, Curator Framework 4.3.0.7.1.7.1000-141, Curator Recipes 4.3.0.7.1.7.0-551, Data Mapper for Jackson 1.9.13-cloudera.1, DataStax Java driver for Apache Cassandra(R) - core with netty shaded 4.14.1, delta-standalone 0.4.1, Ehcache 3.3.1, Ehcache 3 API module 3.4.0, Ehcache 3 JSR-107 module 3.3.1, Ehcache 3 XML Parsing module 3.2.2, Ehcache SizeOf Engine 0.3.0, Elastic JNA Distribution 5.5.0, Elastic JNA Distribution 5.7.0, error-prone annotations 2.7.1, fast-serialization 2.50, FindBugs jsr305 3.0.0, FindBugs-Annotations 3.0.0, Flogger 0.5, Flogger SLF4J Backend 0.5, Flogger System Backend 0.5, gateway-cloud-bindings 1.3.0.7.1.7.1000-141, gateway-i18n 1.3.0.7.1.7.0-551, gateway-shell 1.3.0.7.1.7.1000-141, gateway-util-common 1.3.0.7.1.7.0-551, gcs-connector.jar 2.1.2.7.1.7.1000-141, gelfclient 1.5.1, Google Guice 4.0, Google Logger 0.5, google-gson 2.9.0, Gradle 2.14.1 API 7.3.2, Guava InternalFutureFailureAccess and InternalFutures 1.0.1, Guava ListenableFuture only 9999.0-empty-to-avoid-conflict-with-guava, Guava: Google Core Libraries for Java v28.1, hadoop-mapreduce-client-app 3.1.1.7.1.6.86-2, hadoop-mapreduce-client-app 3.1.1.7.1.7.1000-141, hadoop-mapreduce-client-common 3.1.1.7.1.7.0-551, hadoop-mapreduce-client-common 3.1.1.7.1.7.1000-141, hadoop-mapreduce-client-core 3.1.1.7.1.7.1000-141, hadoop-mapreduce-client-hs 3.1.1.7.1.7.1000-141, hadoop-mapreduce-client-hs 3.1.1.7.2.15.0-147, hadoop-mapreduce-client-hs-plugins 3.1.1.7.1.7.1000-141, hadoop-mapreduce-client-hs-plugins 3.1.1.7.2.1.0-321, hadoop-mapreduce-client-jobclient 3.1.1.7.1.7.1000-141, hadoop-mapreduce-client-jobclient 3.1.1.7.1.7.74-6, hadoop-mapreduce-client-jobclient 3.1.1.7.2.15.0-147, hadoop-mapreduce-client-shuffle 3.1.1.7.1.4.57-1, hadoop-mapreduce-client-shuffle 3.1.1.7.1.7.1000-141, hadoop-streaming 3.1.1.7.1.7.0-551, hadoop-streaming 3.1.1.7.1.7.1000-141, hadoop-yarn-api 3.1.1.7.1.7.1000-141, hadoop-yarn-api 3.1.1.7.2.15.0-147, hadoop-yarn-applications-distributedshell 3.1.1.7.1.7.0-551, hadoop-yarn-applications-distributedshell 3.1.1.7.1.7.1000-141, hadoop-yarn-applications-unmanaged-am-launcher 3.1.1.7.1.7.0-551, hadoop-yarn-applications-unmanaged-am-launcher 3.1.1.7.1.7.1000-141, hadoop-yarn-client 3.1.1.7.1.7.1000-141, hadoop-yarn-client 3.1.1.7.2.15.0-147, hadoop-yarn-common 3.1.1.7.1.7.1000-141, hadoop-yarn-common 3.1.1.7.2.14.0-149, hadoop-yarn-common 3.1.1.7.2.15.0-147, hadoop-yarn-registry 3.1.1.7.1.7.0-551, hadoop-yarn-registry 3.1.1.7.1.7.64-1, hadoop-yarn-server-applicationhistoryservice 2.8.5, hadoop-yarn-server-applicationhistoryservice 3.1.1.7.1.7.0-551, hadoop-yarn-server-applicationhistoryservice 3.1.1.7.1.7.1000-141, hadoop-yarn-server-common 3.1.1.7.1.7.1000-141, hadoop-yarn-server-common 3.1.1.7.2.15.0-147, hadoop-yarn-server-nodemanager 3.1.1.7.1.7.1000-141, hadoop-yarn-server-resourcemanager 3.1.1.7.1.7.1000-141, hadoop-yarn-server-resourcemanager 3.1.1.7.1.7.64-1, hadoop-yarn-server-resourcemanager 3.1.1.7.1.7.67-1, hadoop-yarn-server-resourcemanager 3.1.1.7.2.15.0-147, hadoop-yarn-server-sharedcachemanager 3.1.1.7.1.4.57-1, hadoop-yarn-server-tests 3.1.1.7.1.7.1000-141, hadoop-yarn-server-web-proxy 3.1.1.7.1.7.1000-141, HawtJNI Runtime 1.10, HBase - Client 2.4.6.7.2.14.0-149, HBase - Common 2.4.6.7.2.15.0-147, HBase - Hadoop Compatibility 2.4.12, HBase - Hadoop Two Compatibility 2.4.6.7.2.14.0-149, HBase - Protocol 2.4.6.7.2.15.0-147, HikariCP 2.4.12, io.swagger:swagger-annotations 1.5.4, J2ObjC Annotations 1.3, jackson-annotations 2.10.5, jackson-databind 2.10.5.1, jackson-dataformat-yaml 2.10.5, Jackson-JAXRS-base 2.10.5, jackson-jaxrs-json-provider 2.10.5, jackson-module-jaxb-annotations 2.10.5, Java Native Access (JNA) 5.2.0, java-util 1.9.0, javax.inject:javax.inject 1, JAX-RS provider for JSON content type 1.9.13, JCIP Annotations under Apache License 1.0-1, Jettison - Json Stax implementation 1.1, Jetty: Java based HTTP/1.x, HTTP/2, Servlet, WebSocket Server 9.4.43.v20210629, jmx_prometheus_javaagent 0.14.0, Joda Time 2.8.1, Joda Time v2.10.6, json-io 2.5.1, json-simple 1.1.1, json-smart 2.4.7, Kerb Simple Kdc 1.1.1, Kerby ASN1 Project 1.1.1, Kerby Config 1.1.1, Kerby PKIX Project 1.1.1, Kerby Util 1.1.1, Kerby XDR Project 1.1.1, Kerby-kerb Admin 1.1.1, Kerby-kerb Client 1.1.1, Kerby-kerb Common 1.1.1, Kerby-kerb core 1.1.1, Kerby-kerb Crypto 1.1.1, Kerby-kerb Identity 1.1.1, Kerby-kerb Server 1.1.1, Kerby-kerb Util 1.1.1, leveldb-api 0.6, Log Redactor 2.0.8, LZ4 Java 1.2, Metrics Core 3.2.4, Microsoft Windows Azure Storage Client SDK 7.0.1, Netty Project 3.10.6.Final, Netty Project 4.1.68.Final, Netty/Codec/Redis 4.1.78.Final, Netty/Codec/SMTP 4.1.48.Final, Netty/Transport/Native/KQueue 4.1.68.Final-redhat-00002, Netty/Transport/Native/Unix/Common 4.1.68.Final-redhat-00002, Nimbus-JOSE-JWT 9.8.1, OkHttp 2.7.5, OkIO 1.6.0, open-telemetry/opentelemetry-java 0.12.0, OpenTelemetry Java 0.12.0, OpenTracing API 0.33.0, OpenTracing-noop 0.33.0, OpenTracing-util 0.33.0, org.codehaus.jackson:jackson-asl 1.9.13-cloudera.2, org.codehaus.jackson:jackson-asl 2.10.5, Policeman's Forbidden API Checker 2.7, Protokt 0.7.3, Ranger Remote Authorization Hook - ABFS driver 2.1.0.1.15.7214.0-5, Ranger Remote Authorization Integration 2.1.0.7.2.15.0-147, SnakeYAML 1.26, snappy-java 1.1.7.7, Token provider 1.1.1, wildfly-openssl 1.0.7.Final, wildfly-openssl-java 1.0.8.Final, wildfly-openssl-windows-i386 1.0.7.Final, wildfly-openssl-windows-x86_64 1.0.7.Final, Woodstox 5.0.3, WSO2 Siddhi Execution Extension - Device management Core functionality as Siddhi extension 4.1.17)
 
 Apache License
 Version 2.0, January 2004
@@ -616,7 +618,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 ---
 
 BSD 3-clause "New" or "Revised" License
-(JavaBeans Activation Framework 1.2.1, JavaBeans Activation Framework API jar 1.2.1)
+(Jakarta Activation 1.2.1, JavaBeans Activation Framework API jar 1.2.1)
 
 Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
    
@@ -652,7 +654,7 @@ Redistribution and use in source and binary forms, with or without
 ---
 
 BSD 3-clause "New" or "Revised" License
-(apache-hadoop-libexec 3.2.0, HyperSQL Database Engine 2.3.4, jackson-module-jaxb-annotations 1.9.13, JSch 0.1.54, leveldbjni-all 1.8, Protocol Buffer Java API 2.5.0, Protocol Buffer Java Util Package 3.13.0, re2j 1.2, Stax2 API 3.1.4)
+(apache-hadoop-libexec 3.2.0, HyperSQL Database Engine 2.3.4, jackson-module-jaxb-annotations 1.9.13, JSch 0.1.54, leveldbjni-all 1.8, Protocol Buffer Java API 2.5.0, re2j 1.2, Stax2 API 3.1.4)
 
 Copyright (c) <YEAR>, <OWNER>
 All rights reserved.
@@ -689,7 +691,7 @@ BSD 3-clause "New" or "Revised" License
 (ParaNamer Core 2.8)
 
 Files: debian/*
-Copyright: 2014-2016, Markus Koschany <apo@debian.org>
+Copyright: 2014-2021, Markus Koschany <apo@debian.org>
            2015,      Emmanuel Bourg <ebourg@apache.org>
 License: BSD-3-clause
 
@@ -750,7 +752,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE
 ---
 
 Common Development and Distribution License 1.0
-(Java Servlet API 2.1, JavaBeans Activation Framework 1.2.0, jsr311-api 1.1.1)
+(Java Servlet API 2.1, jsr311-api 1.1.1)
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 ==============================================================
@@ -1080,40 +1082,40 @@ COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 ---
 
 Common Development and Distribution License 1.1
-(com.sun.jersey.jersey-servlet 1.17, Java Architecture for XML Binding 2.2.11, Java Servlet API 3.1.0, JavaBeans Activation Framework API jar 1.2.0, JAXB XML Binding Code Generator Package 2.2.3-1, JAXB XML Binding Code Generator Package 2.2.3-2, Jersey 1.19, jersey-json 1.19, jersey-server 1.19, jersey-servlet 1.19, jerseyguice 1.19, txw2 20110809)
+(com.sun.jersey.jersey-servlet 1.17, Jakarta Activation 1.2.0, Java Architecture for XML Binding 2.2.11, Java Servlet API 3.1.0, JavaBeans Activation Framework API jar 1.2.0, JAXB XML Binding Code Generator Package 2.2.3-1, JAXB XML Binding Code Generator Package 2.2.3-2, jersey's jersey 1.19, jersey-json 1.19, jersey-server 1.19, jersey-servlet 1.19, jerseyguice 1.19, txw2 20110809)
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1
 ==============================================================
 
 1. Definitions.
 
-  1.1. “Contributor” means each individual or entity that creates or contributes
+  1.1. â€œContributorâ€ means each individual or entity that creates or contributes
   to the creation of Modifications.
 
-  1.2. “Contributor Version” means the combination of the Original Software,
+  1.2. â€œContributor Versionâ€ means the combination of the Original Software,
   prior Modifications used by a Contributor (if any), and the Modifications made
   by that particular Contributor.
 
-  1.3. “Covered Software” means (a) the Original Software, or (b) Modifications,
+  1.3. â€œCovered Softwareâ€ means (a) the Original Software, or (b) Modifications,
   or (c) the combination of files containing Original Software with files
   containing Modifications, in each case including portions thereof.
 
-  1.4. “Executable” means the Covered Software in any form other than Source
+  1.4. â€œExecutableâ€ means the Covered Software in any form other than Source
   Code.
 
-  1.5. “Initial Developer” means the individual or entity that first makes
+  1.5. â€œInitial Developerâ€ means the individual or entity that first makes
   Original Software available under this License.
 
-  1.6. “Larger Work” means a work which combines Covered Software or portions
+  1.6. â€œLarger Workâ€ means a work which combines Covered Software or portions
   thereof with code not governed by the terms of this License.
 
-  1.7. “License” means this document.
+  1.7. â€œLicenseâ€ means this document.
 
-  1.8. “Licensable” means having the right to grant, to the maximum extent
+  1.8. â€œLicensableâ€ means having the right to grant, to the maximum extent
   possible, whether at the time of the initial grant or subsequently acquired,
   any and all of the rights conveyed herein.
 
-  1.9. “Modifications” means the Source Code and Executable form of any of the
+  1.9. â€œModificationsâ€ means the Source Code and Executable form of any of the
   following:
 
     A. Any file that results from an addition to, deletion from or modification
@@ -1127,21 +1129,21 @@ COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1
     terms of this License.
 
 
-  1.10. “Original Software” means the Source Code and Executable form of computer
+  1.10. â€œOriginal Softwareâ€ means the Source Code and Executable form of computer
   software code that is originally released under this License.
 
-  1.11. “Patent Claims” means any patent claim(s), now owned or hereafter
+  1.11. â€œPatent Claimsâ€ means any patent claim(s), now owned or hereafter
   acquired, including without limitation, method, process, and apparatus claims,
   in any patent Licensable by grantor.
 
-  1.12. “Source Code” means (a) the common form of computer software code in
+  1.12. â€œSource Codeâ€ means (a) the common form of computer software code in
   which modifications are made and (b) associated documentation included in or
   with such code.
 
-  1.13. “You” (or “Your”) means an individual or a legal entity exercising rights
+  1.13. â€œYouâ€ (or â€œYourâ€) means an individual or a legal entity exercising rights
   under, and complying with all of the terms of, this License. For legal
-  entities, “You” includes any entity which controls, is controlled by, or is
-  under common control with You. For purposes of this definition, “control” means
+  entities, â€œYouâ€ includes any entity which controls, is controlled by, or is
+  under common control with You. For purposes of this definition, â€œcontrolâ€ means
   (a) the power, direct or indirect, to cause the direction or management of such
   entity, whether by contract or otherwise, or (b) ownership of more than fifty
   percent (50%) of the outstanding shares or beneficial ownership of such entity.
@@ -1309,7 +1311,7 @@ COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1
 
   5. DISCLAIMER OF WARRANTY.
 
-  COVERED SOFTWARE IS PROVIDED UNDER THIS LICENSE ON AN “AS IS” BASIS, WITHOUT
+  COVERED SOFTWARE IS PROVIDED UNDER THIS LICENSE ON AN â€œAS ISâ€ BASIS, WITHOUT
   WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, WITHOUT
   LIMITATION, WARRANTIES THAT THE COVERED SOFTWARE IS FREE OF DEFECTS,
   MERCHANTABLE, FIT FOR A PARTICULAR PURPOSE OR NON-INFRINGING. THE ENTIRE RISK
@@ -1333,7 +1335,7 @@ COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1
     6.2. If You assert a patent infringement claim (excluding declaratory
     judgment actions) against Initial Developer or a Contributor (the Initial
     Developer or Contributor against whom You assert such claim is referred to as
-    “Participant”) alleging that the Participant Software (meaning the
+    â€œParticipantâ€) alleging that the Participant Software (meaning the
     Contributor Version where the Participant is a Contributor or the Original
     Software where the Participant is the Initial Developer) directly or
     indirectly infringes any patent, then any and all rights granted directly or
@@ -1379,10 +1381,10 @@ COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1
 
   8. U.S. GOVERNMENT END USERS.
 
-  The Covered Software is a “commercial item,” as that term is defined in 48
-  C.F.R. 2.101 (Oct. 1995), consisting of “commercial computer software” (as that
-  term is defined at 48 C.F.R. § 252.227-7014(a)(1)) and “commercial computer
-  software documentation” as such terms are used in 48 C.F.R. 12.212 (Sept.
+  The Covered Software is a â€œcommercial item,â€ as that term is defined in 48
+  C.F.R. 2.101 (Oct. 1995), consisting of â€œcommercial computer softwareâ€ (as that
+  term is defined at 48 C.F.R. Â§ 252.227-7014(a)(1)) and â€œcommercial computer
+  software documentationâ€ as such terms are used in 48 C.F.R. 12.212 (Sept.
   1995). Consistent with 48 C.F.R. 12.212 and 48 C.F.R. 227.7202-1 through
   227.7202-4 (June 1995), all U.S. Government End Users acquire Covered Software
   with only those rights set forth herein. This U.S. Government Rights clause is
@@ -1438,7 +1440,7 @@ COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1
 ---
 
 Eclipse Distribution License - v 1.0
-(Java Architecture for XML Binding 2.3.2, TXW2 Runtime 2.3.3-b02)
+(Java Architecture for XML Binding 2.3.2, TXW2 Runtime 4.0.0-M2)
 
 Eclipse Distribution License - v 1.0
 ====================================
@@ -1475,7 +1477,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ---
 
 Eclipse Public License 1.0
-(JRuby 2019c, Logspace Agent Controller 0.3.1)
+(HawtJNI Runtime 1.10, Jetty: Java based HTTP/1.x, HTTP/2, Servlet, WebSocket Server 9.4.43.v20210629, JRuby 2019c, Logspace Agent Controller 0.3.1)
 
 Eclipse Public License - v 1.0
 ==============================
@@ -1696,14 +1698,14 @@ Eclipse Public License - v 2.0
 ==============================
 
 THE ACCOMPANYING PROGRAM IS PROVIDED UNDER THE TERMS OF THIS ECLIPSE PUBLIC
-LICENSE (“AGREEMENT”). ANY USE, REPRODUCTION OR DISTRIBUTION OF THE PROGRAM
+LICENSE (â€œAGREEMENTâ€). ANY USE, REPRODUCTION OR DISTRIBUTION OF THE PROGRAM
 CONSTITUTES RECIPIENT'S ACCEPTANCE OF THIS AGREEMENT.
 
 
 1. DEFINITIONS
 --------------
 
-“Contribution” means:
+â€œContributionâ€ means:
 
   a) in the case of the initial Contributor, the initial content Distributed
   under this Agreement, and
@@ -1713,28 +1715,28 @@ CONSTITUTES RECIPIENT'S ACCEPTANCE OF THIS AGREEMENT.
     ii) additions to the Program;
 
   where such changes and/or additions to the Program originate from and are
-  Distributed by that particular Contributor. A Contribution “originates” from a
+  Distributed by that particular Contributor. A Contribution â€œoriginatesâ€ from a
   Contributor if it was added to the Program by such Contributor itself or anyone
   acting on such Contributor's behalf. Contributions do not include changes or
   additions to the Program that are not Modified Works.
 
-“Contributor” means any person or entity that Distributes the Program.
+â€œContributorâ€ means any person or entity that Distributes the Program.
 
-“Licensed Patents” mean patent claims licensable by a Contributor which are
+â€œLicensed Patentsâ€ mean patent claims licensable by a Contributor which are
 necessarily infringed by the use or sale of its Contribution alone or when
 combined with the Program.
 
-“Program” means the Contributions Distributed in accordance with this Agreement.
+â€œProgramâ€ means the Contributions Distributed in accordance with this Agreement.
 
-“Recipient” means anyone who receives the Program under this Agreement or any
+â€œRecipientâ€ means anyone who receives the Program under this Agreement or any
 Secondary License (as applicable), including Contributors.
 
-“Derivative Works” shall mean any work, whether in Source Code or other form,
+â€œDerivative Worksâ€ shall mean any work, whether in Source Code or other form,
 that is based on (or derived from) the Program and for which the editorial
 revisions, annotations, elaborations, or other modifications represent, as a
 whole, an original work of authorship.
 
-“Modified Works” shall mean any work in Source Code or other form that results
+â€œModified Worksâ€ shall mean any work in Source Code or other form that results
 from an addition to, deletion from, or modification of the contents of the
 Program, including, for purposes of clarity any new file in Source Code form that
 contains any contents of the Program. Modified Works shall not include works that
@@ -1742,14 +1744,14 @@ contain only declarations, interfaces, types, classes, structures, or files of
 the Program solely in each case in order to link to, bind by name, or subclass
 the Program or Modified Works thereof.
 
-“Distribute” means the acts of a) distributing or b) making available in any
+â€œDistributeâ€ means the acts of a) distributing or b) making available in any
 manner that enables the transfer of a copy.
 
-“Source Code” means the form of a Program preferred for making modifications,
+â€œSource Codeâ€ means the form of a Program preferred for making modifications,
 including but not limited to software source code, documentation source, and
 configuration files.
 
-“Secondary License” means either the GNU General Public License, Version 2.0, or
+â€œSecondary Licenseâ€ means either the GNU General Public License, Version 2.0, or
 any later versions of that license, including any exceptions or additional
 permissions as identified by the initial Contributor.
 
@@ -1830,7 +1832,7 @@ permissions as identified by the initial Contributor.
 
 3.3 Contributors may not remove or alter any copyright, patent, trademark,
 attribution notices, disclaimers of warranty, or limitations of liability
-(‘notices’) contained within the Program from any copy of the Program which they
+(â€˜noticesâ€™) contained within the Program from any copy of the Program which they
 Distribute, provided that Contributors may add their own appropriate notices.
 
 
@@ -1843,9 +1845,9 @@ intended to facilitate the commercial use of the Program, the Contributor who
 includes the Program in a commercial product offering should do so in a manner
 which does not create potential liability for other Contributors. Therefore, if a
 Contributor includes the Program in a commercial product offering, such
-Contributor (“Commercial Contributor”) hereby agrees to defend and indemnify
-every other Contributor (“Indemnified Contributor”) against any losses, damages
-and costs (collectively “Losses”) arising from claims, lawsuits and other legal
+Contributor (â€œCommercial Contributorâ€) hereby agrees to defend and indemnify
+every other Contributor (â€œIndemnified Contributorâ€) against any losses, damages
+and costs (collectively â€œLossesâ€) arising from claims, lawsuits and other legal
 actions brought by a third party against the Indemnified Contributor to the
 extent caused by the acts or omissions of such Commercial Contributor in
 connection with its distribution of the Program in a commercial product offering.
@@ -1872,7 +1874,7 @@ those damages.
 --------------
 
 EXCEPT AS EXPRESSLY SET FORTH IN THIS AGREEMENT, AND TO THE EXTENT PERMITTED BY
-APPLICABLE LAW, THE PROGRAM IS PROVIDED ON AN “AS IS” BASIS, WITHOUT WARRANTIES
+APPLICABLE LAW, THE PROGRAM IS PROVIDED ON AN â€œAS ISâ€ BASIS, WITHOUT WARRANTIES
 OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED INCLUDING, WITHOUT
 LIMITATION, ANY WARRANTIES OR CONDITIONS OF TITLE, NON-INFRINGEMENT,
 MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. Each Recipient is solely
@@ -1942,13 +1944,13 @@ Contributor or Recipient. No third-party beneficiary rights are created under
 this Agreement.
 
 
-Exhibit A – Form of Secondary Licenses Notice
+Exhibit A â€“ Form of Secondary Licenses Notice
 ---------------------------------------------
 
-“This Source Code may also be made available under the following Secondary
+â€œThis Source Code may also be made available under the following Secondary
 Licenses when the conditions for such availability set forth in the Eclipse
 Public License, v. 2.0 are satisfied: {name license(s), version(s), and
-exceptions or additional permissions here}.”
+exceptions or additional permissions here}.â€
 
   Simply including a copy of this Agreement, including this Exhibit A is not
   sufficient to license the Source Code under Secondary Licenses.
@@ -1992,7 +1994,7 @@ are permitted provided that the following conditions are met:
 In addition, we request (but do not require) that you include in the end-user
 documentation provided with the redistribution and/or in the software itself an
 acknowledgement equivalent to the following:
-      "This product includes software developed by the JDOM Project
+Â Â Â Â Â Â "This product includes software developed by the JDOM Project
 (http://www.jdom.org/)."
 Alternatively, the acknowledgment may be graphical using the logos available at
 http://www.jdom.org/images/logos.
@@ -2068,6 +2070,32 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE
 ---
 
 MIT License
+(DataTables 1.10.13)
+
+Copyright (c) 2008-2015 SpryMedia Limited
+http://datatables.net
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE
+
+---
+
+MIT License
 (azure-data-lake-store-java 2.3.6)
 
 Copyright (c) Microsoft Corporation
@@ -2119,7 +2147,7 @@ SOFTWARE
 ---
 
 MIT License
-(Animal Sniffer Annotations 1.18, Bouncy Castle PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs 1.60, Checker Qual 2.5.3, Checker Qual 2.8.1, iam-jdbc-driver 0.1.0, jQuery UI (Combined Library) 1.8.9, JUL to SLF4J bridge 1.7.30, Microsoft Azure SDK for Key Vault 1.0.0, Microsoft JDBC Driver for SQL Server 6.2.1.jre7, MongoDB replica set 0.4.3, ojAlgo 43.0, SLF4J API Module 1.7.30, SLF4J LOG4J-12 Binding 1.7.30, unirest-java 4.0.0-RC1)
+(Animal Sniffer Annotations 1.18, Bouncy Castle PKIX, CMS, EAC, TSP, PKCS, OCSP, CMP, and CRMF APIs 1.60, Checker Qual 2.5.3, Checker Qual 2.8.1, jQuery UI (Combined Library) 1.8.9, JUL to SLF4J bridge 1.7.30, Microsoft Azure SDK for Key Vault 1.0.0, Microsoft JDBC Driver for SQL Server 6.2.1.jre7, MongoDB replica set 0.4.3, ojAlgo 43.0, SLF4J API Module 1.7.30, SLF4J LOG4J-12 Binding 1.7.30)
 
 The MIT License
 ===============
@@ -2152,7 +2180,7 @@ Upstream-Contact: JRuby Team (https://jruby.org)
 Source: https://github.com/jruby/joni/
 
 Files: *
-Copyright: 2008-2018 Marcin Mielżyński
+Copyright: 2008-2018 Marcin MielÅ¼yÅ„ski
            2008-2018 Thomas E. Enebo <tom.enebo@gmail.com>
            2013-2017 Charles Oliver Nutter <headius@headius.com>
 License: MIT
@@ -2185,9 +2213,9 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of
 ---
 
 MIT License
-(Microsoft JDBC Driver for SQL Server v6.2.1)
+(Microsoft JDBC Driver for SQL Server v8.2.0)
 
-﻿Copyright(c) 2017 Microsoft Corporation
+ï»¿Copyright(c) 2019 Microsoft Corporation
 All rights reserved.
 
 MIT License
@@ -2199,7 +2227,7 @@ and / or sell copies of the Software, and to permit persons to whom the Software
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
 IN THE SOFTWARE
 
@@ -2568,4 +2596,3 @@ proprietary programs. If your program is a subroutine library, you may consider
 it more useful to permit linking proprietary applications with the library. If
 this is what you want to do, use the GNU Library General Public License instead
 of this License.
-
