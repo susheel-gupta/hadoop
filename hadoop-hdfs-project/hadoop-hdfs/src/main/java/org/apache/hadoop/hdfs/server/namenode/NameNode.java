@@ -168,6 +168,9 @@ import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_REPLICATION_STRE
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_REPLICATION_STREAMS_HARD_LIMIT_DEFAULT;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_REPLICATION_WORK_MULTIPLIER_PER_ITERATION;
 import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_REPLICATION_WORK_MULTIPLIER_PER_ITERATION_DEFAULT;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_RECONSTRUCTION_PENDING_TIMEOUT_SEC_KEY;
+import static org.apache.hadoop.hdfs.DFSConfigKeys.DFS_NAMENODE_RECONSTRUCTION_PENDING_TIMEOUT_SEC_DEFAULT;
+
 import static org.apache.hadoop.util.ExitUtil.terminate;
 import static org.apache.hadoop.util.ToolRunner.confirmPrompt;
 import static org.apache.hadoop.fs.CommonConfigurationKeys.IPC_BACKOFF_ENABLE;
@@ -304,7 +307,8 @@ public class NameNode extends ReconfigurableBase implements
           HADOOP_CALLER_CONTEXT_ENABLED_KEY,
           DFS_NAMENODE_REPLICATION_MAX_STREAMS_KEY,
           DFS_NAMENODE_REPLICATION_STREAMS_HARD_LIMIT_KEY,
-          DFS_NAMENODE_REPLICATION_WORK_MULTIPLIER_PER_ITERATION));
+          DFS_NAMENODE_REPLICATION_WORK_MULTIPLIER_PER_ITERATION,
+          DFS_NAMENODE_RECONSTRUCTION_PENDING_TIMEOUT_SEC_KEY));
 
   private static final String USAGE = "Usage: hdfs namenode ["
       + StartupOption.BACKUP.getName() + "] | \n\t["
@@ -2094,7 +2098,8 @@ public class NameNode extends ReconfigurableBase implements
     } else if (property.equals(DFS_NAMENODE_REPLICATION_MAX_STREAMS_KEY)
         || property.equals(DFS_NAMENODE_REPLICATION_STREAMS_HARD_LIMIT_KEY)
         || property.equals(
-            DFS_NAMENODE_REPLICATION_WORK_MULTIPLIER_PER_ITERATION)) {
+            DFS_NAMENODE_REPLICATION_WORK_MULTIPLIER_PER_ITERATION)
+        || property.equals(DFS_NAMENODE_RECONSTRUCTION_PENDING_TIMEOUT_SEC_KEY)) {
       return reconfReplicationParameters(newVal, property);
     } else {
       throw new ReconfigurationException(property, newVal, getConf().get(
@@ -2126,6 +2131,14 @@ public class NameNode extends ReconfigurableBase implements
                 DFS_NAMENODE_REPLICATION_WORK_MULTIPLIER_PER_ITERATION_DEFAULT,
                 newVal));
         newSetting = bm.getBlocksReplWorkMultiplier();
+      } else if (
+          property.equals(
+              DFS_NAMENODE_RECONSTRUCTION_PENDING_TIMEOUT_SEC_KEY)) {
+        bm.setReconstructionPendingTimeout(
+            adjustNewVal(
+                DFS_NAMENODE_RECONSTRUCTION_PENDING_TIMEOUT_SEC_DEFAULT,
+                newVal));
+        newSetting = bm.getReconstructionPendingTimeout();
       } else {
         throw new IllegalArgumentException("Unexpected property " +
             property + "in reconfReplicationParameters");
