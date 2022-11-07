@@ -2252,6 +2252,13 @@ The switch to turn S3A auditing on or off.
 </property>
 
 <property>
+  <name>fs.azure.enable.readahead</name>
+  <value>false</value>
+  <description>Disable readahead/prefetching in AbfsInputStream.
+    See CDPD-46366</description>
+</property>
+
+<property>
   <name>io.seqfile.compress.blocksize</name>
   <value>1000000</value>
   <description>The minimum block size for compression in block compressed
