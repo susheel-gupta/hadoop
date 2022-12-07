@@ -50,6 +50,7 @@ import static java.lang.Math.min;
 
 import static org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations.ONE_KB;
 import static org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations.STREAM_ID_LEN;
+import static org.apache.hadoop.fs.azurebfs.constants.InternalConstants.CAPABILITY_SAFE_READAHEAD;
 import static org.apache.hadoop.util.StringUtils.toLowerCase;
 
 /**
@@ -810,9 +811,9 @@ public class AbfsInputStream extends FSInputStream implements CanUnbuffer,
   public String toString() {
     final StringBuilder sb = new StringBuilder(super.toString());
     sb.append("AbfsInputStream@(").append(this.hashCode()).append("){");
-    sb.append("ReadAheadEnabled=").append(readAheadEnabled).append(", ");
+    sb.append("[" + CAPABILITY_SAFE_READAHEAD + "]");
     if (streamStatistics != null) {
-      sb.append(streamStatistics.toString());
+      sb.append(", ").append(streamStatistics);
     }
     sb.append("}");
     return sb.toString();

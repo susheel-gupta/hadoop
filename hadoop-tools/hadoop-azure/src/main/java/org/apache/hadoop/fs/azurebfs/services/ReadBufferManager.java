@@ -102,6 +102,7 @@ final class ReadBufferManager {
 
   // hide instance constructor
   private ReadBufferManager() {
+    LOGGER.trace("Creating readbuffer manager with HADOOP-18546 patch");
   }
 
 
@@ -545,7 +546,6 @@ final class ReadBufferManager {
     LOGGER.debug("Purging stale buffers for AbfsInputStream {} ", stream);
     readAheadQueue.removeIf(readBuffer -> readBuffer.getStream() == stream);
     purgeList(stream, completedReadList);
-    purgeList(stream, inProgressList);
   }
 
   /**
@@ -642,5 +642,10 @@ final class ReadBufferManager {
   void testMimicFullUseAndAddFailedBuffer(ReadBuffer buf) {
     freeList.clear();
     completedReadList.add(buf);
+  }
+
+  @VisibleForTesting
+  int getNumBuffers() {
+    return NUM_BUFFERS;
   }
 }

@@ -20,6 +20,7 @@ package org.apache.hadoop.fs.azurebfs;
 
 import java.util.Random;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import org.apache.hadoop.conf.Configuration;
@@ -33,20 +34,53 @@ import static org.apache.hadoop.fs.azurebfs.constants.ConfigurationKeys.FS_AZURE
 import static org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations.DEFAULT_READ_BUFFER_SIZE;
 
 /**
- * Test Abfs Input Stream.
+ * Test Abfs Input Stream readahead config/state.
+ * This is an internal class exclusive to cloudera (why?) and was
+ * renamed from ITestAbfsInputStream to avoid confusion with
+ * {@link org.apache.hadoop.fs.azurebfs.services.ITestAbfsInputStream}.
  */
 
 public class ITestAbfsInputStream extends AbstractAbfsIntegrationTest {
   private static final Path TEST_PATH = new Path("/ITestAbfsInputStream");
 
+  /**
+   * what do we want from our readahead state?
+   * Toggle depending on what the config is set to.
+   */
+  private static final boolean EXPECTED_READAHEAD_ENABLED_STATE = true;
+
   public ITestAbfsInputStream() throws Exception {
   }
 
-  /**
-   * This test will create a 2 * DEFAULT_READ_BUFFER_SIZE = 8MB file, and
-   * use that during the test, then remove it.
-   * @throws Exception
-   */
+  @Override
+  public void setup() throws Exception {
+    super.setup();
+    final byte[] b = new byte[2 * DEFAULT_READ_BUFFER_SIZE];
+    new Random().nextBytes(b);
+    try (FSDataOutputStream stream = getFileSystem().create(TEST_PATH)) {
+      stream.write(b);
+    }
+  }
+
+  @Override
+  public void teardown() throws Exception {
+    getFileSystem().delete(TEST_PATH, true);
+    super.teardown();
+  }
+
+  @Test
+  public void testReadAheadDefault() throws Exception {
+    final AzureBlobFileSystem fs = getFileSystem();
+    final AzureBlobFileSystemStore abfsStore = fs.getAbfsStore();
+    final FileSystem.Statistics statistics = fs.getFsStatistics();
+    final AbfsInputStream abfsInputStream = abfsStore.openFileForRead(
+        TEST_PATH, statistics, getTestTracingContext(fs, false));
+    Assertions.assertThat(abfsInputStream.isReadAheadEnabled())
+        .describedAs("readahead should be %s with default conf.",
+            EXPECTED_READAHEAD_ENABLED_STATE)
+        .isEqualTo(EXPECTED_READAHEAD_ENABLED_STATE);
+  }
+
   @Test
   public void testAbfsInputStreamReadAhead() throws Exception {
     final AzureBlobFileSystem fs = getFileSystem();
@@ -55,21 +89,8 @@ public class ITestAbfsInputStream extends AbstractAbfsIntegrationTest {
 
     abfsConfiguration.setWriteBufferSize(DEFAULT_READ_BUFFER_SIZE);
     abfsConfiguration.setReadBufferSize(DEFAULT_READ_BUFFER_SIZE);
-
-    try {
-
-      final byte[] b = new byte[2 * DEFAULT_READ_BUFFER_SIZE];
-      new Random().nextBytes(b);
-      try (FSDataOutputStream stream = fs.create(TEST_PATH)) {
-        stream.write(b);
-      }
-
-      testAbfsInputStreamReadAheadConfigDisable();
-      testAbfsInputStreamReadAheadConfigEnable();
-
-    } finally {
-      fs.delete(TEST_PATH, true);
-    }
+    testAbfsInputStreamReadAheadConfigDisable();
+    testAbfsInputStreamReadAheadConfigEnable();
   }
 
   private void testAbfsInputStreamReadAheadConfigDisable() throws Exception {
