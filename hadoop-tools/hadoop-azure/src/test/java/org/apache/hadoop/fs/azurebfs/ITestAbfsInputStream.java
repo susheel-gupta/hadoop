@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.azurebfs.services.AbfsInputStream;
 import org.apache.hadoop.fs.azurebfs.services.AbfsInputStreamStatisticsImpl;
 
 import static org.apache.hadoop.fs.azurebfs.constants.ConfigurationKeys.FS_AZURE_ENABLE_READAHEAD;
+import static org.apache.hadoop.fs.azurebfs.constants.ConfigurationKeys.FS_AZURE_ENABLE_READAHEAD_V2;
 import static org.apache.hadoop.fs.azurebfs.constants.FileSystemConfigurations.DEFAULT_READ_BUFFER_SIZE;
 
 /**
@@ -95,7 +96,7 @@ public class ITestAbfsInputStream extends AbstractAbfsIntegrationTest {
 
   private void testAbfsInputStreamReadAheadConfigDisable() throws Exception {
     final Configuration config = new Configuration(getRawConfiguration());
-    config.set(FS_AZURE_ENABLE_READAHEAD,
+    config.set(FS_AZURE_ENABLE_READAHEAD_V2,
         String.valueOf(Boolean.FALSE));
 
     AzureBlobFileSystem testAbfs =
@@ -118,7 +119,7 @@ public class ITestAbfsInputStream extends AbstractAbfsIntegrationTest {
 
   private void testAbfsInputStreamReadAheadConfigEnable() throws Exception {
     final Configuration config = new Configuration(getRawConfiguration());
-    config.set(FS_AZURE_ENABLE_READAHEAD,
+    config.set(FS_AZURE_ENABLE_READAHEAD_V2,
         String.valueOf(Boolean.TRUE));
 
     AzureBlobFileSystem testAbfs =

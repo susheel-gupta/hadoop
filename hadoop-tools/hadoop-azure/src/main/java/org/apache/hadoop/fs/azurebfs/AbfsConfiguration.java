@@ -301,7 +301,7 @@ public class AbfsConfiguration{
           DefaultValue = DEFAULT_ABFS_LATENCY_TRACK)
   private boolean trackLatency;
 
-  @BooleanConfigurationValidatorAnnotation(ConfigurationKey = FS_AZURE_ENABLE_READAHEAD,
+  @BooleanConfigurationValidatorAnnotation(ConfigurationKey = FS_AZURE_ENABLE_READAHEAD_V2,
       DefaultValue = DEFAULT_ENABLE_READAHEAD)
   private boolean enabledReadAhead;
 
