@@ -179,7 +179,7 @@ public class WriteOperationHelper implements WriteOperations {
    * @param retries number of retries
    * @param idempotent is the method idempotent
    */
-  void operationRetried(String text, Exception ex, int retries,
+  void operationRetried(String text, IOException ex, int retries,
       boolean idempotent) {
     LOG.info("{}: Retried {}: {}", text, retries, ex.toString());
     LOG.debug("Stack", ex);

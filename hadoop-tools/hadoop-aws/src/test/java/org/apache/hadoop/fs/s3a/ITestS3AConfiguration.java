@@ -544,4 +544,30 @@ public class ITestS3AConfiguration {
         .assertEquals(signerOverride, clientConfiguration.getSignerOverride());
   }
 
+
+  /**
+   * Ask for a threshold in an unsupported unit.
+   */
+  @Test
+  public void testMultipartThreshold() throws Exception {
+    useFailFastConfiguration();
+    conf.set(MIN_MULTIPART_THRESHOLD, "32bit");
+    expectFSCreateFailure(
+        IllegalArgumentException.class,
+        conf, "Expected a connection error for " + MIN_MULTIPART_THRESHOLD);
+
+  }
+
+  /**
+   * Ask for copy threshold in an unsupported unit.
+   */
+  @Test
+  public void testMultipartCopyThreshold() throws Exception {
+    useFailFastConfiguration();
+    conf.set(MULTIPART_COPY_THRESHOLD, "32bit");
+    expectFSCreateFailure(
+        IllegalArgumentException.class,
+        conf, "Expected a connection error for " + MULTIPART_COPY_THRESHOLD);
+  }
+
 }

@@ -997,9 +997,18 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
     TransferManagerConfiguration transferConfiguration =
         new TransferManagerConfiguration();
     transferConfiguration.setMinimumUploadPartSize(partSize);
-    transferConfiguration.setMultipartUploadThreshold(multiPartThreshold);
     transferConfiguration.setMultipartCopyPartSize(partSize);
-    transferConfiguration.setMultipartCopyThreshold(multiPartThreshold);
+
+    // Get MPC threshold from config, or use prev config for both upload and copy.
+    long multiPartCopyThreshold = getMultipartSizeProperty(
+        getConf(),
+        MULTIPART_COPY_THRESHOLD, multiPartThreshold);
+    LOG.debug("Initializing transfer manager; part size={}, upload threshold={},"
+            + " copy threshold={}",
+        partSize, multiPartThreshold, multiPartCopyThreshold);
+
+    transferConfiguration.setMultipartUploadThreshold(multiPartThreshold);
+    transferConfiguration.setMultipartCopyThreshold(multiPartCopyThreshold);
 
     transfers = new TransferManager(s3, unboundedThreadPool);
     transfers.setConfiguration(transferConfiguration);
@@ -2294,11 +2303,13 @@ public class S3AFileSystem extends FileSystem implements StreamCapabilities,
    * @param retries number of retries
    * @param idempotent is the method idempotent
    */
-  public void operationRetried(
+  void operationRetried(
       String text,
-      Exception ex,
+      IOException ex,
       int retries,
       boolean idempotent) {
+    // log through the normal logger callback.
+    LOG_EVENT.onFailure(text, ex, retries, idempotent);
     operationRetried(ex);
   }
 

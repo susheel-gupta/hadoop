@@ -171,7 +171,7 @@ public abstract class AbstractSTestS3AHugeFiles extends S3AScaleTestBase {
     S3AFileSystem fs = getFileSystem();
     IOStatistics iostats = fs.getIOStatistics();
 
-    String putRequests = Statistic.OBJECT_PUT_REQUESTS.getSymbol();
+    String putRequests = Statistic.OBJECT_PUT_REQUESTS_COMPLETED.getSymbol();
     String putBytes = Statistic.OBJECT_PUT_BYTES.getSymbol();
     Statistic putRequestsActive = Statistic.OBJECT_PUT_REQUESTS_ACTIVE;
     Statistic putBytesPending = Statistic.OBJECT_PUT_BYTES_PENDING;
@@ -234,8 +234,8 @@ public abstract class AbstractSTestS3AHugeFiles extends S3AScaleTestBase {
     long putRequestCount = lookupCounterStatistic(iostats, putRequests);
     long putByteCount = lookupCounterStatistic(iostats, putBytes);
     Assertions.assertThat(putRequestCount)
-        .describedAs("Put request count from filesystem stats %s",
-            iostats)
+        .describedAs("Statistic %s from filesystem stats %s",
+            putRequests, iostats)
         .isGreaterThan(0);
     Assertions.assertThat(putByteCount)
         .describedAs("%s count from filesystem stats %s",

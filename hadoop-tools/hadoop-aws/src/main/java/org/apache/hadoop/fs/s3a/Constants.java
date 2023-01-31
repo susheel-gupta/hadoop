@@ -292,6 +292,22 @@ public final class Constants {
       "fs.s3a.multipart.threshold";
   public static final long DEFAULT_MIN_MULTIPART_THRESHOLD = 134217728; // 128M
 
+  /**
+   * Allow modifying copy vs. multi-part copy threshold for Transfer Manager.
+   * Value: {@value}.
+   *
+   * No default - if not set, it uses the combined copy/upload multipart threshold.
+   */
+  public static final String MULTIPART_COPY_THRESHOLD
+      = "fs.s3a.multipart.copy.threshold";
+
+  /**
+   * What is the maximum threshold value for multipart copies?
+   * {@value}.
+   */
+  public static final long MULTIPART_COPY_THRESHOLD_MAX
+      = Integer.MAX_VALUE;
+
   //enable multiobject-delete calls?
   public static final String ENABLE_MULTI_DELETE =
       "fs.s3a.multiobjectdelete.enable";

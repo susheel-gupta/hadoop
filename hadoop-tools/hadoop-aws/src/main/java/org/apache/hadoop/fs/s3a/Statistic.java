@@ -232,7 +232,7 @@ public enum Statistic {
       TYPE_DURATION),
   OBJECT_PUT_REQUESTS(
       StoreStatisticNames.OBJECT_PUT_REQUEST,
-      "Object put/multipart upload count",
+      "Object put/multipart upload duration",
       TYPE_DURATION),
   OBJECT_PUT_REQUESTS_COMPLETED(
       StoreStatisticNames.OBJECT_PUT_REQUEST_COMPLETED,
