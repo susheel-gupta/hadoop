@@ -214,6 +214,12 @@
                         <exclude>ccache.txt</exclude>
                       </excludes>
                     </filter>
+                    <filter>
+                      <artifact>org.yaml:snakeyaml</artifact>
+                      <excludes>
+                        <exclude>META-INF/versions/9/module-info.class</exclude>
+                      </excludes>
+                    </filter>
                   </filters>
                   <relocations>
                     <relocation>
@@ -413,4 +419,3 @@
   </profiles>
 
 </project>
-
