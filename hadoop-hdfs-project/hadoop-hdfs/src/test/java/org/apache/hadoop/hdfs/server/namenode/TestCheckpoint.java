@@ -1147,6 +1147,7 @@ public class TestCheckpoint {
    * Tests save namespace.
    */
   @Test
+  @SuppressWarnings("deprecation")
   public void testSaveNamespace() throws IOException {
     MiniDFSCluster cluster = null;
     DistributedFileSystem fs = null;

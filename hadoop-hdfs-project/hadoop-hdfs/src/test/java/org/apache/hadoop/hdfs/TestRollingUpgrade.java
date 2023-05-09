@@ -39,9 +39,9 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.SafeModeAction;
 import org.apache.hadoop.hdfs.MiniDFSCluster.DataNodeProperties;
 import org.apache.hadoop.hdfs.protocol.HdfsConstants.RollingUpgradeAction;
-import org.apache.hadoop.hdfs.protocol.HdfsConstants.SafeModeAction;
 import org.apache.hadoop.hdfs.protocol.RollingUpgradeInfo;
 import org.apache.hadoop.hdfs.qjournal.MiniJournalCluster;
 import org.apache.hadoop.hdfs.qjournal.MiniQJMHACluster;
@@ -107,9 +107,9 @@ public class TestRollingUpgrade {
         runCmd(dfsadmin, true, "-rollingUpgrade");
 
         //start rolling upgrade
-        dfs.setSafeMode(SafeModeAction.SAFEMODE_ENTER);
+        dfs.setSafeMode(SafeModeAction.ENTER);
         runCmd(dfsadmin, true, "-rollingUpgrade", "prepare");
-        dfs.setSafeMode(SafeModeAction.SAFEMODE_LEAVE);
+        dfs.setSafeMode(SafeModeAction.LEAVE);
 
         //query rolling upgrade
         runCmd(dfsadmin, true, "-rollingUpgrade", "query");
@@ -134,9 +134,9 @@ public class TestRollingUpgrade {
         Assert.assertTrue(dfs.exists(bar));
         Assert.assertTrue(dfs.exists(baz));
 
-        dfs.setSafeMode(SafeModeAction.SAFEMODE_ENTER);
+        dfs.setSafeMode(SafeModeAction.ENTER);
         dfs.saveNamespace();
-        dfs.setSafeMode(SafeModeAction.SAFEMODE_LEAVE);
+        dfs.setSafeMode(SafeModeAction.LEAVE);
       }
 
       // Ensure directories exist after restart
@@ -214,9 +214,9 @@ public class TestRollingUpgrade {
         dfs.mkdirs(foo);
 
         //start rolling upgrade
-        dfs.setSafeMode(SafeModeAction.SAFEMODE_ENTER);
+        dfs.setSafeMode(SafeModeAction.ENTER);
         info1 = dfs.rollingUpgrade(RollingUpgradeAction.PREPARE);
-        dfs.setSafeMode(SafeModeAction.SAFEMODE_LEAVE);
+        dfs.setSafeMode(SafeModeAction.LEAVE);
         LOG.info("START\n" + info1);
 
         //query rolling upgrade
@@ -361,9 +361,9 @@ public class TestRollingUpgrade {
     final DistributedFileSystem dfs = cluster.getFileSystem();
 
     //start rolling upgrade
-    dfs.setSafeMode(SafeModeAction.SAFEMODE_ENTER);
+    dfs.setSafeMode(SafeModeAction.ENTER);
     dfs.rollingUpgrade(RollingUpgradeAction.PREPARE);
-    dfs.setSafeMode(SafeModeAction.SAFEMODE_LEAVE);
+    dfs.setSafeMode(SafeModeAction.LEAVE);
 
     dfs.mkdirs(bar);
     Assert.assertTrue(dfs.exists(foo));
@@ -544,13 +544,13 @@ public class TestRollingUpgrade {
       cluster.waitActive();
       DistributedFileSystem dfs = cluster.getFileSystem();
 
-      dfs.setSafeMode(SafeModeAction.SAFEMODE_ENTER);
+      dfs.setSafeMode(SafeModeAction.ENTER);
       // start rolling upgrade
       dfs.rollingUpgrade(RollingUpgradeAction.PREPARE);
       queryForPreparation(dfs);
-      dfs.setSafeMode(SafeModeAction.SAFEMODE_ENTER);
+      dfs.setSafeMode(SafeModeAction.ENTER);
       dfs.saveNamespace();
-      dfs.setSafeMode(SafeModeAction.SAFEMODE_LEAVE);
+      dfs.setSafeMode(SafeModeAction.LEAVE);
 
       cluster.restartNameNodes();
       dfs.rollingUpgrade(RollingUpgradeAction.QUERY);
@@ -713,9 +713,9 @@ public class TestRollingUpgrade {
       snn.doCheckpoint();
 
       //start rolling upgrade
-      dfs.setSafeMode(SafeModeAction.SAFEMODE_ENTER);
+      dfs.setSafeMode(SafeModeAction.ENTER);
       dfs.rollingUpgrade(RollingUpgradeAction.PREPARE);
-      dfs.setSafeMode(SafeModeAction.SAFEMODE_LEAVE);
+      dfs.setSafeMode(SafeModeAction.LEAVE);
 
       dfs.mkdirs(new Path("/test/bar"));
       // do checkpoint in SNN again

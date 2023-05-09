@@ -35,6 +35,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.SafeModeAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.ha.HAServiceProtocol.HAServiceState;
 import org.apache.hadoop.ha.ServiceFailedException;
@@ -43,7 +44,6 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hdfs.protocol.Block;
 import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
 import org.apache.hadoop.hdfs.protocol.ExtendedBlock;
-import org.apache.hadoop.hdfs.protocol.HdfsConstants.SafeModeAction;
 import org.apache.hadoop.hdfs.protocol.LocatedBlock;
 import org.apache.hadoop.hdfs.protocol.LocatedBlocks;
 import org.apache.hadoop.hdfs.qjournal.MiniQJMHACluster;
@@ -280,7 +280,7 @@ public class TestObserverNode {
     assertSentTo(2);
 
     // Set observer to safe mode.
-    dfsCluster.getFileSystem(2).setSafeMode(SafeModeAction.SAFEMODE_ENTER);
+    dfsCluster.getFileSystem(2).setSafeMode(SafeModeAction.ENTER);
 
     // Mock block manager for observer to generate some fake blocks which
     // will trigger the (retriable) safe mode exception.
@@ -303,7 +303,7 @@ public class TestObserverNode {
     Mockito.reset(bmSpy);
 
     // Remove safe mode on observer, request should still go to it.
-    dfsCluster.getFileSystem(2).setSafeMode(SafeModeAction.SAFEMODE_LEAVE);
+    dfsCluster.getFileSystem(2).setSafeMode(SafeModeAction.LEAVE);
     dfs.open(testPath).close();
     assertSentTo(2);
   }
