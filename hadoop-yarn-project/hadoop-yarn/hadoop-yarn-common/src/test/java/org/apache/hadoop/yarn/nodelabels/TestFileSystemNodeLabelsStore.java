@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.server.namenode.SafeModeException;
 import org.apache.hadoop.yarn.api.records.NodeLabel;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.event.InlineDispatcher;
@@ -339,24 +340,12 @@ public class TestFileSystemNodeLabelsStore extends NodeLabelTestBase {
   }
 
   @Test
-  public void testRootMkdirOnInitStoreWhenRootDirectoryAlreadyExists() throws Exception {
-    final FileSystem mockFs = Mockito.mock(FileSystem.class);
-    final FileSystemNodeLabelsStore mockStore = createMockNodeLabelsStore(mockFs);
-    final int expectedMkdirsCount = 0;
-
-    Mockito.when(mockStore.getFs().exists(Mockito.any(Path.class)))
-        .thenReturn(true);
-    verifyMkdirsCount(mockStore, expectedMkdirsCount);
-  }
-
-  @Test
-  public void testRootMkdirOnInitStoreWhenRootDirectoryNotExists() throws Exception {
+  public void testRootMkdirOnInitStore() throws Exception {
     final FileSystem mockFs = Mockito.mock(FileSystem.class);
     final FileSystemNodeLabelsStore mockStore = createMockNodeLabelsStore(mockFs);
     final int expectedMkdirsCount = 1;
 
-    Mockito.when(mockStore.getFs().exists(Mockito.any(Path.class)))
-        .thenReturn(false).thenReturn(true);
+    Mockito.when(mockStore.getFs().mkdirs(Mockito.any(Path.class))).thenReturn(true);
     verifyMkdirsCount(mockStore, expectedMkdirsCount);
   }
 
@@ -364,10 +353,11 @@ public class TestFileSystemNodeLabelsStore extends NodeLabelTestBase {
   public void testRootMkdirOnInitStoreRetryLogic() throws Exception {
     final FileSystem mockFs = Mockito.mock(FileSystem.class);
     final FileSystemNodeLabelsStore mockStore = createMockNodeLabelsStore(mockFs);
-    final int expectedMkdirsCount = 2;
+    final int expectedMkdirsCount = 3;
 
-    Mockito.when(mockStore.getFs().exists(Mockito.any(Path.class)))
-        .thenReturn(false).thenReturn(false).thenReturn(true);
+    Mockito.when(mockStore.getFs().mkdirs(Mockito.any(Path.class)))
+        .thenThrow(SafeModeException.class).thenThrow(SafeModeException.class)
+        .thenReturn(true);
     verifyMkdirsCount(mockStore, expectedMkdirsCount);
   }
 
