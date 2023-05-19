@@ -20,6 +20,7 @@ package org.apache.hadoop.tools.contract;
 
 import static org.apache.hadoop.fs.CommonConfigurationKeys.IOSTATISTICS_LOGGING_LEVEL_INFO;
 import static org.apache.hadoop.fs.contract.ContractTestUtils.*;
+import static org.apache.hadoop.fs.statistics.IOStatisticsLogging.logIOStatisticsAtLevel;
 import static org.apache.hadoop.tools.DistCpConstants.CONF_LABEL_DISTCP_JOB_ID;
 
 import static org.apache.hadoop.fs.statistics.IOStatisticsLogging.logIOStatisticsAtLevel;
@@ -531,7 +532,7 @@ public abstract class AbstractContractDistCpTest
     remoteFS.create(new Path(remoteDir, "file1")).close();
     DistCpTestUtils
         .assertRunDistCp(DistCpConstants.SUCCESS, remoteDir.toString(),
-            localDir.toString(), null, conf);
+            localDir.toString(), getDefaultCLIOptionsOrNull(), conf);
     assertNotNull("DistCp job id isn't set",
         conf.get(CONF_LABEL_DISTCP_JOB_ID));
   }
@@ -842,7 +843,6 @@ public abstract class AbstractContractDistCpTest
     Path dest = new Path(localDir, "file");
     dest = localFS.makeQualified(dest);
 
-    mkdirs(remoteFS, remoteDir);
     mkdirs(localFS, localDir);
 
     int len = 4;
@@ -853,7 +853,7 @@ public abstract class AbstractContractDistCpTest
     verifyPathExists(localFS, "", localDir);
 
     DistCpTestUtils.assertRunDistCp(DistCpConstants.SUCCESS, source.toString(),
-        dest.toString(), null, conf);
+        dest.toString(), getDefaultCLIOptionsOrNull(), conf);
 
     Assertions
         .assertThat(RemoteIterators.toList(localFS.listFiles(dest, true)))
@@ -863,14 +863,11 @@ public abstract class AbstractContractDistCpTest
 
   @Test
   public void testDistCpWithUpdateExistFile() throws Exception {
-    describe("Now update an exist file.");
+    describe("Now update an existing file.");
 
     Path source = new Path(remoteDir, "file");
     Path dest = new Path(localDir, "file");
     dest = localFS.makeQualified(dest);
-
-    mkdirs(remoteFS, remoteDir);
-    mkdirs(localFS, localDir);
 
     int len = 4;
     int base = 0x40;
@@ -882,7 +879,7 @@ public abstract class AbstractContractDistCpTest
     verifyPathExists(remoteFS, "", source);
     verifyPathExists(localFS, "", dest);
     DistCpTestUtils.assertRunDistCp(DistCpConstants.SUCCESS, source.toString(),
-        dest.toString(), "-delete -update", conf);
+        dest.toString(), "-delete -update" + getDefaultCLIOptions(), conf);
 
     Assertions.assertThat(RemoteIterators.toList(localFS.listFiles(dest, true)))
         .hasSize(1);
