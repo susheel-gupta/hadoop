@@ -143,6 +143,9 @@ public class QueueMetrics implements MetricsSource {
   @Metric("# of reserved containers")
   MutableGaugeInt reservedContainers;
 
+  // INTERNAL ONLY
+  private static final String CONFIGURATION_VALIDATION = "yarn.configuration-validation";
+
   private final MutableGaugeInt[] runningTime;
   private TimeBucketMetrics<ApplicationId> runBuckets;
 
@@ -310,7 +313,7 @@ public class QueueMetrics implements MetricsSource {
     if (metrics == null) {
       metrics = new QueueMetrics(metricsSystem, queueName, null, false, conf);
       users.put(userName, metrics);
-      registerMetrics(
+      metricsSystem.register(
           sourceName(queueName).append(",user=").append(userName).toString(),
           "Metrics for user '" + userName + "' in queue '" + queueName + "'",
           metrics.tag(QUEUE_INFO, queueName).tag(USER_INFO, userName));
@@ -355,18 +358,40 @@ public class QueueMetrics implements MetricsSource {
       QueueMetrics queueMetrics =
           new PartitionQueueMetrics(metricsSystem, this.queueName, parentQueue,
               this.enableUserMetrics, this.conf, partition);
-      registerMetrics(
+      metricsSystem.register(
           pSourceName(partitionJMXStr).append(qSourceName(this.queueName))
               .toString(),
           "Metrics for queue: " + this.queueName,
           queueMetrics.tag(PARTITION_INFO, partitionJMXStr).tag(QUEUE_INFO,
               this.queueName));
-      getQueueMetrics().put(metricName, queueMetrics);
+      if (!isConfigurationValidationSet(conf)) {
+        getQueueMetrics().put(metricName, queueMetrics);
+      }
       registerPartitionMetricsCreation(metricName);
       return queueMetrics;
     } else {
       return metrics;
     }
+  }
+
+  /**
+   * Check whether we are in a configuration validation mode. INTERNAL ONLY.
+   *
+   * @param conf the configuration to check
+   * @return true if
+   */
+  public static boolean isConfigurationValidationSet(Configuration conf) {
+    return conf.getBoolean(CONFIGURATION_VALIDATION, false);
+  }
+
+  /**
+   * Set configuration validation mode. INTERNAL ONLY.
+   *
+   * @param conf the configuration to update
+   * @param value the value for the validation mode
+   */
+  public static void setConfigurationValidation(Configuration conf, boolean value) {
+    conf.setBoolean(CONFIGURATION_VALIDATION, value);
   }
 
   /**
@@ -399,7 +424,7 @@ public class QueueMetrics implements MetricsSource {
 
       // Register with the MetricsSystems
       if (metricsSystem != null) {
-        registerMetrics(pSourceName(partitionJMXStr).toString(),
+        metricsSystem.register(pSourceName(partitionJMXStr).toString(),
             "Metrics for partition: " + partitionJMXStr,
             (PartitionQueueMetrics) metrics.tag(PARTITION_INFO,
                 partitionJMXStr));
@@ -1314,16 +1339,5 @@ public class QueueMetrics implements MetricsSource {
         metric.parentQueue = parentQueue;
       }
     }
-  }
-
-  protected void registerMetrics(String sourceName, String desc, QueueMetrics metrics) {
-    MetricsSource source = metricsSystem.getSource(sourceName);
-    // Unregister metrics if a source is already present
-    if (source != null) {
-      LOG.info("Unregistering source " + sourceName);
-      metricsSystem.unregisterSource(sourceName);
-    }
-
-    metricsSystem.register(sourceName, desc, metrics);
   }
 }
