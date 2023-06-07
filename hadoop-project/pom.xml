@@ -88,7 +88,7 @@
     <protobuf.version>2.5.0</protobuf.version>
     <protoc.path>${env.HADOOP_PROTOC_PATH}</protoc.path>
 
-    <zookeeper.version>3.5.5.7.1.9.0-SNAPSHOT</zookeeper.version>
+    <zookeeper.version>3.8.1.7.1.9.0-SNAPSHOT</zookeeper.version>
     <curator.version>4.3.0.7.1.9.0-SNAPSHOT</curator.version>
     <findbugs.version>3.0.0</findbugs.version>
     <spotbugs.version>3.1.0-RC1</spotbugs.version>
