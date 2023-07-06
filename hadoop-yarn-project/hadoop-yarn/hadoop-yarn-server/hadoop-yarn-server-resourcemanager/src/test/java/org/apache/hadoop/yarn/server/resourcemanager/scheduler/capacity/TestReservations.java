@@ -33,6 +33,7 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.logging.Log;
+import org.junit.After;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.yarn.api.records.ApplicationAttemptId;
 import org.apache.hadoop.yarn.api.records.Container;
@@ -105,6 +106,13 @@ public class TestReservations {
     CapacityScheduler spyCs = new CapacityScheduler();
     cs = spy(spyCs);
     rmContext = TestUtils.getMockRMContext();
+  }
+
+  @After
+  public void tearDown() {
+    if (cs != null) {
+      cs.stop();
+    }
   }
 
   private void setup(CapacitySchedulerConfiguration csConf) throws Exception {

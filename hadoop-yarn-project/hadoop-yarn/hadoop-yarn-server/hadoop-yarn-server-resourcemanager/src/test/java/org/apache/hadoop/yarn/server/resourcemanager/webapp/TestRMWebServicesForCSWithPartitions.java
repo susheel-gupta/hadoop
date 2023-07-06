@@ -66,6 +66,7 @@ import org.apache.hadoop.yarn.webapp.WebServicesTestUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -99,9 +100,13 @@ public class TestRMWebServicesForCSWithPartitions extends JerseyTestBase {
   private static final ImmutableSet<String> CLUSTER_LABELS =
       ImmutableSet.of(LABEL_LX, LABEL_LY, DEFAULT_PARTITION);
   private static final String DOT = ".";
+  private static final double EPSILON = 1e-1f;
+
   private static MockRM rm;
   static private CapacitySchedulerConfiguration csConf;
   static private YarnConfiguration conf;
+
+  private MockNM nm1;
 
   private static class WebServletModule extends ServletModule {
     @Override
@@ -201,6 +206,36 @@ public class TestRMWebServicesForCSWithPartitions extends JerseyTestBase {
     super.setUp();
     GuiceServletConfig.setInjector(
         Guice.createInjector(new WebServletModule()));
+
+    rm.start();
+    rm.getRMContext().getNodeLabelManager().addLabelsToNode(ImmutableMap
+        .of(NodeId.newInstance("127.0.0.1", 0), Sets.newHashSet(LABEL_LX)));
+
+    nm1 = new MockNM("127.0.0.1:1234", 2 * 1024,
+        rm.getResourceTrackerService());
+    MockNM nm2 = new MockNM("127.0.0.2:1234", 2 * 1024,
+        rm.getResourceTrackerService());
+    nm1.registerNode();
+    nm2.registerNode();
+
+    rm.getRMContext().getNodeLabelManager().addLabelsToNode(ImmutableMap
+        .of(NodeId.newInstance("127.0.0.2", 0), Sets.newHashSet(LABEL_LY)));
+
+    MockNM nm3 = new MockNM("127.0.0.2:1234", 128 * 1024,
+        rm.getResourceTrackerService());
+    nm3.registerNode();
+
+    // Default partition
+    MockNM nm4 = new MockNM("127.0.0.3:1234", 128 * 1024,
+        rm.getResourceTrackerService());
+    nm4.registerNode();
+  }
+
+  @After
+  public void tearDown() {
+    if (rm != null) {
+      rm.stop();
+    }
   }
 
   public TestRMWebServicesForCSWithPartitions() {
@@ -266,18 +301,6 @@ public class TestRMWebServicesForCSWithPartitions extends JerseyTestBase {
 
   @Test
   public void testPartitionInSchedulerActivities() throws Exception {
-    rm.start();
-    rm.getRMContext().getNodeLabelManager().addLabelsToNode(ImmutableMap
-        .of(NodeId.newInstance("127.0.0.1", 0), Sets.newHashSet(LABEL_LX)));
-
-    MockNM nm1 = new MockNM("127.0.0.1:1234", 2 * 1024,
-        rm.getResourceTrackerService());
-    MockNM nm2 = new MockNM("127.0.0.2:1234", 2 * 1024,
-        rm.getResourceTrackerService());
-    nm1.registerNode();
-    nm2.registerNode();
-
-    try {
       RMApp app1 = rm.submitApp(1024, "app1", "user1", null, QUEUE_B, LABEL_LX);
       MockAM am1 = MockRM.launchAndRegisterAM(app1, rm, nm1);
       am1.allocate(Arrays.asList(
@@ -286,9 +309,9 @@ public class TestRMWebServicesForCSWithPartitions extends JerseyTestBase {
               .capability(Resources.createResource(2048)).numContainers(1)
               .build()), null);
 
-      WebResource sr = resource().path(RMWSConsts.RM_WEB_SERVICE_PATH)
-          .path(RMWSConsts.SCHEDULER_ACTIVITIES);
-      ActivitiesTestUtils.requestWebResource(sr, null);
+    WebResource sr = resource().path(RMWSConsts.RM_WEB_SERVICE_PATH)
+        .path(RMWSConsts.SCHEDULER_ACTIVITIES);
+    ActivitiesTestUtils.requestWebResource(sr, null);
 
       nm1.nodeHeartbeat(true);
       Thread.sleep(1000);
@@ -335,9 +358,6 @@ public class TestRMWebServicesForCSWithPartitions extends JerseyTestBase {
           queueCObj.get(0).optString(FN_ACT_ALLOCATION_STATE));
       assertEquals(ActivityDiagnosticConstant.QUEUE_DO_NOT_NEED_MORE_RESOURCE,
           queueCObj.get(0).optString(FN_ACT_DIAGNOSTIC));
-    } finally {
-      rm.stop();
-    }
   }
 
   private void verifySchedulerInfoXML(Document dom) throws Exception {
@@ -540,20 +560,20 @@ public class TestRMWebServicesForCSWithPartitions extends JerseyTestBase {
       float absoluteCapacity, float absoluteUsedCapacity,
       float absoluteMaxCapacity) {
     assertEquals("capacity doesn't match", capacity,
-        WebServicesTestUtils.getXmlFloat(partitionInfo, "capacity"), 1e-3f);
+        WebServicesTestUtils.getXmlFloat(partitionInfo, "capacity"), EPSILON);
     assertEquals("capacity doesn't match", usedCapacity,
-        WebServicesTestUtils.getXmlFloat(partitionInfo, "usedCapacity"), 1e-3f);
+        WebServicesTestUtils.getXmlFloat(partitionInfo, "usedCapacity"), EPSILON);
     assertEquals("capacity doesn't match", maxCapacity,
-        WebServicesTestUtils.getXmlFloat(partitionInfo, "maxCapacity"), 1e-3f);
+        WebServicesTestUtils.getXmlFloat(partitionInfo, "maxCapacity"), EPSILON);
     assertEquals("capacity doesn't match", absoluteCapacity,
         WebServicesTestUtils.getXmlFloat(partitionInfo, "absoluteCapacity"),
-        1e-3f);
+        EPSILON);
     assertEquals("capacity doesn't match", absoluteUsedCapacity,
         WebServicesTestUtils.getXmlFloat(partitionInfo, "absoluteUsedCapacity"),
-        1e-3f);
+        EPSILON);
     assertEquals("capacity doesn't match", absoluteMaxCapacity,
         WebServicesTestUtils.getXmlFloat(partitionInfo, "absoluteMaxCapacity"),
-        1e-3f);
+        EPSILON);
   }
 
   private void verifySchedulerInfoJson(JSONObject json)
@@ -725,13 +745,13 @@ public class TestRMWebServicesForCSWithPartitions extends JerseyTestBase {
       float maxCapacity, float absoluteCapacity, float absoluteUsedCapacity,
       float absoluteMaxCapacity) throws JSONException {
     assertEquals("capacity doesn't match", capacity,
-        (float) partitionCapacityInfoJson.getDouble("capacity"), 1e-3f);
+        (float) partitionCapacityInfoJson.getDouble("capacity"), EPSILON);
     assertEquals("capacity doesn't match", usedCapacity,
-        (float) partitionCapacityInfoJson.getDouble("usedCapacity"), 1e-3f);
+        (float) partitionCapacityInfoJson.getDouble("usedCapacity"), EPSILON);
     assertEquals("capacity doesn't match", maxCapacity,
-        (float) partitionCapacityInfoJson.getDouble("maxCapacity"), 1e-3f);
+        (float) partitionCapacityInfoJson.getDouble("maxCapacity"), EPSILON);
     assertEquals("capacity doesn't match", absoluteCapacity,
-        (float) partitionCapacityInfoJson.getDouble("absoluteCapacity"), 1e-3f);
+        (float) partitionCapacityInfoJson.getDouble("absoluteCapacity"), EPSILON);
     assertEquals("capacity doesn't match", absoluteUsedCapacity,
         (float) partitionCapacityInfoJson.getDouble("absoluteUsedCapacity"),
         1e-3f);

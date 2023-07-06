@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
@@ -53,6 +55,7 @@ import org.apache.hadoop.yarn.api.records.QueueInfo;
 import org.apache.hadoop.yarn.api.records.QueueState;
 import org.apache.hadoop.yarn.api.records.QueueUserACLInfo;
 import org.apache.hadoop.yarn.api.records.Resource;
+import org.apache.hadoop.yarn.api.records.ResourceInformation;
 import org.apache.hadoop.yarn.factories.RecordFactory;
 import org.apache.hadoop.yarn.factory.providers.RecordFactoryProvider;
 import org.apache.hadoop.yarn.nodelabels.CommonNodeLabelsManager;
@@ -256,10 +259,12 @@ public class AbstractLeafQueue extends AbstractCSQueue {
               + " [= configuredMaxCapacity ]" + "\n" + "absoluteMaxCapacity = "
               + queueCapacities.getAbsoluteMaximumCapacity()
               + " [= 1.0 maximumCapacity undefined, "
-              + "(parentAbsoluteMaxCapacity * maximumCapacity) / 100 otherwise ]"
-              + "\n" + "effectiveMinResource=" +
-              getEffectiveCapacity(CommonNodeLabelsManager.NO_LABEL) + "\n"
-              + " , effectiveMaxResource=" +
+              + "(parentAbsoluteMaxCapacity * maximumCapacity) / 100 otherwise ] \n"
+              + "capacityVector = " + configuredCapacityVectors + "\n"
+              + "maxCapacityVector = " + configuredMaxCapacityVectors + "\n"
+              + "effectiveMinResource=" +
+              getEffectiveCapacity(CommonNodeLabelsManager.NO_LABEL)
+              + " effectiveMaxResource=" +
               getEffectiveMaxCapacity(CommonNodeLabelsManager.NO_LABEL)
               + "\n" + "userLimit = " + usersManager.getUserLimit()
               + " [= configuredUserLimit ]" + "\n" + "userLimitFactor = "
@@ -1896,8 +1901,12 @@ public class AbstractLeafQueue extends AbstractCSQueue {
   public void refreshAfterResourceCalculation(Resource clusterResource,
       ResourceLimits resourceLimits) {
     lastClusterResource = clusterResource;
+
     // Update maximum applications for the queue and for users
-    updateMaximumApplications();
+    final boolean clusterResourceAvailable = Stream.of(clusterResource.getResources())
+        .map(ResourceInformation::getValue)
+        .anyMatch(num -> num > 0);
+    updateMaximumApplications(clusterResourceAvailable);
 
     updateCurrentResourceLimits(resourceLimits, clusterResource);
 
@@ -1933,11 +1942,31 @@ public class AbstractLeafQueue extends AbstractCSQueue {
           SchedulingMode.RESPECT_PARTITION_EXCLUSIVITY, null);
 
     }
+
+    LOG.info("Refresh after resource calculation (LEAF)" + queuePath + "\n"
+            + "effectiveMinResource = " + getEffectiveCapacity(NO_LABEL) + "\n"
+            + "effectiveMaxResource = " + getEffectiveMaxCapacity(NO_LABEL) + "\n"
+            + "capacity = " + getCapacity() + "\n"
+            + "maxCapacity = " + getMaximumCapacity() + "\n"
+            + "absoluteCapacity = " + getAbsoluteCapacity() + "\n"
+            + "absoluteMaxCapacity = " + getAbsoluteMaximumCapacity()
+    );
   }
 
   @Override
   public void updateClusterResource(Resource clusterResource,
       ResourceLimits currentResourceLimits) {
+    if (queueContext.getConfiguration().isLegacyQueueMode()) {
+      updateClusterResourceLegacyMode(clusterResource, currentResourceLimits);
+      return;
+    }
+
+    queueContext.getQueueManager().getQueueCapacityHandler()
+        .updateChildren(clusterResource, getParent());
+  }
+
+  public void updateClusterResourceLegacyMode(Resource clusterResource,
+                                              ResourceLimits currentResourceLimits) {
     writeLock.lock();
     try {
       updateCurrentResourceLimits(currentResourceLimits, clusterResource);
@@ -1948,7 +1977,7 @@ public class AbstractLeafQueue extends AbstractCSQueue {
       super.updateEffectiveResources(clusterResource);
 
       // Update maximum applications for the queue and for users
-      updateMaximumApplications();
+      updateMaximumApplications(true);
 
       updateCurrentResourceLimits(currentResourceLimits, clusterResource);
 
@@ -2343,7 +2372,7 @@ public class AbstractLeafQueue extends AbstractCSQueue {
     }
   }
 
-  void updateMaximumApplications() {
+  void updateMaximumApplications(boolean absoluteCapacityIsReadyForUse) {
     CapacitySchedulerConfiguration configuration = queueContext.getConfiguration();
     int maxAppsForQueue = configuration.getMaximumApplicationsPerQueue(getQueuePath());
 
@@ -2355,16 +2384,20 @@ public class AbstractLeafQueue extends AbstractCSQueue {
 
     String maxLabel = RMNodeLabelsManager.NO_LABEL;
     if (maxAppsForQueue < 0) {
-      if (maxDefaultPerQueueApps > 0 && this.capacityConfigType
-          != CapacityConfigType.ABSOLUTE_RESOURCE) {
+      if (!absoluteCapacityIsReadyForUse) {
         maxAppsForQueue = baseMaxApplications;
       } else {
-        for (String label : queueNodeLabelsSettings.getConfiguredNodeLabels()) {
-          int maxApplicationsByLabel = (int) (baseMaxApplications
-              * queueCapacities.getAbsoluteCapacity(label));
-          if (maxApplicationsByLabel > maxAppsForQueue) {
-            maxAppsForQueue = maxApplicationsByLabel;
-            maxLabel = label;
+        if (maxDefaultPerQueueApps > 0 && this.capacityConfigType
+            != CapacityConfigType.ABSOLUTE_RESOURCE) {
+          maxAppsForQueue = baseMaxApplications;
+        } else {
+          for (String label : queueNodeLabelsSettings.getConfiguredNodeLabels()) {
+            int maxApplicationsByLabel = (int) (baseMaxApplications
+                * queueCapacities.getAbsoluteCapacity(label));
+            if (maxApplicationsByLabel > maxAppsForQueue) {
+              maxAppsForQueue = maxApplicationsByLabel;
+              maxLabel = label;
+            }
           }
         }
       }
@@ -2374,8 +2407,8 @@ public class AbstractLeafQueue extends AbstractCSQueue {
 
     updateMaxAppsPerUser();
 
-    LOG.info("LeafQueue:" + getQueuePath() +
-        "update max app related, maxApplications="
+    LOG.info("LeafQueue: " + getQueuePath() +
+        " update max app related, maxApplications="
         + maxAppsForQueue + ", maxApplicationsPerUser="
         + maxApplicationsPerUser + ", Abs Cap:" + queueCapacities
         .getAbsoluteCapacity(maxLabel) + ", Cap: " + queueCapacities

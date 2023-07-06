@@ -494,7 +494,7 @@ public class TestSchedulingRequestContainerAllocation {
 
     Assert.assertEquals(4, schedApp.getLiveContainers().size());
 
-    rm1.close();
+    rm1.stop();
   }
 
   private void doNodeHeartbeat(MockNM... nms) throws Exception {

@@ -164,6 +164,7 @@ public class TestCapacitySchedulerSchedulingRequestUpdate {
     checkPendingResource(rm, "b", 0 * GB, null);
     checkPendingResource(rm, "root", 0 * GB, null);
     checkPendingResource(rm, "root", 0 * GB, "x");
+    rm.stop();
   }
 
   @Test
@@ -265,5 +266,6 @@ public class TestCapacitySchedulerSchedulingRequestUpdate {
     checkPendingResource(rm, "b", 0 * GB, null);
     checkPendingResource(rm, "root", 0 * GB, null);
     checkPendingResource(rm, "root", 0 * GB, "x");
+    rm.stop();
   }
 }

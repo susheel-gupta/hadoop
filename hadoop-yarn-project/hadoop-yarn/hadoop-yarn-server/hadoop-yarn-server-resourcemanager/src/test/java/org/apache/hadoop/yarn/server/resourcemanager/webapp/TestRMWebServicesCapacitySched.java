@@ -48,6 +48,7 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
   @Test
   public void testClusterScheduler() throws Exception {
     try (MockRM rm = createRM(createConfig())){
+      rm.registerNode("h1:1234", 32 * GB, 32);
       assertJsonResponse(resource().path("ws/v1/cluster/scheduler")
               .accept(MediaType.APPLICATION_JSON).get(ClientResponse.class),
           "webapp/scheduler-response.json");
@@ -65,9 +66,9 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
   @Test
   public void testPerUserResources() throws Exception {
     try (MockRM rm = createRM(createConfig())){
-      rm.registerNode("h1:1234", 10 * GB, 10);
+      rm.registerNode("h1:1234", 32 * GB, 32);
       MockRMAppSubmitter.submit(rm, MockRMAppSubmissionData.Builder
-          .createWithMemory(10, rm)
+          .createWithMemory(32, rm)
           .withAppName("app1")
           .withUser("user1")
           .withAcls(null)
@@ -76,7 +77,7 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
           .build()
       );
       MockRMAppSubmitter.submit(rm, MockRMAppSubmissionData.Builder
-          .createWithMemory(20, rm)
+          .createWithMemory(64, rm)
           .withAppName("app2")
           .withUser("user2")
           .withAcls(null)
@@ -100,6 +101,7 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
     conf.setDefaultNodeLabelExpression("root", "ROOT-INHERITED");
     conf.setDefaultNodeLabelExpression("root.a", "root-a-default-label");
     try (MockRM rm = createRM(conf)) {
+      rm.registerNode("h1:1234", 32 * GB, 32);
       ClientResponse response = resource().path("ws/v1/cluster/scheduler")
           .accept(MediaType.APPLICATION_XML).get(ClientResponse.class);
       assertXmlResponse(response, "webapp/scheduler-response-NodeLabelDefaultAPI.xml");
@@ -118,11 +120,11 @@ public class TestRMWebServicesCapacitySched extends JerseyTestBase {
   private Configuration createConfig() {
     Configuration conf = new Configuration();
     conf.set("yarn.scheduler.capacity.root.queues", "a, b, c");
-    conf.set("yarn.scheduler.capacity.root.a.capacity", "20");
+    conf.set("yarn.scheduler.capacity.root.a.capacity", "12.5");
     conf.set("yarn.scheduler.capacity.root.a.maximum-capacity", "50");
     conf.set("yarn.scheduler.capacity.root.a.max-parallel-app", "42");
-    conf.set("yarn.scheduler.capacity.root.b.capacity", "70");
-    conf.set("yarn.scheduler.capacity.root.c.capacity", "10");
+    conf.set("yarn.scheduler.capacity.root.b.capacity", "50");
+    conf.set("yarn.scheduler.capacity.root.c.capacity", "37.5");
     return conf;
   }
 }
