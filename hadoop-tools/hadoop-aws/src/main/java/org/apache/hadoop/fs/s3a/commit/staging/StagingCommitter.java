@@ -491,6 +491,14 @@ public class StagingCommitter extends AbstractS3ACommitter {
     }
   }
 
+  /**
+   * Staging committer cleanup includes calling wrapped committer's
+   * cleanup method, and removing staging uploads path and all
+   * destination paths in the final filesystem.
+   * @param context job context
+   * @param suppressExceptions should exceptions be suppressed?
+   * @throws IOException IO failures if exceptions are not suppressed.
+   */
   @Override
   @SuppressWarnings("deprecation")
   protected void cleanup(JobContext context,
@@ -498,6 +506,8 @@ public class StagingCommitter extends AbstractS3ACommitter {
       throws IOException {
     maybeIgnore(suppressExceptions, "Cleanup wrapped committer",
         () -> wrappedCommitter.cleanupJob(context));
+    maybeIgnore(suppressExceptions, "Delete staging uploads path",
+        () -> deleteStagingUploadsParentDirectory(context));
     maybeIgnore(suppressExceptions, "Delete destination paths",
         () -> deleteDestinationPaths(context));
     super.cleanup(context, suppressExceptions);
@@ -523,11 +533,26 @@ public class StagingCommitter extends AbstractS3ACommitter {
     }
   }
 
+  /**
+   * Delete the multipart upload staging directory.
+   * @param context job context
+   * @throws IOException IO failure
+   */
+  protected void deleteStagingUploadsParentDirectory(JobContext context)
+          throws IOException {
+    Path stagingUploadsPath = Paths.getStagingUploadsParentDirectory(
+            context.getConfiguration(), getUUID());
+    ignoreIOExceptions(LOG,
+        "Deleting staging uploads path", stagingUploadsPath.toString(),
+        () -> deleteWithWarning(
+            stagingUploadsPath.getFileSystem(getConf()),
+            stagingUploadsPath,
+            true));
+  }
 
   /**
    * Delete the working paths of a job.
    * <ol>
-   *   <li>The job attempt path</li>
    *   <li>{@code $dest/__temporary}</li>
    *   <li>the local working directory for staged files</li>
    * </ol>
@@ -536,14 +561,6 @@ public class StagingCommitter extends AbstractS3ACommitter {
    * @throws IOException IO failure
    */
   protected void deleteDestinationPaths(JobContext context) throws IOException {
-    Path attemptPath = getJobAttemptPath(context);
-    ignoreIOExceptions(LOG,
-        "Deleting Job attempt Path", attemptPath.toString(),
-        () -> deleteWithWarning(
-            getJobAttemptFileSystem(context),
-            attemptPath,
-            true));
-
     // delete the __temporary directory. This will cause problems
     // if there is >1 task targeting the same dest dir
     deleteWithWarning(getDestFS(),
