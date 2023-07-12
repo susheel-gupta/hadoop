@@ -91,6 +91,7 @@ import org.apache.hadoop.fs.azurebfs.utils.Listener;
 import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
 import org.apache.hadoop.fs.azurebfs.utils.TracingHeaderFormat;
 import org.apache.hadoop.fs.impl.AbstractFSBuilderImpl;
+import org.apache.hadoop.fs.impl.BackReference;
 import org.apache.hadoop.fs.impl.OpenFileParameters;
 import org.apache.hadoop.fs.permission.AclEntry;
 import org.apache.hadoop.fs.permission.AclStatus;
@@ -155,6 +156,9 @@ public class AzureBlobFileSystem extends FileSystem
   /** Rate limiting for operations which use it to throttle their IO. */
   private RateLimiting rateLimiting;
 
+  /** Storing full path uri for better logging. */
+  private URI fullPathUri;
+
   @Override
   public void initialize(URI uri, Configuration configuration)
       throws IOException {
@@ -163,7 +167,7 @@ public class AzureBlobFileSystem extends FileSystem
     setConf(configuration);
 
     LOG.debug("Initializing AzureBlobFileSystem for {}", uri);
-
+    this.fullPathUri = uri;
     this.uri = URI.create(uri.getScheme() + "://" + uri.getAuthority());
     abfsCounters = new AbfsCountersImpl(uri);
     // name of the blockFactory to be used.
@@ -190,6 +194,7 @@ public class AzureBlobFileSystem extends FileSystem
             .withAbfsCounters(abfsCounters)
             .withBlockFactory(blockFactory)
             .withBlockOutputActiveBlocks(blockOutputActiveBlocks)
+            .withBackReference(new BackReference(this))
             .build();
 
     this.abfsStore = new AzureBlobFileSystemStore(systemStoreBuilder);
@@ -235,7 +240,7 @@ public class AzureBlobFileSystem extends FileSystem
   public String toString() {
     final StringBuilder sb = new StringBuilder(
         "AzureBlobFileSystem{");
-    sb.append("uri=").append(uri);
+    sb.append("uri=").append(fullPathUri);
     sb.append(", user='").append(abfsStore.getUser()).append('\'');
     sb.append(", primaryUserGroup='").append(abfsStore.getPrimaryGroup()).append('\'');
     sb.append("[" + CAPABILITY_SAFE_READAHEAD + "]");

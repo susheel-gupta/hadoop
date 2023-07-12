@@ -42,6 +42,7 @@ import org.apache.hadoop.fs.azurebfs.contracts.services.AppendRequestParameters;
 import org.apache.hadoop.fs.azurebfs.utils.CachedSASToken;
 import org.apache.hadoop.fs.azurebfs.utils.Listener;
 import org.apache.hadoop.fs.azurebfs.utils.TracingContext;
+import org.apache.hadoop.fs.impl.BackReference;
 import org.apache.hadoop.fs.statistics.IOStatistics;
 import org.apache.hadoop.fs.statistics.IOStatisticsSource;
 import org.apache.hadoop.fs.store.DataBlocks;
@@ -125,6 +126,9 @@ public class AbfsOutputStream extends OutputStream implements Syncable,
   /** Executor service to carry out the parallel upload requests. */
   private final ListeningExecutorService executorService;
 
+  /** ABFS instance to be held by the output stream to avoid GC close. */
+  private final BackReference fsBackRef;
+
   public AbfsOutputStream(AbfsOutputStreamContext abfsOutputStreamContext)
       throws IOException {
     this.client = abfsOutputStreamContext.getClient();
@@ -145,6 +149,7 @@ public class AbfsOutputStream extends OutputStream implements Syncable,
     this.numOfAppendsToServerSinceLastFlush = 0;
     this.writeOperations = new ConcurrentLinkedDeque<>();
     this.outputStreamStatistics = abfsOutputStreamContext.getStreamStatistics();
+    this.fsBackRef = abfsOutputStreamContext.getFsBackRef();
 
     if (this.isAppendBlob) {
       this.maxConcurrentRequestCount = 1;
@@ -486,6 +491,12 @@ public class AbfsOutputStream extends OutputStream implements Syncable,
     }
 
     try {
+      // Check if Executor Service got shutdown before the writes could be
+      // completed.
+      if (hasActiveBlockDataToUpload() && executorService.isShutdown()) {
+        throw new PathIOException(path, "Executor Service closed before "
+            + "writes could be completed.");
+      }
       flushInternal(true);
     } catch (IOException e) {
       // Problems surface in try-with-resources clauses if
@@ -763,5 +774,15 @@ public class AbfsOutputStream extends OutputStream implements Syncable,
     sb.append(outputStreamStatistics.toString());
     sb.append("}");
     return sb.toString();
+  }
+
+  @VisibleForTesting
+  BackReference getFsBackRef() {
+    return fsBackRef;
+  }
+
+  @VisibleForTesting
+  ListeningExecutorService getExecutorService() {
+    return executorService;
   }
 }
