@@ -89,7 +89,7 @@
     <protoc.path>${env.HADOOP_PROTOC_PATH}</protoc.path>
 
     <zookeeper.version>3.8.1.7.1.9.0-SNAPSHOT</zookeeper.version>
-    <curator.version>4.3.0.7.1.9.0-SNAPSHOT</curator.version>
+    <curator.version>5.4.0.7.1.9.0-SNAPSHOT</curator.version>
     <findbugs.version>3.0.0</findbugs.version>
     <spotbugs.version>3.1.0-RC1</spotbugs.version>
     <dnsjava.version>2.1.7</dnsjava.version>
@@ -182,7 +182,7 @@
     <swagger-annotations-version>1.5.4</swagger-annotations-version>
     <snakeyaml.version>2.0</snakeyaml.version>
     <hbase.one.version>1.2.6</hbase.one.version>
-    <hbase.two.version>2.4.6.7.1.9.0-SNAPSHOT</hbase.two.version>
+    <hbase.two.version>2.4.17.7.1.9.0-SNAPSHOT</hbase.two.version>
     <gcs.version>2.1.2.7.1.9.0-SNAPSHOT</gcs.version>
     <knox.version>1.3.0.7.1.9.0-SNAPSHOT</knox.version>
     <ranger.version>2.4.0.7.1.9.0-SNAPSHOT</ranger.version>
