@@ -75,6 +75,7 @@ import org.apache.hadoop.yarn.api.records.impl.pb.ApplicationSubmissionContextPB
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.hadoop.yarn.event.DrainDispatcher;
 import org.apache.hadoop.yarn.event.EventHandler;
+import org.apache.hadoop.yarn.server.api.protocolrecords.LogAggregationReport;
 import org.apache.hadoop.yarn.server.resourcemanager.ApplicationMasterService;
 import org.apache.hadoop.yarn.server.resourcemanager.RMAppManagerEvent;
 import org.apache.hadoop.yarn.server.resourcemanager.RMAppManagerEventType;
@@ -952,6 +953,17 @@ public class TestRMAppTransitions {
     rmDispatcher.await();
     assertAppState(RMAppState.ACCEPTED, application);
     assertAppStateLaunchTimeSaved(1234L);
+  }
+
+  @Test
+  public void testAcquiredReleased() throws IOException {
+    RMApp application = testCreateAppSubmittedNoRecovery(null);
+    NodeId nodeId = NodeId.newInstance("host", 1234);
+    application.handle(
+        new RMAppRunningOnNodeEvent(application.getApplicationId(), nodeId, true));
+    Map<NodeId, LogAggregationReport> logAggregationReportsForApp =
+        application.getLogAggregationReportsForApp();
+    assertEquals(0, logAggregationReportsForApp.size());
   }
 
   @Test

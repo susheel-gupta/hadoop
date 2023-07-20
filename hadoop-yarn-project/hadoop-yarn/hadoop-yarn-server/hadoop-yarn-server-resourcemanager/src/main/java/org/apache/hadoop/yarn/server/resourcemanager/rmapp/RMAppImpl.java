@@ -1093,13 +1093,18 @@ public class RMAppImpl implements RMApp, Recoverable {
       // otherwise, add it to ranNodes for further process
       app.ranNodes.add(nodeAddedEvent.getNodeId());
 
-      if (!app.logAggregationStatus.containsKey(nodeAddedEvent.getNodeId())) {
-        app.logAggregationStatus.put(nodeAddedEvent.getNodeId(),
-          LogAggregationReport.newInstance(app.applicationId,
-            app.logAggregationEnabled ? LogAggregationStatus.NOT_START
-                : LogAggregationStatus.DISABLED, ""));
+      if (!nodeAddedEvent.isCreatedFromAcquiredState()) {
+        if (!app.logAggregationStatus.containsKey(nodeAddedEvent.getNodeId())) {
+          app.logAggregationStatus.put(nodeAddedEvent.getNodeId(),
+              LogAggregationReport.newInstance(app.applicationId,
+                  app.logAggregationEnabled ? LogAggregationStatus.NOT_START
+                      : LogAggregationStatus.DISABLED, ""));
+        }
+      } else {
+        LOG.debug(String.format("Not considering node for log aggregation yet. nodeId: %s, appId: %s",
+            nodeAddedEvent.getNodeId(), app.getApplicationId()));
       }
-    };
+    }
   }
 
   // synchronously recover attempt to ensure any incoming external events
