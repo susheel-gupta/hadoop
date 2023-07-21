@@ -62,6 +62,7 @@ import org.apache.hadoop.yarn.server.nodemanager.util.DefaultLCEResourcesHandler
 import org.apache.hadoop.yarn.server.nodemanager.util.LCEResourcesHandler;
 import java.io.File;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -742,9 +743,18 @@ public class LinuxContainerExecutor extends ContainerExecutor {
       LOG.warn("Error in signalling container " + pid + " with " + signal
           + "; exit = " + retCode, e);
       logOutput(e.getOutput());
-      throw new IOException("Problem signalling container " + pid + " with "
-          + signal + "; output: " + e.getOutput() + " and exitCode: "
-          + retCode, e);
+
+      // In ContainerExecutionException -1 is the default value for the exit code.
+      // If it remained unset, we can treat the signalling as interrupted.
+      if (retCode == ContainerExecutionException.getDefaultExitCode()) {
+        throw new InterruptedIOException("Signalling container " + pid + " with "
+            + signal + " is interrupted; output: " + e.getOutput() + " and exitCode: "
+            + retCode);
+      } else {
+        throw new IOException("Problem signalling container " + pid + " with "
+            + signal + "; output: " + e.getOutput() + " and exitCode: "
+            + retCode, e);
+      }
     }
     return true;
   }

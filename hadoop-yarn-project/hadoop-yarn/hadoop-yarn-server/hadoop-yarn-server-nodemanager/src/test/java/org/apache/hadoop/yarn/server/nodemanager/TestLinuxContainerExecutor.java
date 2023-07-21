@@ -23,9 +23,13 @@ import static org.apache.hadoop.fs.CreateFlag.OVERWRITE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -33,6 +37,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.apache.hadoop.yarn.server.nodemanager.containermanager.linux.runtime.LinuxContainerRuntime;
+import org.apache.hadoop.yarn.server.nodemanager.containermanager.runtime.ContainerExecutionException;
+import org.apache.hadoop.yarn.server.nodemanager.containermanager.runtime.ContainerRuntimeContext;
 import org.apache.hadoop.yarn.server.nodemanager.executor.ContainerReapContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +46,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -692,6 +699,44 @@ public class TestLinuxContainerExecutor {
     ContainerStartContext ctx = builder.build();
     lce.relaunchContainer(ctx);
     verify(lce, times(1)).relaunchContainer(ctx);
+  }
+
+  @Test
+  public void testSignalContainerFailureWhenExitCodeIsPresentInTheException()
+      throws ContainerExecutionException {
+    LinuxContainerRuntime containerRuntime = mock(LinuxContainerRuntime.class);
+    LinuxContainerExecutor containerExecutor = spy(new LinuxContainerExecutor(
+        containerRuntime));
+    ContainerSignalContext signalContext = new ContainerSignalContext.Builder().build();
+    ContainerExecutionException testException =
+        new ContainerExecutionException("exceptionWithExitCode", 123);
+
+    doNothing().when(containerExecutor).verifyUsernamePattern(any());
+    doThrow(testException)
+        .when(containerRuntime)
+        .signalContainer(any(ContainerRuntimeContext.class));
+
+    assertThrows(IOException.class,
+        () -> containerExecutor.signalContainer(signalContext));
+  }
+
+  @Test
+  public void testSignalContainerFailureWhenExitCodeIsNotPresentInTheException()
+      throws ContainerExecutionException {
+    LinuxContainerRuntime containerRuntime = mock(LinuxContainerRuntime.class);
+    LinuxContainerExecutor containerExecutor = spy(new LinuxContainerExecutor(
+        containerRuntime));
+    ContainerSignalContext signalContext = new ContainerSignalContext.Builder().build();
+    ContainerExecutionException testException =
+        new ContainerExecutionException("exceptionWithoutExitCode");
+
+    doNothing().when(containerExecutor).verifyUsernamePattern(any());
+    doThrow(testException)
+        .when(containerRuntime)
+        .signalContainer(any(ContainerRuntimeContext.class));
+
+    assertThrows(InterruptedIOException.class,
+        () -> containerExecutor.signalContainer(signalContext));
   }
 
   private static class TestResourceHandler implements LCEResourcesHandler {
