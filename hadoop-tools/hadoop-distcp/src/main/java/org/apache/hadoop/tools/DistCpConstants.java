@@ -120,6 +120,10 @@ public final class DistCpConstants {
   /* DistCp CopyListing class override param */
   public static final String CONF_LABEL_COPY_LISTING_CLASS = "distcp.copy.listing.class";
 
+  /* Traverse directory from diff recursively and add paths to the copyList if true */
+  public static final String CONF_LABEL_DIFF_COPY_LISTING_TRAVERSE_DIRECTORY =
+      "distcp.diff.copy.listing.traverse.directory";
+
   /* DistCp Copy Buffer Size */
   public static final String CONF_LABEL_COPY_BUFFER_SIZE =
       "distcp.copy.buffer.size";
