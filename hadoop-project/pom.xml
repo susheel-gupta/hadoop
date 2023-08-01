@@ -61,7 +61,7 @@
     <java.security.egd>file:///dev/urandom</java.security.egd>
 
     <!-- avro version -->
-    <avro.version>1.11.1</avro.version>
+    <avro.version>1.8.2.7.1.9.0-SNAPSHOT</avro.version>
 
     <!-- jersey version -->
     <jersey.version>1.19</jersey.version>
