@@ -154,6 +154,8 @@
                       <exclude>io.netty:*</exclude>
                       <!-- Leave bouncycastle unshaded because it's signed with a special Oracle certificate so it can be a custom JCE security provider -->
                       <exclude>org.bouncycastle:*</exclude>
+                      <!-- leave out kotlin classes -->
+                      <exclude>org.jetbrains.kotlin:*</exclude>
                     </excludes>
                   </artifactSet>
                   <filters>
