@@ -330,10 +330,6 @@
          <artifactId>jackson-databind</artifactId>
      </dependency>
      <dependency>
-         <groupId>com.fasterxml.jackson.dataformat</groupId>
-         <artifactId>jackson-dataformat-yaml</artifactId>
-     </dependency>
-     <dependency>
        <groupId>joda-time</groupId>
        <artifactId>joda-time</artifactId>
        <version>${joda.time.version}</version>

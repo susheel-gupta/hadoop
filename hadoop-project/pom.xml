@@ -1252,11 +1252,6 @@
         <version>${jackson2.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.fasterxml.jackson.dataformat</groupId>
-        <artifactId>jackson-dataformat-yaml</artifactId>
-        <version>${jackson2.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
         <version>1.10.19</version>
