@@ -443,6 +443,7 @@ public class TestRMWebServicesNodesScaling extends JerseyTestBase {
     Resource cResource = Resources.createResource(2 * GB, 1);
     am1.allocate("*", cResource, 1,
         new ArrayList<ContainerId>(), null);
+    Thread.sleep(10000);
 
     heartbeat(rm, nm1);
     heartbeat(rm, nm2);
