@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.LockSupport;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -1348,6 +1349,18 @@ public abstract class AbstractParentQueue extends AbstractCSQueue {
       readLock.unlock();
     }
 
+  }
+
+  @Override
+  public List<CSQueue> getChildQueuesByTryLock() {
+    try {
+      while (!readLock.tryLock()){
+        LockSupport.parkNanos(10000);
+      }
+      return new ArrayList<>(childQueues);
+    } finally {
+      readLock.unlock();
+    }
   }
 
   @Override
