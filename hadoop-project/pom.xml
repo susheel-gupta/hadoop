@@ -117,6 +117,7 @@
     <commons-logging-api.version>1.1</commons-logging-api.version>
     <commons-math3.version>3.1.1</commons-math3.version>
     <commons-net.version>3.9.0</commons-net.version>
+    <commons-text.version>1.10.0</commons-text.version>
 
     <kerby.version>2.0.3</kerby.version>
     <jcache.version>1.0-alpha-1</jcache.version>
@@ -1162,6 +1163,11 @@
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
         <version>${commons-lang3.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-text</artifactId>
+        <version>${commons-text.version}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
