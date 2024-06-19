@@ -222,6 +222,7 @@ public class FsImageValidation {
     initConf(conf);
 
     // check INodeReference
+    NameNode.initMetrics(conf, HdfsServerConstants.NamenodeRole.NAMENODE); // to avoid NPE
     final FSNamesystem namesystem = checkINodeReference(conf, errorCount);
 
     // check INodeMap
@@ -284,14 +285,16 @@ public class FsImageValidation {
       namesystem.getFSDirectory().writeLock();
       try {
         loader.load(fsImageFile, false);
+        fsImage.setLastAppliedTxId(loader);
       } finally {
         namesystem.getFSDirectory().writeUnlock();
         namesystem.writeUnlock();
       }
     }
     t.cancel();
-    Cli.println("Loaded %s %s successfully in %s",
-        FS_IMAGE, fsImageFile, StringUtils.formatTime(now() - loadStart));
+    Cli.println("Loaded %s %s with txid %d successfully in %s",
+        FS_IMAGE, fsImageFile, namesystem.getFSImage().getLastAppliedTxId(),
+        StringUtils.formatTime(now() - loadStart));
     return namesystem;
   }
 
