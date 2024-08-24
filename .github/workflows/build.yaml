@@ -17,6 +17,8 @@
 name: BUILD
 on:
   pull_request:
+    types: [labeled]
+
 jobs:
-  BUILD:
-    uses: Kitchen/RE-github-workflows/.github/workflows/CI_CDPD_BUILD.yaml@main
+  build:
+    uses: Kitchen/RE-github-workflows/.github/workflows/trigger-build.yaml@main
